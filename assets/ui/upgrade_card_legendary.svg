@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+<defs>
+  <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#00D7FF"/><stop offset="1" stop-color="#176BFF"/></linearGradient>
+  <linearGradient id="purple" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6A2CFF"/><stop offset="1" stop-color="#FF38F2"/></linearGradient>
+  <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFB000"/><stop offset="1" stop-color="#FF4B16"/></linearGradient>
+  <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F8FBFF"/><stop offset="0.45" stop-color="#AFC4D8"/><stop offset="1" stop-color="#42556A"/></linearGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="soft"><feGaussianBlur stdDeviation="22"/></filter>
+</defs>
+
+<path d="M110 30 H914 L994 110 V914 L914 994 H110 L30 914 V110 Z" fill="#251506" stroke="url(#orange)" stroke-width="24"/>
+<path d="M165 100 H859" stroke="#FFE39C" stroke-width="10"/>
+
+</svg>

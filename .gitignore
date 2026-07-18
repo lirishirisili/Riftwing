@@ -1,0 +1,21 @@
+# Godot
+.godot/
+*.translation
+
+# Local export outputs / secrets (never commit)
+build/
+*.apk
+*.aab
+*.ipa
+*.xcframework
+*.keystore
+*.jks
+.godot/export_credentials.cfg
+export_credentials.cfg
+**/riftwing-upload.keystore
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*~

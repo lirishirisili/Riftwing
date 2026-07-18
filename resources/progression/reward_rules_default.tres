@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RewardRulesData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/reward_rules_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+score_per_kill = 100
+score_per_combo = 25
+score_per_second = 5
+score_per_energy = 10
+score_victory_bonus = 5000
+base_rift_energy = 50
+rift_energy_per_score = 0.05
+victory_energy_multiplier = 1.5
+rift_core_on_victory = 1
+rift_core_on_defeat = 0

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+<defs>
+  <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#00D7FF"/><stop offset="1" stop-color="#176BFF"/></linearGradient>
+  <linearGradient id="purple" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6A2CFF"/><stop offset="1" stop-color="#FF38F2"/></linearGradient>
+  <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFB000"/><stop offset="1" stop-color="#FF4B16"/></linearGradient>
+  <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F8FBFF"/><stop offset="0.45" stop-color="#AFC4D8"/><stop offset="1" stop-color="#42556A"/></linearGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="soft"><feGaussianBlur stdDeviation="22"/></filter>
+</defs>
+
+<path d="M95 170 H845 L955 512 L845 854 H95 L-15 512 Z" fill="#071A35" stroke="url(#blue)" stroke-width="26"/>
+<path d="M125 225 H815 L895 512 L815 799 H125 L45 512 Z" fill="#0A2A5A" opacity="0.92" stroke="#83E8FF" stroke-width="7"/>
+<path d="M180 760 H760" stroke="#1EE9FF" stroke-width="16" stroke-linecap="round" opacity="0.75"/>
+
+</svg>

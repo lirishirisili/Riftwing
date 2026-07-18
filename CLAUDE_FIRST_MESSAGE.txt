@@ -1,0 +1,28 @@
+Read `CLAUDE.md` first, then read every file in `docs/` and `references/README.md`. Do not modify any file until you have finished reading them.
+
+This project is the original mobile game **RIFTWING**. The words “Starforge” and “Galaxy Rush” that appear inside some reference images are obsolete placeholder text. Never copy those names into the project. Use `RIFTWING` as the display brand and `riftwing` as the internal slug.
+
+Inspect the complete repository and confirm that you understand:
+1. the product and gameplay loop,
+2. the visual hierarchy of each reference screen,
+3. the one-project Android/iOS architecture,
+4. the asset status and placeholder limitations,
+5. the milestone workflow and definition of done.
+
+Then execute **only** `prompts/00_bootstrap.md`.
+
+Before changing files, provide:
+- a concise implementation plan,
+- the exact files you intend to create or modify,
+- acceptance criteria,
+- any installed Godot-version constraint you detected.
+
+After implementation:
+- run the project or the closest available validation command,
+- fix parser errors caused by your changes,
+- list changed files,
+- explain how I can verify the result,
+- update `docs/CHANGELOG.md`,
+- stop and wait for approval.
+
+Do not implement player movement, weapons, enemies, menus, stores, analytics, ads, or later milestones yet.

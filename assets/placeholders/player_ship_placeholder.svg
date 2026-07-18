@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+<defs>
+  <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#00D7FF"/><stop offset="1" stop-color="#176BFF"/></linearGradient>
+  <linearGradient id="purple" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6A2CFF"/><stop offset="1" stop-color="#FF38F2"/></linearGradient>
+  <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFB000"/><stop offset="1" stop-color="#FF4B16"/></linearGradient>
+  <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F8FBFF"/><stop offset="0.45" stop-color="#AFC4D8"/><stop offset="1" stop-color="#42556A"/></linearGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="soft"><feGaussianBlur stdDeviation="22"/></filter>
+</defs>
+
+<g filter="url(#glow)">
+  <path d="M512 70 L575 240 L650 320 L885 430 L810 590 L635 530 L585 720 L512 900 L439 720 L389 530 L214 590 L139 430 L374 320 L449 240 Z" fill="url(#metal)" stroke="#9EEBFF" stroke-width="10"/>
+  <path d="M512 115 L550 270 L512 610 L474 270 Z" fill="#14253C" stroke="#00D7FF" stroke-width="8"/>
+  <path d="M215 435 L405 345 L375 520 L185 550 Z" fill="#FF7A1A" stroke="#FFD39A" stroke-width="8"/>
+  <path d="M809 435 L619 345 L649 520 L839 550 Z" fill="#FF7A1A" stroke="#FFD39A" stroke-width="8"/>
+  <ellipse cx="512" cy="370" rx="52" ry="105" fill="#091421" stroke="#20DFFF" stroke-width="10"/>
+  <ellipse cx="512" cy="398" rx="30" ry="58" fill="url(#blue)" opacity="0.9"/>
+  <rect x="395" y="265" width="74" height="295" rx="34" fill="#273B52" stroke="#D9F4FF" stroke-width="8"/>
+  <rect x="555" y="265" width="74" height="295" rx="34" fill="#273B52" stroke="#D9F4FF" stroke-width="8"/>
+  <path d="M410 545 L455 545 L430 900 L380 900 Z" fill="url(#blue)" opacity="0.9" filter="url(#soft)"/>
+  <path d="M569 545 L614 545 L644 900 L594 900 Z" fill="url(#blue)" opacity="0.9" filter="url(#soft)"/>
+</g>
+</svg>

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/enemy_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/placeholders/enemy_elite_placeholder.svg" id="2"]
+[ext_resource type="Resource" path="res://resources/weapons/enemy_plasma_projectile.tres" id="3"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Shooter"
+max_health = 40.0
+contact_damage = 16.0
+energy_drop = 2
+sprite = ExtResource("2")
+sprite_scale = 0.14
+hit_radius = 52.0
+tint = Color(1, 0.478431, 0.101961, 1)
+can_shoot = true
+shoot_telegraph = 0.7
+burst_count = 3
+burst_spread_degrees = 28.0
+shoot_rest = 1.2
+projectile = ExtResource("3")

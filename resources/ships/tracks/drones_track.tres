@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="HangarUpgradeTrackData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/hangar_upgrade_track_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_drone.svg" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "drones"
+category = 3
+title = "DRONES"
+icon = ExtResource("2")
+accent_token = "green"
+max_level = 20
+cost_base = 220
+cost_per_level = 85
+attack_per_level = 25
+defense_per_level = 0
+hp_per_level = 0
+critical_per_level = 0.3

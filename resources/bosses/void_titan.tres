@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/boss_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/placeholders/boss_void_titan_placeholder.svg" id="2"]
+[ext_resource type="Resource" path="res://resources/bosses/void_titan_radial.tres" id="3"]
+[ext_resource type="Resource" path="res://resources/bosses/void_titan_laser.tres" id="4"]
+[ext_resource type="Resource" path="res://resources/bosses/void_titan_summon.tres" id="5"]
+[ext_resource type="Resource" path="res://resources/bosses/void_titan_radial_p2.tres" id="6"]
+[ext_resource type="Resource" path="res://resources/bosses/void_titan_laser_p2.tres" id="7"]
+
+[resource]
+script = ExtResource("1")
+display_name = "VOID TITAN"
+max_health = 2400.0
+sprite = ExtResource("2")
+sprite_scale = 0.5
+hit_radius = 150.0
+contact_damage = 20.0
+health_segments = 20
+warning_seconds = 2.2
+entry_seconds = 1.6
+hold_ratio = Vector2(0.5, 0.24)
+phase2_threshold = 0.4
+phase1_patterns = Array[Resource]([ExtResource("3"), ExtResource("4"), ExtResource("5")])
+phase2_patterns = Array[Resource]([ExtResource("6"), ExtResource("7"), ExtResource("5")])

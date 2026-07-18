@@ -1,0 +1,96 @@
+[gd_scene load_steps=24 format=3]
+
+[ext_resource type="Script" path="res://scripts/gameplay/enemy_wave_debug.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/effects/effects_layer.tscn" id="13"]
+[ext_resource type="PackedScene" path="res://scenes/effects/camera_rig.tscn" id="14"]
+[ext_resource type="PackedScene" path="res://scenes/player/player_ship.tscn" id="2"]
+[ext_resource type="Script" path="res://scripts/combat/plasma_weapon.gd" id="3"]
+[ext_resource type="Resource" path="res://resources/weapons/plasma_cannon.tres" id="4"]
+[ext_resource type="Script" path="res://scripts/combat/projectile_pool.gd" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/projectile.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/enemy_projectile.tscn" id="7"]
+[ext_resource type="Script" path="res://scripts/combat/node_pool.gd" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/enemy.tscn" id="9"]
+[ext_resource type="PackedScene" path="res://scenes/pickups/energy_pickup.tscn" id="10"]
+[ext_resource type="Script" path="res://scripts/spawning/wave_director.gd" id="11"]
+[ext_resource type="Resource" path="res://resources/waves/debug_wave_45s.tres" id="12"]
+[ext_resource type="Script" path="res://scripts/progression/experience_tracker.gd" id="15"]
+[ext_resource type="Resource" path="res://resources/upgrades/level_curve_default.tres" id="16"]
+[ext_resource type="Script" path="res://scripts/progression/upgrade_manager.gd" id="17"]
+[ext_resource type="PackedScene" path="res://scenes/ui/upgrade_screen.tscn" id="18"]
+[ext_resource type="Resource" path="res://resources/upgrades/plasma_overcharge.tres" id="19"]
+[ext_resource type="Resource" path="res://resources/upgrades/plasma_spread_array.tres" id="20"]
+[ext_resource type="Resource" path="res://resources/upgrades/homing_missiles.tres" id="21"]
+[ext_resource type="Resource" path="res://resources/upgrades/arc_laser.tres" id="22"]
+[ext_resource type="Resource" path="res://resources/upgrades/guardian_drone.tres" id="23"]
+
+[node name="EnemyWaveDebug" type="Node2D"]
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 1080.0
+offset_bottom = 1920.0
+color = Color(0.008, 0.02, 0.055, 1)
+
+[node name="CameraRig" parent="." instance=ExtResource("14")]
+position = Vector2(540, 960)
+
+[node name="EffectsLayer" parent="." instance=ExtResource("13")]
+
+[node name="PlayerProjectilePool" type="Node" parent="."]
+script = ExtResource("5")
+projectile_scene = ExtResource("6")
+prewarm_count = 256
+
+[node name="EnemyProjectilePool" type="Node" parent="."]
+script = ExtResource("5")
+projectile_scene = ExtResource("7")
+prewarm_count = 256
+fires_at_player = true
+
+[node name="EnemyPool" type="Node" parent="."]
+script = ExtResource("8")
+scene = ExtResource("9")
+prewarm_count = 48
+
+[node name="PickupPool" type="Node" parent="."]
+script = ExtResource("8")
+scene = ExtResource("10")
+prewarm_count = 64
+
+[node name="PlayerShip" parent="." instance=ExtResource("2")]
+position = Vector2(540, 1500)
+
+[node name="PlasmaWeapon" type="Node2D" parent="PlayerShip"]
+script = ExtResource("3")
+data = ExtResource("4")
+firing_active = true
+
+[node name="WaveDirector" type="Node2D" parent="."]
+script = ExtResource("11")
+wave = ExtResource("12")
+
+[node name="ExperienceTracker" type="Node" parent="."]
+script = ExtResource("15")
+curve = ExtResource("16")
+
+[node name="UpgradeManager" type="Node" parent="."]
+script = ExtResource("17")
+catalog = Array[Resource]([ExtResource("19"), ExtResource("20"), ExtResource("21"), ExtResource("22"), ExtResource("23")])
+
+[node name="Overlay" type="Control" parent="."]
+mouse_filter = 2
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="UpgradeScreen" parent="." instance=ExtResource("18")]
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Readout" type="Label" parent="UI"]
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 900.0
+offset_bottom = 900.0
+theme_override_font_sizes/font_size = 30
+text = "Wave starting..."

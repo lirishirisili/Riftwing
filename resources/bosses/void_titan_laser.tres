@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BossPatternData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/boss_pattern_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+kind = 1
+display_name = "Rift Lance"
+telegraph_seconds = 1.3
+active_seconds = 2.4
+recover_seconds = 0.9
+laser_sweep_degrees = 130.0
+laser_half_width = 26.0
+laser_damage = 18.0
+laser_return_sweep = false

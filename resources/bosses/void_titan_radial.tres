@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="BossPatternData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/boss_pattern_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/weapons/boss_radial_projectile.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+kind = 0
+display_name = "Void Nova"
+telegraph_seconds = 1.1
+active_seconds = 1.8
+recover_seconds = 0.9
+radial_bullets = 28
+radial_gaps = 2
+radial_gap_slots = 3
+radial_rings = 3
+radial_spin_degrees = 8.0
+radial_projectile = ExtResource("2")

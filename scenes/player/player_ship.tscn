@@ -1,0 +1,23 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/player/player_ship.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/balance/player_movement_default.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/placeholders/player_ship_placeholder.svg" id="3"]
+[ext_resource type="Resource" path="res://resources/balance/player_combat_default.tres" id="4"]
+
+[sub_resource type="CircleShape2D" id="core_shape"]
+radius = 18.0
+
+[node name="PlayerShip" type="Area2D"]
+collision_layer = 1
+collision_mask = 20
+script = ExtResource("1")
+data = ExtResource("2")
+combat_data = ExtResource("4")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+scale = Vector2(0.15, 0.15)
+texture = ExtResource("3")
+
+[node name="CollisionCore" type="CollisionShape2D" parent="."]
+shape = SubResource("core_shape")

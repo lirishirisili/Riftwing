@@ -1,0 +1,32 @@
+RIFTWING CLAUDE KIT V2
+
+COPY TO CLAUDE FIRST
+- CLAUDE_FIRST_MESSAGE.txt
+
+READ FIRST
+- README.md
+- CLAUDE.md
+- START_HERE_HE.md
+- docs/00_PRODUCT_VISION.md
+- docs/01_VISUAL_DIRECTION.md
+- docs/04_ARCHITECTURE.md
+- docs/09_BRAND_AND_NAMING.md
+- docs/10_REFERENCE_IMPLEMENTATION_MATRIX.md
+
+THEN RUN ONE AT A TIME
+- prompts/00_bootstrap.md
+- prompts/01_player_movement.md
+- continue in numeric order through prompts/14_export_validation.md
+
+REFERENCE SCREENS
+- references/00_reference_contact_sheet.jpg
+- references/01_main_menu.png through 07_victory.png
+- references/README.md explains legacy text inside the images
+
+ASSETS
+- assets/placeholders: transparent SVG prototype game objects
+- assets/ui: scalable frames and controls
+- assets/icons: weapon, currency, and status icons
+- assets/backgrounds: separate parallax layers
+- assets/effects: scalable effect placeholders
+- assets/concept: crops for art direction only

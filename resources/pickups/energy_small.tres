@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="PickupData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/pickup_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+value = 1
+radius = 15.0
+color = Color(0, 1, 0.611765, 1)
+fall_speed = 150.0
+lifetime = 9.0

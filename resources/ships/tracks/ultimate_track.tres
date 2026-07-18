@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="HangarUpgradeTrackData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/hangar_upgrade_track_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_boss.svg" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "ultimate"
+category = 4
+title = "ULTIMATE"
+icon = ExtResource("2")
+accent_token = "orange"
+max_level = 10
+cost_base = 400
+cost_per_level = 150
+attack_per_level = 30
+defense_per_level = 15
+hp_per_level = 80
+critical_per_level = 0.5

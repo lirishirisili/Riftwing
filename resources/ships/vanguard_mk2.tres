@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="ShipData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/ship_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/placeholders/player_ship_placeholder.svg" id="2"]
+[ext_resource type="Resource" path="res://resources/ships/tracks/weapons_track.tres" id="3"]
+[ext_resource type="Resource" path="res://resources/ships/tracks/shield_track.tres" id="4"]
+[ext_resource type="Resource" path="res://resources/ships/tracks/engine_track.tres" id="5"]
+[ext_resource type="Resource" path="res://resources/ships/tracks/drones_track.tres" id="6"]
+[ext_resource type="Resource" path="res://resources/ships/tracks/ultimate_track.tres" id="7"]
+
+[resource]
+script = ExtResource("1")
+id = "vanguard_mk2"
+display_name = "VANGUARD MK-II"
+tier_label = "TIER 2  ·  RARE"
+portrait = ExtResource("2")
+hero_texture = ExtResource("2")
+accent_modulate = Color(1, 1, 1, 1)
+base_attack = 220
+base_defense = 180
+base_hp = 1600
+base_critical = 8.0
+starts_unlocked = true
+unlock_hint = ""
+weapons_track = ExtResource("3")
+shield_track = ExtResource("4")
+engine_track = ExtResource("5")
+drones_track = ExtResource("6")
+ultimate_track = ExtResource("7")

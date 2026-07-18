@@ -1,0 +1,21 @@
+{
+  "brand": "RIFTWING",
+  "project_name": "Riftwing",
+  "working_store_title": "Riftwing: Space Survivor",
+  "internal_slug": "riftwing",
+  "version_name": "0.1.0",
+  "version_code": 1,
+  "android_application_id_provisional": "com.lishistudio.riftwing",
+  "ios_bundle_id_provisional": "com.lishistudio.riftwing",
+  "android_min_sdk": 24,
+  "android_target_sdk": 36,
+  "ios_min_version": "15.0",
+  "orientation": "portrait",
+  "legacy_reference_names_to_ignore": [
+    "Starforge",
+    "Galaxy Rush",
+    "Starforge: Galaxy Rush"
+  ],
+  "status": "prototype; IDs and store subtitle require owner approval before submission",
+  "notes": "Change IDs here first, then sync export_presets.cfg and docs/EXPORT_VALIDATION.md before store submission."
+}

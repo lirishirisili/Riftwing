@@ -1,0 +1,59 @@
+{
+  "status": "starter/reference pack; complex concept crops are not production-ready sprites",
+  "reference_screens": [
+    "01_main_menu.png",
+    "02_stage_select.png",
+    "03_hangar.png",
+    "04_gameplay.png",
+    "05_upgrade_choice.png",
+    "06_boss_fight.png",
+    "07_victory.png"
+  ],
+  "placeholders": [
+    "player_ship_placeholder.svg",
+    "enemy_drone_placeholder.svg",
+    "enemy_elite_placeholder.svg",
+    "boss_void_titan_placeholder.svg"
+  ],
+  "ui": [
+    "button_primary_blue.svg",
+    "button_secondary_purple.svg",
+    "panel_dark_9slice.svg",
+    "upgrade_card_rare.svg",
+    "upgrade_card_epic.svg",
+    "upgrade_card_legendary.svg",
+    "health_bar_frame.svg",
+    "shield_bar_frame.svg",
+    "ability_button_blue.svg",
+    "ability_button_purple.svg"
+  ],
+  "icons": [
+    "icon_missile.svg",
+    "icon_laser.svg",
+    "icon_drone.svg",
+    "icon_shield.svg",
+    "icon_health.svg",
+    "icon_coin.svg",
+    "icon_crystal.svg",
+    "icon_energy.svg",
+    "icon_boss.svg"
+  ],
+  "background_layers": [
+    "parallax_far_stars.png",
+    "parallax_nebula.png",
+    "parallax_foreground_asteroids.png"
+  ],
+  "effects": [
+    "engine_glow.svg",
+    "shield_ring.svg",
+    "shockwave_ring.svg"
+  ],
+  "rules": {
+    "base_resolution": "1080x1920 portrait",
+    "safe_area": "all interactive UI must remain inside device safe areas",
+    "import": "SVG placeholders can be imported directly into Godot; final art should be exported as WebP/PNG at 2x or 4x",
+    "naming": "snake_case, lowercase, no spaces"
+  },
+  "project": "Riftwing",
+  "reference_branding_note": "Legacy Starforge/Galaxy Rush text inside concept images must not be implemented."
+}

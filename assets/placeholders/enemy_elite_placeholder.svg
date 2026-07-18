@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+<defs>
+  <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#00D7FF"/><stop offset="1" stop-color="#176BFF"/></linearGradient>
+  <linearGradient id="purple" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6A2CFF"/><stop offset="1" stop-color="#FF38F2"/></linearGradient>
+  <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFB000"/><stop offset="1" stop-color="#FF4B16"/></linearGradient>
+  <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F8FBFF"/><stop offset="0.45" stop-color="#AFC4D8"/><stop offset="1" stop-color="#42556A"/></linearGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="soft"><feGaussianBlur stdDeviation="22"/></filter>
+</defs>
+
+<g filter="url(#glow)">
+ <path d="M512 90 L605 210 L770 170 L730 345 L900 470 L742 570 L700 790 L560 700 L512 925 L464 700 L324 790 L282 570 L124 470 L294 345 L254 170 L419 210 Z" fill="#17151E" stroke="#B96BFF" stroke-width="14"/>
+ <path d="M512 150 L610 370 L570 650 L512 745 L454 650 L414 370 Z" fill="#3E283F" stroke="#FF7B27" stroke-width="10"/>
+ <circle cx="512" cy="455" r="105" fill="url(#orange)" stroke="#FFE2A8" stroke-width="12"/>
+ <circle cx="512" cy="455" r="48" fill="#FFF1C9"/>
+ <path d="M265 295 L425 345 L380 520 L195 455 Z" fill="url(#purple)"/>
+ <path d="M759 295 L599 345 L644 520 L829 455 Z" fill="url(#purple)"/>
+</g>
+</svg>

@@ -1,0 +1,155 @@
+[gd_resource type="Resource" script_class="StageMapData" load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/stage_map_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/progression/stage_node_data.gd" id="2"]
+
+[sub_resource type="Resource" id="stage_1"]
+script = ExtResource("2")
+id = "1-1"
+index = 1
+label = "1-1"
+title = "RIFT GATE"
+enemy_label = "VOID SCOUTS"
+objective = "Break the Void Swarm picket at the outer rift gate."
+recommended_power = 1200
+reward_rift_energy = 220
+reward_rift_core = 0
+first_clear_rift_core = 1
+map_position = Vector2(200, 100)
+planet_modulate = Color(0.35, 0.85, 0.55, 1)
+starts_unlocked = true
+stars_combo_for_2 = 4
+stars_score_for_3 = 3500
+
+[sub_resource type="Resource" id="stage_2"]
+script = ExtResource("2")
+id = "1-2"
+index = 2
+label = "1-2"
+title = "ASH NEBULA"
+enemy_label = "VOID SWARM"
+objective = "Clear the ash nebula corridor before the swarm reforms."
+recommended_power = 1600
+reward_rift_energy = 260
+reward_rift_core = 0
+first_clear_rift_core = 1
+map_position = Vector2(520, 220)
+planet_modulate = Color(1, 0.45, 0.25, 1)
+starts_unlocked = true
+stars_combo_for_2 = 5
+stars_score_for_3 = 4000
+
+[sub_resource type="Resource" id="stage_3"]
+script = ExtResource("2")
+id = "1-3"
+index = 3
+label = "1-3"
+title = "ICE RELIC"
+enemy_label = "VOID SWARM"
+objective = "Secure the frozen relic station and extract its signal."
+recommended_power = 2000
+reward_rift_energy = 300
+reward_rift_core = 0
+first_clear_rift_core = 1
+map_position = Vector2(220, 360)
+planet_modulate = Color(0.45, 0.75, 1, 1)
+starts_unlocked = true
+stars_combo_for_2 = 5
+stars_score_for_3 = 4500
+
+[sub_resource type="Resource" id="stage_4"]
+script = ExtResource("2")
+id = "1-4"
+index = 4
+label = "1-4"
+title = "CRIMSON BELT"
+enemy_label = "VOID ELITES"
+objective = "Survive the crimson asteroid belt ambush."
+recommended_power = 2400
+reward_rift_energy = 340
+reward_rift_core = 0
+first_clear_rift_core = 1
+map_position = Vector2(540, 500)
+planet_modulate = Color(0.95, 0.3, 0.35, 1)
+starts_unlocked = false
+stars_combo_for_2 = 6
+stars_score_for_3 = 5000
+
+[sub_resource type="Resource" id="stage_5"]
+script = ExtResource("2")
+id = "1-5"
+index = 5
+label = "1-5"
+title = "VOID OUTPOST"
+enemy_label = "VOID SWARM"
+objective = "Eliminate the Void Swarm at the abandoned outpost."
+recommended_power = 2800
+reward_rift_energy = 380
+reward_rift_core = 0
+first_clear_rift_core = 1
+map_position = Vector2(240, 640)
+planet_modulate = Color(0.55, 0.35, 0.95, 1)
+starts_unlocked = false
+stars_combo_for_2 = 6
+stars_score_for_3 = 5500
+
+[sub_resource type="Resource" id="stage_6"]
+script = ExtResource("2")
+id = "1-6"
+index = 6
+label = "1-6"
+title = "PULSE ARRAY"
+enemy_label = "VOID SHOOTERS"
+objective = "Silence the pulse array before it calls reinforcements."
+recommended_power = 3200
+reward_rift_energy = 420
+reward_rift_core = 0
+first_clear_rift_core = 1
+map_position = Vector2(560, 780)
+planet_modulate = Color(0.25, 0.9, 0.85, 1)
+starts_unlocked = false
+stars_combo_for_2 = 7
+stars_score_for_3 = 6000
+
+[sub_resource type="Resource" id="stage_7"]
+script = ExtResource("2")
+id = "1-7"
+index = 7
+label = "1-7"
+title = "DARK SPIRE"
+enemy_label = "VOID ELITES"
+objective = "Breach the dark spire and hold the landing ring."
+recommended_power = 3600
+reward_rift_energy = 460
+reward_rift_core = 1
+first_clear_rift_core = 1
+map_position = Vector2(260, 920)
+planet_modulate = Color(0.7, 0.25, 0.85, 1)
+starts_unlocked = false
+stars_combo_for_2 = 7
+stars_score_for_3 = 6500
+
+[sub_resource type="Resource" id="stage_8"]
+script = ExtResource("2")
+id = "1-8"
+index = 8
+label = "1-8"
+title = "TITAN APPROACH"
+enemy_label = "VOID TITAN"
+objective = "Open the approach corridor to the Void Titan."
+recommended_power = 4000
+reward_rift_energy = 520
+reward_rift_core = 1
+first_clear_rift_core = 2
+map_position = Vector2(500, 1060)
+planet_modulate = Color(1, 0.7, 0.2, 1)
+starts_unlocked = false
+stars_combo_for_2 = 8
+stars_score_for_3 = 7000
+
+[resource]
+script = ExtResource("1")
+sector_id = "nova"
+sector_code = "01"
+sector_name = "NOVA SECTOR"
+stages = Array[Resource]([SubResource("stage_1"), SubResource("stage_2"), SubResource("stage_3"), SubResource("stage_4"), SubResource("stage_5"), SubResource("stage_6"), SubResource("stage_7"), SubResource("stage_8")])

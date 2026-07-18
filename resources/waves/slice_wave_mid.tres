@@ -1,0 +1,64 @@
+[gd_resource type="Resource" script_class="WaveData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/spawning/wave_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/spawning/wave_event_data.gd" id="2"]
+[ext_resource type="Resource" path="res://resources/enemies/scout.tres" id="3"]
+[ext_resource type="Resource" path="res://resources/enemies/shooter.tres" id="4"]
+
+[sub_resource type="Resource" id="ev_recover_scouts"]
+script = ExtResource("2")
+time = 2.0
+enemy = ExtResource("3")
+count = 5
+formation = "row"
+center_x_ratio = 0.5
+spacing = 150.0
+hold_y = 390.0
+entry_seconds = 1.1
+wait_seconds = 4.0
+exit_seconds = 2.0
+
+[sub_resource type="Resource" id="ev_pressure_shooters"]
+script = ExtResource("2")
+time = 14.0
+enemy = ExtResource("4")
+count = 4
+formation = "vee"
+center_x_ratio = 0.5
+spacing = 200.0
+hold_y = 330.0
+entry_seconds = 1.2
+wait_seconds = 6.5
+exit_seconds = 2.0
+
+[sub_resource type="Resource" id="ev_swarm"]
+script = ExtResource("2")
+time = 32.0
+enemy = ExtResource("3")
+count = 8
+formation = "vee"
+center_x_ratio = 0.5
+spacing = 120.0
+hold_y = 410.0
+entry_seconds = 1.0
+wait_seconds = 4.5
+exit_seconds = 1.8
+
+[sub_resource type="Resource" id="ev_pre_boss"]
+script = ExtResource("2")
+time = 55.0
+enemy = ExtResource("4")
+count = 5
+formation = "row"
+center_x_ratio = 0.5
+spacing = 180.0
+hold_y = 310.0
+entry_seconds = 1.2
+wait_seconds = 7.0
+exit_seconds = 2.0
+
+[resource]
+script = ExtResource("1")
+display_name = "Slice Mid"
+duration = 80.0
+events = Array[Resource]([SubResource("ev_recover_scouts"), SubResource("ev_pressure_shooters"), SubResource("ev_swarm"), SubResource("ev_pre_boss")])

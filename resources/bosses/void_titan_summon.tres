@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BossPatternData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/boss_pattern_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/enemies/void_spawn.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+kind = 2
+display_name = "Swarm Call"
+telegraph_seconds = 1.0
+active_seconds = 1.6
+recover_seconds = 1.0
+summon_enemy = ExtResource("2")
+summon_waves = 2
+summon_per_wave = 4
+summon_spacing = 150.0

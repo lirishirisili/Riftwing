@@ -1,0 +1,12 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/effects_layer.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/effects/hit_flash.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/effects/explosion.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/effects/damage_number.tscn" id="4"]
+
+[node name="EffectsLayer" type="Node2D"]
+script = ExtResource("1")
+hit_flash_scene = ExtResource("2")
+explosion_scene = ExtResource("3")
+damage_number_scene = ExtResource("4")
