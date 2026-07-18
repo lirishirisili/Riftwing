@@ -92,22 +92,33 @@ func _on_area_entered(area: Area2D) -> void:
 func _draw() -> void:
 	if data == null:
 		return
-	# Motion trail (feel only): fading polyline through recent local positions.
-	# Points are stored in this node's local space but recorded while the node
-	# rotates, so draw them relative to the current transform via to_local capture.
+	# Lifetime fade near expiry keeps the field readable.
+	var life_f := 1.0
+	if data.lifetime > 0.0:
+		life_f = clampf(1.0 - (_age / data.lifetime), 0.15, 1.0)
+	# Motion trail (feel only). Hostile trails stay short/soft so they never mask cores.
 	if _trail.size() >= 2:
 		var n := _trail.size()
 		for i in range(n - 1):
 			var a := to_local(_trail[i])
 			var b := to_local(_trail[i + 1])
 			var f := float(i) / float(n)
-			draw_line(a, b, Color(data.color, 0.10 + 0.25 * f), data.radius * (0.6 + 1.2 * f), true)
-	# Bolt drawn in local space pointing "up" (-Y) before rotation is applied.
+			var trail_a := (0.06 + 0.22 * f) if hits_player else (0.1 + 0.32 * f)
+			var trail_w := data.radius * ((0.55 + 1.0 * f) if hits_player else (0.75 + 1.35 * f))
+			draw_line(a, b, Color(data.color, trail_a * life_f), trail_w, true)
 	var half := data.length * 0.5
-	var glow := Color(data.color, 0.35)
-	draw_line(Vector2(0.0, half), Vector2(0.0, -half), glow, data.radius * 2.2, true)
-	draw_line(Vector2(0.0, half), Vector2(0.0, -half), data.color, data.radius, true)
-	draw_circle(Vector2(0.0, -half), data.radius, data.color)
+	if hits_player:
+		# Hostile: round orb + warm core (shape distinct from cyan needles).
+		draw_circle(Vector2.ZERO, data.radius * 1.9, Color(data.color, 0.22 * life_f))
+		draw_circle(Vector2.ZERO, data.radius * 1.1, Color(data.color, life_f))
+		draw_circle(Vector2.ZERO, data.radius * 0.45, Color(1.0, 0.78, 0.35, 0.98 * life_f))
+	else:
+		# Friendly: bright head + soft body + hot tip.
+		var glow := Color(data.color, 0.36 * life_f)
+		draw_line(Vector2(0.0, half), Vector2(0.0, -half), glow, data.radius * 2.8, true)
+		draw_line(Vector2(0.0, half * 0.85), Vector2(0.0, -half), Color(data.color, life_f), data.radius * 1.2, true)
+		draw_circle(Vector2(0.0, -half), data.radius * 1.2, Color(data.color, life_f))
+		draw_circle(Vector2(0.0, -half), data.radius * 0.5, Color(1.0, 1.0, 1.0, 0.95 * life_f))
 
 
 ## Called by the pool on acquire.

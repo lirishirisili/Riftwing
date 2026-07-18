@@ -37,6 +37,7 @@ func _process(delta: float) -> void:
 		return
 	global_position.y += data.fall_speed * delta
 	_age += delta
+	queue_redraw()
 	if _age >= data.lifetime or not _bounds.has_point(global_position):
 		_release()
 
@@ -44,9 +45,13 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	if data == null:
 		return
-	draw_circle(Vector2.ZERO, data.radius * 1.6, Color(data.color, 0.25))
-	draw_circle(Vector2.ZERO, data.radius, data.color)
-	draw_circle(Vector2.ZERO, data.radius * 0.45, Color("#FFFFFF"))
+	# Hex-adjacent layered disc (green recovery role) — readable at 64–96 px.
+	var pulse := 0.85 + 0.15 * sin(Time.get_ticks_msec() * 0.01 + _age * 4.0)
+	draw_circle(Vector2.ZERO, data.radius * 1.85, Color(data.color, 0.16 * pulse))
+	draw_circle(Vector2.ZERO, data.radius * 1.7, Color(data.color, 0.22))
+	draw_circle(Vector2.ZERO, data.radius * 1.15, Color(data.color, 0.85))
+	draw_circle(Vector2.ZERO, data.radius * 0.55, Color(1.0, 1.0, 1.0, 0.95))
+	draw_arc(Vector2.ZERO, data.radius * 1.3 * pulse, 0.0, TAU, 6, Color(0.7, 1.0, 0.85, 0.75), 3.0, true)
 
 
 ## Called by the player when this pickup is collected. Returns its value once.

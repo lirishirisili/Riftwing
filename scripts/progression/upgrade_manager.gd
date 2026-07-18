@@ -80,18 +80,29 @@ func eligible_upgrades() -> Array[UpgradeData]:
 	return out
 
 
-## Picks up to `count` distinct eligible upgrades, weighted by UpgradeData.weight.
+## Picks up to `count` distinct eligible upgrades, weighted by UpgradeData.weight
+## and early-run rarity bias (legendary rarer early; epic mid-run).
 ## No reroll this milestone (docs/02_GAMEPLAY_SPEC.md); the caller shows the result.
-func roll_choices(count: int = 3) -> Array[UpgradeData]:
+func roll_choices(count: int = 3, run_level: int = 1) -> Array[UpgradeData]:
 	var pool := eligible_upgrades()
 	var chosen: Array[UpgradeData] = []
 	while chosen.size() < count and pool.size() > 0:
-		var pick := _weighted_take(pool)
+		var pick := _weighted_take(pool, run_level)
 		if pick == null:
 			break
 		chosen.append(pick)
 		pool.erase(pick)
 	return chosen
+
+
+## Synergy hint when the player already owns a listed partner upgrade/weapon.
+func synergy_hint_for(upgrade: UpgradeData) -> String:
+	if upgrade == null or upgrade.synergy_hint.strip_edges() == "":
+		return ""
+	for id in upgrade.synergy_ids:
+		if _owned.has(id) or level_of(id) > 0:
+			return upgrade.synergy_hint
+	return ""
 
 
 ## Applies a chosen upgrade: bumps its level, records ownership, and runs effects.
@@ -134,16 +145,36 @@ func _acquires_new_weapon(upgrade: UpgradeData) -> bool:
 	return false
 
 
-## Removes and returns one upgrade from `pool`, weighted by its `weight`.
-func _weighted_take(pool: Array[UpgradeData]) -> UpgradeData:
+## Removes and returns one upgrade from `pool`, weighted by effective weight.
+func _weighted_take(pool: Array[UpgradeData], run_level: int = 1) -> UpgradeData:
 	var total := 0.0
 	for upgrade in pool:
-		total += maxf(0.0, upgrade.weight)
+		total += _effective_weight(upgrade, run_level)
 	if total <= 0.0:
 		return pool[0] if pool.size() > 0 else null
 	var roll := _rng.randf() * total
 	for upgrade in pool:
-		roll -= maxf(0.0, upgrade.weight)
+		roll -= _effective_weight(upgrade, run_level)
 		if roll <= 0.0:
 			return upgrade
 	return pool[pool.size() - 1]
+
+
+## Early levels suppress legendary/epic so each pick stays meaningful.
+func _effective_weight(upgrade: UpgradeData, run_level: int) -> float:
+	var w := maxf(0.0, upgrade.weight)
+	var lvl := maxi(1, run_level)
+	match upgrade.rarity:
+		UpgradeData.Rarity.LEGENDARY:
+			if lvl <= 3:
+				w *= 0.22
+			elif lvl <= 6:
+				w *= 0.55
+		UpgradeData.Rarity.EPIC:
+			if lvl <= 3:
+				w *= 0.5
+			elif lvl <= 5:
+				w *= 0.8
+		_:
+			pass
+	return w

@@ -7,6 +7,14 @@ extends RefCounted
 ## into logical coordinates so UI margins line up with the game's coordinate
 ## space. On desktop/headless there is no cutout, so the safe area equals the
 ## full logical viewport.
+##
+## Windows often reports the monitor *work area* (excluding the taskbar) as the
+## display safe area even for a normal game window. Those huge insets are not
+## mobile cutouts — we reject implausibly large bands so meta UI is not crushed.
+
+## Max fraction of an axis that a single inset may consume (notch / home bar).
+const _MAX_INSET_FRACTION := 0.12
+
 
 ## Returns the safe rectangle for the given tree in logical coordinates.
 static func get_logical_rect(tree: SceneTree) -> Rect2:
@@ -23,8 +31,20 @@ static func get_logical_rect(tree: SceneTree) -> Rect2:
 	if native_rect.size == Vector2.ZERO or native_rect == Rect2(Vector2.ZERO, window_size):
 		return full
 
-	# Map native pixels -> logical units. Axes can scale independently because
-	# the canvas_items stretch aspect is "expand".
+	var inset_l := native_rect.position.x
+	var inset_t := native_rect.position.y
+	var inset_r := window_size.x - (native_rect.position.x + native_rect.size.x)
+	var inset_b := window_size.y - (native_rect.position.y + native_rect.size.y)
+	# Reject taskbar / work-area misreports (far larger than phone cutouts).
+	if (
+		inset_l > window_size.x * _MAX_INSET_FRACTION
+		or inset_r > window_size.x * _MAX_INSET_FRACTION
+		or inset_t > window_size.y * _MAX_INSET_FRACTION
+		or inset_b > window_size.y * _MAX_INSET_FRACTION
+	):
+		return full
+
+	# Map native pixels -> logical units.
 	var scale := logical_size / window_size
 	var safe := Rect2(native_rect.position * scale, native_rect.size * scale)
 	return safe.intersection(full)

@@ -37,6 +37,9 @@ extends Resource
 ## Fresh saves unlock these without any clears (prompt: first three for testing).
 @export var starts_unlocked: bool = false
 
-## Star thresholds evaluated on victory (best_combo / score). Pure data.
-@export var stars_combo_for_2: int = 5
+## Star objectives on victory (additive): clear / HP ratio / score. Pure data.
+@export_range(0.0, 1.0, 0.05) var stars_hp_ratio_for_2: float = 0.5
 @export var stars_score_for_3: int = 4000
+
+## Legacy combo threshold kept for older map resources; unused when HP ratio is set.
+@export var stars_combo_for_2: int = 5

@@ -1,21 +1,27 @@
 class_name StageMapScreen
 extends Control
-## Galaxy map / stage select (prompts/10_stage_map.md, docs/03_SCREEN_SPEC.md).
+## Production galaxy map / stage select (prompts/19_galaxy_map_production.md).
 ##
-## Data-driven mission nodes from StageMapData, connected paths, locked states,
-## star ratings, mission detail panel, NORMAL/HARD difficulty (HARD locked), and
-## Launch into a real run. Branding reads RIFTWING; the reference image is visual
-## direction only.
+## Data-driven mission nodes from StageMapData with glowing paths, clear
+## completed / current / unlocked / locked states, mission detail panel, and
+## Launch into a real run. Save / unlock / HARD restrictions unchanged.
+## Branding reads RIFTWING only.
 
 const _MAP_PATH := "res://resources/stages/nova_sector_map.tres"
-const _BASE_PADDING := 36.0
-const _NODE_RADIUS := 44.0
+const _TEX_NODE_ACTIVE: Texture2D = preload("res://assets/ui/chrome/map_node_active.svg")
+const _TEX_NODE_LOCKED: Texture2D = preload("res://assets/ui/chrome/map_node_locked.svg")
+const _BASE_PADDING := 32.0
+const _NODE_RADIUS := 46.0
 const _MAP_HEIGHT := 1180.0
+const _SCROLL_SPEED := 12.0
+const _ICON_SIZE := 72
 
+@onready var _parallax: ParallaxBackground = $Background
 @onready var _safe: MarginContainer = %Safe
 @onready var _energy_value: Label = %EnergyValue
 @onready var _core_value: Label = %CoreValue
 @onready var _sector_label: Label = %SectorLabel
+@onready var _progress_label: Label = %ProgressLabel
 @onready var _map_canvas: Control = %MapCanvas
 @onready var _detail_title: Label = %DetailTitle
 @onready var _detail_enemy: Label = %DetailEnemy
@@ -37,6 +43,7 @@ var _map: StageMapData
 var _selected_id: String = ""
 var _node_buttons: Dictionary = {} # stage_id -> Button
 var _feedback_tween: Tween
+var _pulse_time := 0.0
 
 
 func receive_payload(payload: Dictionary) -> void:
@@ -68,6 +75,21 @@ func _ready() -> void:
 	_sector_label.text = "%s  %s" % [_map.sector_code, _map.sector_name]
 	_build_nodes()
 	_refresh_all()
+	GameFeel.debug_markers_enabled = false
+	AudioManager.play_music("menu")
+	set_process(true)
+
+
+func _process(delta: float) -> void:
+	_parallax.scroll_offset.y += delta * _SCROLL_SPEED
+	_pulse_time += delta
+	_map_canvas.queue_redraw()
+	# Stronger CTA pulse when launch is available.
+	if _launch_button != null and not _launch_button.disabled:
+		var g := 0.88 + absf(sin(_pulse_time * 2.1)) * 0.12
+		_launch_button.modulate = Color(g, g, 1.0, 1.0)
+	elif _launch_button != null:
+		_launch_button.modulate = Color.WHITE
 
 
 # --- Build ------------------------------------------------------------------
@@ -82,9 +104,13 @@ func _build_nodes() -> void:
 		if stage == null:
 			continue
 		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(_NODE_RADIUS * 2.2, _NODE_RADIUS * 2.2)
+		btn.custom_minimum_size = Vector2(_NODE_RADIUS * 2.3, _NODE_RADIUS * 2.3)
 		btn.focus_mode = Control.FOCUS_NONE
-		btn.add_theme_font_size_override("font_size", 26)
+		btn.theme_type_variation = &"ButtonTertiary"
+		btn.add_theme_font_size_override("font_size", 20)
+		btn.add_theme_constant_override("icon_max_width", _ICON_SIZE)
+		btn.expand_icon = true
+		btn.clip_text = true
 		btn.position = stage.map_position - btn.custom_minimum_size * 0.5
 		btn.pressed.connect(_on_node_pressed.bind(stage.id))
 		_map_canvas.add_child(btn)
@@ -95,6 +121,7 @@ func _build_nodes() -> void:
 
 func _refresh_all() -> void:
 	_refresh_currencies()
+	_refresh_progress()
 	_refresh_nodes()
 	_refresh_detail()
 	_refresh_difficulty()
@@ -106,22 +133,52 @@ func _refresh_currencies() -> void:
 	_core_value.text = _format_int(SaveManager.get_rift_core())
 
 
+func _refresh_progress() -> void:
+	if _map == null:
+		return
+	var cleared := 0
+	for stage in _map.stages:
+		if stage != null and SaveManager.is_stage_cleared(stage.id):
+			cleared += 1
+	var total := _map.stages.size()
+	_progress_label.text = "%d / %d  CLEARED" % [cleared, total]
+
+
 func _refresh_nodes() -> void:
-	var cleared := SaveManager.get_cleared_stage_ids()
+	var cleared_ids := SaveManager.get_cleared_stage_ids()
+	var current_id := _next_current_stage_id(cleared_ids)
 	for stage in _map.stages:
 		if stage == null or not _node_buttons.has(stage.id):
 			continue
 		var btn: Button = _node_buttons[stage.id]
-		var unlocked := StageProgress.is_unlocked(_map, stage, cleared)
+		var unlocked := StageProgress.is_unlocked(_map, stage, cleared_ids)
+		var cleared := SaveManager.is_stage_cleared(stage.id)
 		var selected := stage.id == _selected_id
+		var is_current := stage.id == current_id
 		var stars := SaveManager.get_stage_stars(stage.id)
+
 		if not unlocked:
-			btn.text = "🔒\n%s" % stage.label
-			btn.modulate = Color(0.45, 0.45, 0.5, 1)
-		else:
+			btn.icon = _TEX_NODE_LOCKED
+			btn.text = stage.label
+			btn.modulate = Color(0.55, 0.58, 0.65, 1)
+			btn.self_modulate = Color(0.85, 0.88, 0.95, 1)
+		elif cleared:
+			btn.icon = null
 			btn.text = "%s\n%s" % [_star_text(stars), stage.label]
 			btn.modulate = stage.planet_modulate
-		btn.self_modulate = Palette.get_color("cyan", Color(0, 0.84, 1)) if selected else Color.WHITE
+			btn.self_modulate = Palette.get_color("gold", Color(1, 0.85, 0.35)) if not selected else Palette.get_color("cyan", Color(0, 0.84, 1))
+		else:
+			var focus := selected or is_current
+			btn.icon = _TEX_NODE_ACTIVE if focus else null
+			# Keep label short when the active chrome icon is shown.
+			btn.text = stage.label if focus else "%s\n%s" % [_star_text(stars), stage.label]
+			btn.modulate = stage.planet_modulate
+			if selected:
+				btn.self_modulate = Palette.get_color("cyan", Color(0, 0.84, 1))
+			elif is_current:
+				btn.self_modulate = Color(0.85, 0.95, 1, 1)
+			else:
+				btn.self_modulate = Color.WHITE
 
 
 func _refresh_detail() -> void:
@@ -133,8 +190,9 @@ func _refresh_detail() -> void:
 
 	var unlocked := StageProgress.is_unlocked(_map, stage, SaveManager.get_cleared_stage_ids())
 	var player_power := _player_power()
-	_detail_title.text = "SECTOR %s  ·  %s  %s" % [_map.sector_code, stage.label, stage.title]
-	_detail_enemy.text = stage.enemy_label
+	# Short readable title: "1-5  VOID OUTPOST"
+	_detail_title.text = "%s  %s" % [stage.label, stage.title]
+	_detail_enemy.text = "ENEMY  ·  %s" % stage.enemy_label
 	_detail_objective.text = stage.objective
 	_power_recommended.text = "REC  %s" % _format_int(stage.recommended_power)
 	_power_yours.text = "YOU  %s" % _format_int(player_power)
@@ -153,7 +211,9 @@ func _refresh_detail() -> void:
 		_first_clear_label.text = "FIRST CLEAR  Core +%d" % stage.first_clear_rift_core
 		_first_clear_label.add_theme_color_override("font_color", Palette.get_color("purple", Color(0.55, 0.26, 1)))
 
-	_stars_label.text = "STARS  %s" % _star_text(SaveManager.get_stage_stars(stage.id))
+	var earned := SaveManager.get_stage_stars(stage.id)
+	var obj := StageProgress.star_objective_lines(stage)
+	_stars_label.text = "STARS  %s\n%s" % [_star_text(earned), "\n".join(obj)]
 
 	var can_launch := SaveManager.can_launch_stage(_map, stage.id)
 	_launch_button.disabled = not can_launch
@@ -161,23 +221,28 @@ func _refresh_detail() -> void:
 		_lock_label.visible = true
 		_lock_label.text = "LOCKED  ·  Clear the previous stage"
 		_launch_button.text = "LOCKED"
+		_launch_button.theme_type_variation = &"ButtonTertiary"
 	elif SaveManager.get_campaign_difficulty() != SaveManager.DIFFICULTY_NORMAL:
 		_lock_label.visible = true
 		_lock_label.text = "HARD difficulty is locked in this prototype"
 		_launch_button.text = "LOCKED"
+		_launch_button.theme_type_variation = &"ButtonTertiary"
 	else:
 		_lock_label.visible = false
 		_launch_button.text = "LAUNCH"
+		_launch_button.theme_type_variation = &"ButtonPrimary"
 
 
 func _refresh_difficulty() -> void:
 	var normal := SaveManager.get_campaign_difficulty() == SaveManager.DIFFICULTY_NORMAL
 	_normal_button.disabled = false
 	_hard_button.disabled = false
-	_normal_button.modulate = Palette.get_color("cyan", Color(0, 0.84, 1)) if normal else Color.WHITE
+	_normal_button.theme_type_variation = &"ButtonPrimary" if normal else &"ButtonTertiary"
+	_hard_button.theme_type_variation = &"ButtonTertiary"
 	_hard_button.modulate = Color(0.55, 0.45, 0.7, 1)
 	_hard_button.text = "HARD  🔒"
 	_normal_button.text = "NORMAL"
+	_normal_button.modulate = Color.WHITE
 
 
 # --- Map draw ---------------------------------------------------------------
@@ -185,36 +250,128 @@ func _refresh_difficulty() -> void:
 func _on_map_draw() -> void:
 	if _map == null:
 		return
-	var cleared := SaveManager.get_cleared_stage_ids()
+	var cleared_ids := SaveManager.get_cleared_stage_ids()
+	var current_id := _next_current_stage_id(cleared_ids)
 	var stages := _map.stages
+
+	# Soft route glow under the path.
 	for i in range(stages.size() - 1):
 		var a: StageNodeData = stages[i]
 		var b: StageNodeData = stages[i + 1]
 		if a == null or b == null:
 			continue
-		var unlocked_b := StageProgress.is_unlocked(_map, b, cleared)
-		var color := Palette.get_color("purple", Color(0.55, 0.26, 1)) if unlocked_b else Palette.get_color("muted", Color(0.46, 0.57, 0.71))
-		color.a = 0.85 if unlocked_b else 0.5
-		if unlocked_b:
-			_map_canvas.draw_line(a.map_position, b.map_position, color, 6.0)
-		else:
-			# Dashed path for locked ahead segments.
-			var delta := b.map_position - a.map_position
-			var len := delta.length()
-			if len > 1.0:
-				var dir := delta / len
-				var t := 0.0
-				while t < len:
-					var p0 := a.map_position + dir * t
-					var p1 := a.map_position + dir * minf(t + 18.0, len)
-					_map_canvas.draw_line(p0, p1, color, 3.0)
-					t += 34.0
+		var a_cleared := SaveManager.is_stage_cleared(a.id)
+		var unlocked_b := StageProgress.is_unlocked(_map, b, cleared_ids)
+		if a_cleared and unlocked_b:
+			var glow_c := Palette.get_color("cyan", Color(0, 0.84, 1))
+			glow_c.a = 0.28
+			_map_canvas.draw_line(a.map_position, b.map_position, glow_c, 16.0)
+			var glow_p := Palette.get_color("purple", Color(0.55, 0.26, 1))
+			glow_p.a = 0.16
+			_map_canvas.draw_line(a.map_position, b.map_position, glow_p, 10.0)
+		elif unlocked_b:
+			var glow_u := Palette.get_color("purple", Color(0.55, 0.26, 1))
+			glow_u.a = 0.22
+			_map_canvas.draw_line(a.map_position, b.map_position, glow_u, 13.0)
 
-	# Selected highlight ring.
-	var selected := _map.find_by_id(_selected_id)
-	if selected != null:
-		var ring := Palette.get_color("cyan", Color(0, 0.84, 1))
-		_map_canvas.draw_arc(selected.map_position, _NODE_RADIUS + 14.0, 0.0, TAU, 48, ring, 4.0)
+	# Solid purple/cyan for cleared+unlocked; dashed muted for locked.
+	for i in range(stages.size() - 1):
+		var a2: StageNodeData = stages[i]
+		var b2: StageNodeData = stages[i + 1]
+		if a2 == null or b2 == null:
+			continue
+		var unlocked_b2 := StageProgress.is_unlocked(_map, b2, cleared_ids)
+		var a_cleared2 := SaveManager.is_stage_cleared(a2.id)
+		if unlocked_b2:
+			if a_cleared2:
+				var purple := Palette.get_color("purple", Color(0.55, 0.26, 1))
+				purple.a = 0.95
+				var cyan := Palette.get_color("cyan", Color(0, 0.84, 1))
+				cyan.a = 0.95
+				_draw_gradient_path(a2.map_position, b2.map_position, purple, cyan, 5.5)
+			else:
+				var color := Palette.get_color("purple", Color(0.55, 0.26, 1))
+				color.a = 0.88
+				_map_canvas.draw_line(a2.map_position, b2.map_position, color, 5.0)
+		else:
+			var muted := Palette.get_color("muted", Color(0.46, 0.57, 0.71))
+			muted.a = 0.4
+			_draw_dashed_path(a2.map_position, b2.map_position, muted, 3.0, 14.0, 18.0)
+
+	# Per-node rings: completed / current / selected (stronger multi-ring pulse).
+	for stage in stages:
+		if stage == null:
+			continue
+		var unlocked := StageProgress.is_unlocked(_map, stage, cleared_ids)
+		var cleared := SaveManager.is_stage_cleared(stage.id)
+		var selected := stage.id == _selected_id
+		var is_current := stage.id == current_id
+		if cleared:
+			var done := Palette.get_color("gold", Color(1, 0.69, 0))
+			done.a = 0.6
+			_map_canvas.draw_arc(stage.map_position, _NODE_RADIUS + 8.0, 0.0, TAU, 40, done, 3.0)
+		if selected:
+			_draw_pulse_rings(stage.map_position, Palette.get_color("cyan", Color(0, 0.84, 1)), 1.9, true)
+		elif is_current and unlocked and not cleared:
+			_draw_pulse_rings(stage.map_position, Palette.get_color("cyan", Color(0, 0.84, 1)), 2.4, false)
+
+
+func _draw_pulse_rings(center: Vector2, base: Color, speed: float, selected: bool) -> void:
+	var ring_count := 4 if selected else 3
+	var base_r := _NODE_RADIUS + (14.0 if selected else 16.0)
+	for i in ring_count:
+		var phase := _pulse_time * speed - float(i) * 0.45
+		var pulse := 0.45 + absf(sin(phase)) * 0.55
+		var r := base_r + float(i) * 11.0 + sin(phase) * 3.5
+		var c := base
+		c.a = (0.9 - float(i) * 0.16) * pulse
+		var width := 4.5 if (selected and i == 0) else (3.2 if i == 0 else 2.0)
+		_map_canvas.draw_arc(center, r, 0.0, TAU, 56, c, width)
+	if selected:
+		var core := base
+		core.a = 0.95
+		_map_canvas.draw_arc(center, _NODE_RADIUS + 12.0, 0.0, TAU, 48, core, 5.0)
+
+
+func _draw_gradient_path(from: Vector2, to: Vector2, c0: Color, c1: Color, width: float) -> void:
+	var segments := 8
+	var prev := from
+	for s in range(1, segments + 1):
+		var t := float(s) / float(segments)
+		var p := from.lerp(to, t)
+		var c := c0.lerp(c1, t)
+		_map_canvas.draw_line(prev, p, c, width)
+		prev = p
+
+
+func _draw_dashed_path(from: Vector2, to: Vector2, color: Color, width: float, dash: float, gap: float) -> void:
+	var delta := to - from
+	var len := delta.length()
+	if len <= 1.0:
+		return
+	var dir := delta / len
+	var t := 0.0
+	var stride := dash + gap
+	while t < len:
+		var p0 := from + dir * t
+		var p1 := from + dir * minf(t + dash, len)
+		_map_canvas.draw_line(p0, p1, color, width)
+		t += stride
+
+
+## First unlocked uncleared stage — the campaign "current" mission marker.
+func _next_current_stage_id(cleared_ids: Array) -> String:
+	if _map == null:
+		return ""
+	for stage in _map.stages:
+		if stage == null:
+			continue
+		if StageProgress.is_unlocked(_map, stage, cleared_ids) and not SaveManager.is_stage_cleared(stage.id):
+			return stage.id
+	# All cleared — highlight the last stage.
+	if _map.stages.size() > 0 and _map.stages[_map.stages.size() - 1] != null:
+		return _map.stages[_map.stages.size() - 1].id
+	return ""
 
 
 # --- Interactions -----------------------------------------------------------
@@ -277,7 +434,7 @@ func _on_campaign_changed(stage_id: String) -> void:
 func _click() -> void:
 	AudioManager.play_sfx("ui_confirm", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
 	var haptics: HapticsService = PlatformServices.haptics
-	if haptics != null:
+	if haptics != null and GameFeel.haptics_enabled:
 		haptics.light()
 
 

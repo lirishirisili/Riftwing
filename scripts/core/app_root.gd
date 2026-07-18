@@ -14,6 +14,8 @@ var _backgrounded: bool = false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# Mobile default: locked 60 FPS. Do not leave the frame rate uncapped.
+	Engine.max_fps = 60
 	SceneRouter.configure(_current_screen)
 	SceneRouter.screen_changed.connect(_on_screen_changed)
 	SceneRouter.go_to(SceneRouter.SCREEN_MAIN_MENU)

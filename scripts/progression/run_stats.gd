@@ -23,6 +23,8 @@ var enemies_destroyed: int = 0
 var best_combo: int = 0
 var survival_seconds: float = 0.0
 var rift_energy_collected: int = 0
+## Remaining HP ratio at run end (0..1). Used for stage star objective 2.
+var hp_ratio_end: float = 0.0
 
 ## Derived at finalize from the fields above (cached so the results screen and
 ## the reward calculator read one consistent value).
@@ -79,5 +81,6 @@ func to_dictionary() -> Dictionary:
 		"best_combo": best_combo,
 		"survival_seconds": survival_seconds,
 		"rift_energy_collected": rift_energy_collected,
+		"hp_ratio_end": hp_ratio_end,
 		"score": score,
 	}

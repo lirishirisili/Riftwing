@@ -1,44 +1,93 @@
-[gd_scene load_steps=10 format=3 uid="uid://c0riftwmainmenu"]
+[gd_scene load_steps=34 format=3 uid="uid://c0riftwmainmenu"]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1"]
 [ext_resource type="Theme" path="res://resources/theme/riftwing_theme.tres" id="2"]
-[ext_resource type="Texture2D" path="res://assets/backgrounds/parallax_far_stars.png" id="3"]
-[ext_resource type="Texture2D" path="res://assets/backgrounds/parallax_nebula.png" id="4"]
-[ext_resource type="Texture2D" path="res://assets/placeholders/player_ship_placeholder.svg" id="5"]
-[ext_resource type="Texture2D" path="res://assets/icons/icon_energy.svg" id="6"]
-[ext_resource type="Texture2D" path="res://assets/icons/icon_crystal.svg" id="7"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/menu_space_keyart.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/parallax_far_stars.png" id="4"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/parallax_nebula_rift.png" id="5"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/parallax_foreground_asteroids.png" id="6"]
+[ext_resource type="Texture2D" path="res://assets/art/ships/hero_vanguard_menu.png" id="7"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_energy.svg" id="8"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_crystal.svg" id="9"]
+[ext_resource type="Texture2D" path="res://assets/effects/engine_glow.svg" id="10"]
+[ext_resource type="Texture2D" path="res://assets/art/enemies/void_scout.svg" id="11"]
+[ext_resource type="Texture2D" path="res://assets/art/enemies/void_shooter.svg" id="12"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/planet_rift_accent.png" id="13"]
+[ext_resource type="Texture2D" path="res://assets/art/env/hangar_pad.svg" id="14"]
+[ext_resource type="Texture2D" path="res://assets/ui/chrome/menu_header_frame.svg" id="15"]
+[ext_resource type="Texture2D" path="res://assets/ui/chrome/cta_start_hex.svg" id="16"]
+[ext_resource type="Texture2D" path="res://assets/ui/chrome/cta_daily_bar.svg" id="17"]
+[ext_resource type="Texture2D" path="res://assets/ui/chrome/cta_nav_hex.svg" id="18"]
+[ext_resource type="Texture2D" path="res://assets/ui/chrome/cta_nav_hex.svg" id="19"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_play.svg" id="20"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_target.svg" id="21"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_chevron.svg" id="22"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_settings.svg" id="23"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_event_void.svg" id="24"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_timer.svg" id="25"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_nav_ship.svg" id="26"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_nav_upgrade.svg" id="27"]
+[ext_resource type="Texture2D" path="res://assets/branding/logo_riftwing.png" id="28"]
 
 [sub_resource type="StyleBoxFlat" id="event_panel"]
-bg_color = Color(0.027451, 0.094118, 0.168627, 0.92)
+bg_color = Color(0.08, 0.04, 0.18, 0.94)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.54902, 0.262745, 1, 0.85)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-content_margin_left = 18
-content_margin_top = 12
-content_margin_right = 18
-content_margin_bottom = 12
-shadow_color = Color(0.54902, 0.262745, 1, 0.28)
-shadow_size = 8
+border_color = Color(0.72, 0.42, 1, 0.95)
+corner_radius_top_left = 2
+corner_radius_top_right = 14
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 14
+content_margin_left = 16
+content_margin_top = 10
+content_margin_right = 16
+content_margin_bottom = 10
+shadow_color = Color(0.55, 0.26, 1, 0.45)
+shadow_size = 12
 
-[sub_resource type="StyleBoxFlat" id="button_secondary"]
-bg_color = Color(0.22, 0.1, 0.42, 1)
+[sub_resource type="StyleBoxFlat" id="power_fill"]
+bg_color = Color(0.55, 0.26, 1, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+shadow_color = Color(0.7, 0.35, 1, 0.55)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="power_bg"]
+bg_color = Color(0.05, 0.08, 0.14, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.55, 0.26, 1, 0.45)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxEmpty" id="chrome_btn"]
+
+[sub_resource type="StyleBoxFlat" id="settings_btn"]
+bg_color = Color(0.06, 0.1, 0.18, 0.92)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.55, 0.26, 1, 0.9)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-shadow_color = Color(0.55, 0.26, 1, 0.3)
-shadow_size = 5
+border_color = Color(0.55, 0.26, 1, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 12
+content_margin_top = 12
+content_margin_right = 12
+content_margin_bottom = 12
+shadow_color = Color(0.55, 0.26, 1, 0.4)
+shadow_size = 8
+shadow_offset = Vector2(0, 0)
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -53,33 +102,99 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.011765, 0.027451, 0.070588, 1)
+mouse_filter = 2
+color = Color(0.01, 0.02, 0.06, 1)
 
-[node name="Background" type="ParallaxBackground" parent="."]
-
-[node name="LayerFar" type="ParallaxLayer" parent="Background"]
-motion_scale = Vector2(0.2, 0.2)
-motion_mirroring = Vector2(0, 1920)
-
-[node name="Sprite" type="Sprite2D" parent="Background/LayerFar"]
-centered = false
-texture = ExtResource("3")
-
-[node name="LayerNebula" type="ParallaxLayer" parent="Background"]
-motion_scale = Vector2(0.45, 0.45)
-motion_mirroring = Vector2(0, 1920)
-
-[node name="Sprite" type="Sprite2D" parent="Background/LayerNebula"]
-centered = false
-modulate = Color(1, 1, 1, 0.75)
-texture = ExtResource("4")
-
-[node name="Dim" type="ColorRect" parent="."]
+[node name="KeyArt" type="TextureRect" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.011765, 0.027451, 0.070588, 0.42)
+mouse_filter = 2
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Background" type="ParallaxBackground" parent="."]
+
+[node name="LayerFar" type="ParallaxLayer" parent="Background"]
+motion_scale = Vector2(0.12, 0.12)
+motion_mirroring = Vector2(0, 1920)
+
+[node name="Sprite" type="Sprite2D" parent="Background/LayerFar"]
+modulate = Color(0.78, 0.85, 1, 0.55)
+centered = false
+texture = ExtResource("4")
+
+[node name="LayerNebula" type="ParallaxLayer" parent="Background"]
+motion_scale = Vector2(0.32, 0.32)
+motion_mirroring = Vector2(0, 1920)
+
+[node name="Sprite" type="Sprite2D" parent="Background/LayerNebula"]
+modulate = Color(0.85, 0.65, 1, 0.28)
+centered = false
+texture = ExtResource("5")
+
+[node name="LayerDebris" type="ParallaxLayer" parent="Background"]
+motion_scale = Vector2(0.65, 0.65)
+motion_mirroring = Vector2(0, 1920)
+
+[node name="Sprite" type="Sprite2D" parent="Background/LayerDebris"]
+modulate = Color(0.9, 0.92, 1, 0.32)
+centered = false
+texture = ExtResource("6")
+
+[node name="VignetteTop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 300.0
+mouse_filter = 2
+color = Color(0.01, 0.02, 0.06, 0.5)
+
+[node name="VignetteBottom" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -420.0
+mouse_filter = 2
+color = Color(0.01, 0.02, 0.08, 0.58)
+
+[node name="Atmosphere" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="AtmosEnemyA" type="TextureRect" parent="Atmosphere"]
+unique_name_in_owner = true
+modulate = Color(0.75, 0.55, 1, 0.32)
+layout_mode = 0
+offset_left = 36.0
+offset_top = 700.0
+offset_right = 200.0
+offset_bottom = 864.0
+mouse_filter = 2
+texture = ExtResource("11")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AtmosEnemyB" type="TextureRect" parent="Atmosphere"]
+unique_name_in_owner = true
+modulate = Color(0.95, 0.4, 0.8, 0.26)
+layout_mode = 0
+offset_left = 840.0
+offset_top = 540.0
+offset_right = 1040.0
+offset_bottom = 740.0
+mouse_filter = 2
+texture = ExtResource("12")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Safe" type="MarginContainer" parent="."]
 unique_name_in_owner = true
@@ -87,161 +202,733 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme_override_constants/margin_left = 44
-theme_override_constants/margin_top = 44
-theme_override_constants/margin_right = 44
-theme_override_constants/margin_bottom = 44
+theme_override_constants/margin_left = 36
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 36
+theme_override_constants/margin_bottom = 88
 
 [node name="Root" type="VBoxContainer" parent="Safe"]
+clip_contents = false
 layout_mode = 2
-theme_override_constants/separation = 22
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
 
-[node name="TopBar" type="HBoxContainer" parent="Safe/Root"]
+[node name="HeaderFrame" type="Control" parent="Safe/Root"]
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
-theme_override_constants/separation = 14
+size_flags_vertical = 0
 
-[node name="EnergyChip" type="PanelContainer" parent="Safe/Root/TopBar"]
-layout_mode = 2
-
-[node name="Box" type="HBoxContainer" parent="Safe/Root/TopBar/EnergyChip"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="Icon" type="TextureRect" parent="Safe/Root/TopBar/EnergyChip/Box"]
-custom_minimum_size = Vector2(44, 44)
-layout_mode = 2
-size_flags_vertical = 4
-texture = ExtResource("6")
+[node name="FrameBg" type="TextureRect" parent="Safe/Root/HeaderFrame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("15")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="EnergyValue" type="Label" parent="Safe/Root/TopBar/EnergyChip/Box"]
+[node name="TopBar" type="HBoxContainer" parent="Safe/Root/HeaderFrame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 16.0
+offset_right = -20.0
+offset_bottom = -16.0
+theme_override_constants/separation = 12
+
+[node name="ProfileChip" type="PanelContainer" parent="Safe/Root/HeaderFrame/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ChipPanel"
+
+[node name="ProfileBox" type="VBoxContainer" parent="Safe/Root/HeaderFrame/TopBar/ProfileChip"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ProfileMeta" type="HBoxContainer" parent="Safe/Root/HeaderFrame/TopBar/ProfileChip/ProfileBox"]
+layout_mode = 2
+
+[node name="CommanderLabel" type="Label" parent="Safe/Root/HeaderFrame/TopBar/ProfileChip/ProfileBox/ProfileMeta"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.55, 0.82, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "COMMANDER"
+
+[node name="ProfilePower" type="Label" parent="Safe/Root/HeaderFrame/TopBar/ProfileChip/ProfileBox/ProfileMeta"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.94, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "PWR  100"
+
+[node name="ProfileName" type="Label" parent="Safe/Root/HeaderFrame/TopBar/ProfileChip/ProfileBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 26
+text = "VANGUARD"
+
+[node name="PowerBar" type="ProgressBar" parent="Safe/Root/HeaderFrame/TopBar/ProfileChip/ProfileBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/background = SubResource("power_bg")
+theme_override_styles/fill = SubResource("power_fill")
+max_value = 20.0
+value = 4.0
+show_percentage = false
+
+[node name="CurrencyCol" type="VBoxContainer" parent="Safe/Root/HeaderFrame/TopBar"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="EnergyChip" type="PanelContainer" parent="Safe/Root/HeaderFrame/TopBar/CurrencyCol"]
+layout_mode = 2
+theme_type_variation = &"ChipPanel"
+
+[node name="Box" type="HBoxContainer" parent="Safe/Root/HeaderFrame/TopBar/CurrencyCol/EnergyChip"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="Safe/Root/HeaderFrame/TopBar/CurrencyCol/EnergyChip/Box"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("8")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EnergyValue" type="Label" parent="Safe/Root/HeaderFrame/TopBar/CurrencyCol/EnergyChip/Box"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_colors/font_color = Color(0, 0.843137, 1, 1)
-theme_override_font_sizes/font_size = 34
+theme_override_font_sizes/font_size = 26
 text = "0"
 
-[node name="CoreChip" type="PanelContainer" parent="Safe/Root/TopBar"]
+[node name="CoreChip" type="PanelContainer" parent="Safe/Root/HeaderFrame/TopBar/CurrencyCol"]
 layout_mode = 2
+theme_type_variation = &"ChipPanel"
 
-[node name="Box" type="HBoxContainer" parent="Safe/Root/TopBar/CoreChip"]
+[node name="Box" type="HBoxContainer" parent="Safe/Root/HeaderFrame/TopBar/CurrencyCol/CoreChip"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
-[node name="Icon" type="TextureRect" parent="Safe/Root/TopBar/CoreChip/Box"]
-custom_minimum_size = Vector2(44, 44)
+[node name="Icon" type="TextureRect" parent="Safe/Root/HeaderFrame/TopBar/CurrencyCol/CoreChip/Box"]
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 size_flags_vertical = 4
+texture = ExtResource("9")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CoreValue" type="Label" parent="Safe/Root/HeaderFrame/TopBar/CurrencyCol/CoreChip/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.54902, 0.262745, 1, 1)
+theme_override_font_sizes/font_size = 26
+text = "0"
+
+[node name="SettingsButton" type="Button" parent="Safe/Root/HeaderFrame/TopBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(88, 88)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"ButtonTertiary"
+theme_override_styles/normal = SubResource("settings_btn")
+theme_override_styles/hover = SubResource("settings_btn")
+theme_override_styles/pressed = SubResource("settings_btn")
+theme_override_styles/focus = SubResource("settings_btn")
+icon = ExtResource("23")
+expand_icon = true
+
+[node name="Brand" type="VBoxContainer" parent="Safe/Root"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BrandLogo" type="TextureRect" parent="Safe/Root/Brand"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+texture = ExtResource("28")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Safe/Root/Brand"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 1
+text = "RIFTWING"
+horizontal_alignment = 1
+
+[node name="TaglineRow" type="HBoxContainer" parent="Safe/Root/Brand"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 14
+
+[node name="TaglineLeft" type="ColorRect" parent="Safe/Root/Brand/TaglineRow"]
+custom_minimum_size = Vector2(72, 2)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.78, 0.42, 1, 0.85)
+
+[node name="TaglineLeft2" type="ColorRect" parent="Safe/Root/Brand/TaglineRow"]
+custom_minimum_size = Vector2(48, 2)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.78, 0.42, 1, 0.55)
+
+[node name="TaglineLeft3" type="ColorRect" parent="Safe/Root/Brand/TaglineRow"]
+custom_minimum_size = Vector2(28, 2)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.78, 0.42, 1, 0.35)
+
+[node name="Tagline" type="Label" parent="Safe/Root/Brand/TaglineRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.55, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.55, 0.2, 1, 0.55)
+theme_override_constants/shadow_outline_size = 6
+theme_override_font_sizes/font_size = 24
+text = "SPACE SURVIVOR"
+horizontal_alignment = 1
+
+[node name="TaglineRight3" type="ColorRect" parent="Safe/Root/Brand/TaglineRow"]
+custom_minimum_size = Vector2(28, 2)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.78, 0.42, 1, 0.35)
+
+[node name="TaglineRight2" type="ColorRect" parent="Safe/Root/Brand/TaglineRow"]
+custom_minimum_size = Vector2(48, 2)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.78, 0.42, 1, 0.55)
+
+[node name="TaglineRight" type="ColorRect" parent="Safe/Root/Brand/TaglineRow"]
+custom_minimum_size = Vector2(72, 2)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.78, 0.42, 1, 0.85)
+
+[node name="EventBanner" type="PanelContainer" parent="Safe/Root"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_vertical = 0
+mouse_default_cursor_shape = 2
+theme_type_variation = &"NeonPanel"
+theme_override_styles/panel = SubResource("event_panel")
+
+[node name="EventRow" type="HBoxContainer" parent="Safe/Root/EventBanner"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="EventThumb" type="TextureRect" parent="Safe/Root/EventBanner/EventRow"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("24")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EventBox" type="VBoxContainer" parent="Safe/Root/EventBanner/EventRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="EventEyebrow" type="Label" parent="Safe/Root/EventBanner/EventRow/EventBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.55, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "EVENT"
+
+[node name="EventTitle" type="Label" parent="Safe/Root/EventBanner/EventRow/EventBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 28
+text = "VOID INVASION"
+
+[node name="EventBody" type="Label" parent="Safe/Root/EventBanner/EventRow/EventBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.82, 0.95, 1)
+theme_override_font_sizes/font_size = 16
+text = "Bonus Rift Energy this cycle"
+autowrap_mode = 0
+
+[node name="EventMeta" type="HBoxContainer" parent="Safe/Root/EventBanner/EventRow"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 8
+
+[node name="TimerIcon" type="TextureRect" parent="Safe/Root/EventBanner/EventRow/EventMeta"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("25")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EventTimer" type="Label" parent="Safe/Root/EventBanner/EventRow/EventMeta"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.85, 0.55, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "2D 14H"
+
+[node name="EventChevron" type="TextureRect" parent="Safe/Root/EventBanner/EventRow/EventMeta"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("22")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Hero" type="Control" parent="Safe/Root"]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.0
+
+[node name="PlanetAccent" type="TextureRect" parent="Safe/Root/Hero"]
+unique_name_in_owner = true
+modulate = Color(0.85, 0.7, 1, 0.35)
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -240.0
+offset_right = 80.0
+offset_bottom = 260.0
+pivot_offset = Vector2(190, 250)
+mouse_filter = 2
+texture = ExtResource("13")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HoloPad" type="TextureRect" parent="Safe/Root/Hero"]
+unique_name_in_owner = true
+modulate = Color(0.55, 0.95, 1, 0.9)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -260.0
+offset_top = -150.0
+offset_right = 260.0
+offset_bottom = 20.0
+pivot_offset = Vector2(260, 85)
+mouse_filter = 2
+texture = ExtResource("14")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EngineGlow" type="TextureRect" parent="Safe/Root/Hero"]
+unique_name_in_owner = true
+modulate = Color(0.25, 0.8, 1, 0.12)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = 20.0
+offset_right = 280.0
+offset_bottom = 380.0
+pivot_offset = Vector2(280, 180)
+mouse_filter = 2
+texture = ExtResource("10")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HeroShip" type="TextureRect" parent="Safe/Root/Hero"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -20.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(496, 250)
+mouse_filter = 2
 texture = ExtResource("7")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="CoreValue" type="Label" parent="Safe/Root/TopBar/CoreChip/Box"]
-unique_name_in_owner = true
+[node name="CtaStack" type="VBoxContainer" parent="Safe/Root"]
+clip_contents = false
+custom_minimum_size = Vector2(0, 400)
 layout_mode = 2
-size_flags_vertical = 4
-theme_override_colors/font_color = Color(0.549020, 0.262745, 1, 1)
-theme_override_font_sizes/font_size = 34
-text = "0"
-
-[node name="Spacer" type="Control" parent="Safe/Root/TopBar"]
-layout_mode = 2
+size_flags_vertical = 0
 size_flags_horizontal = 3
+theme_override_constants/separation = 16
 
-[node name="SettingsButton" type="Button" parent="Safe/Root/TopBar"]
+[node name="StartSlot" type="Control" parent="Safe/Root/CtaStack"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(88, 88)
+clip_contents = false
+custom_minimum_size = Vector2(0, 156)
 layout_mode = 2
-theme_override_font_sizes/font_size = 40
-text = "⚙"
+size_flags_vertical = 0
 
-[node name="EventBanner" type="PanelContainer" parent="Safe/Root"]
-custom_minimum_size = Vector2(0, 100)
-layout_mode = 2
-theme_override_styles/panel = SubResource("event_panel")
+[node name="StartChrome" type="TextureRect" parent="Safe/Root/CtaStack/StartSlot"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("16")
+expand_mode = 1
+stretch_mode = 0
 
-[node name="EventBox" type="VBoxContainer" parent="Safe/Root/EventBanner"]
-layout_mode = 2
-theme_override_constants/separation = 2
+[node name="StartButton" type="Button" parent="Safe/Root/CtaStack/StartSlot"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"ButtonPrimary"
+theme_override_styles/normal = SubResource("chrome_btn")
+theme_override_styles/hover = SubResource("chrome_btn")
+theme_override_styles/pressed = SubResource("chrome_btn")
+theme_override_styles/disabled = SubResource("chrome_btn")
+theme_override_styles/focus = SubResource("chrome_btn")
+flat = true
+text = ""
 
-[node name="EventTitle" type="Label" parent="Safe/Root/EventBanner/EventBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.55, 1, 1)
-theme_override_font_sizes/font_size = 30
-text = "EVENT: RIFT SURGE"
+[node name="StartCenter" type="CenterContainer" parent="Safe/Root/CtaStack/StartSlot/StartButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 72.0
+offset_top = 28.0
+offset_right = -72.0
+offset_bottom = -28.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
-[node name="EventBody" type="Label" parent="Safe/Root/EventBanner/EventBox"]
+[node name="StartLabels" type="VBoxContainer" parent="Safe/Root/CtaStack/StartSlot/StartButton/StartCenter"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.458824, 0.572549, 0.709804, 1)
-theme_override_font_sizes/font_size = 24
-text = "Bonus Rift Energy this cycle · full events coming soon"
-autowrap_mode = 3
-
-[node name="Hero" type="VBoxContainer" parent="Safe/Root"]
-layout_mode = 2
-size_flags_vertical = 3
 theme_override_constants/separation = 4
 alignment = 1
 
-[node name="Title" type="Label" parent="Safe/Root/Hero"]
+[node name="StartTitle" type="Label" parent="Safe/Root/CtaStack/StartSlot/StartButton/StartCenter/StartLabels"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 120
-text = "RIFTWING"
-horizontal_alignment = 1
-
-[node name="Tagline" type="Label" parent="Safe/Root/Hero"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 0.35, 1, 1)
-theme_override_font_sizes/font_size = 34
-text = "—  SPACE SURVIVOR  —"
-horizontal_alignment = 1
-
-[node name="HeroShip" type="TextureRect" parent="Safe/Root/Hero"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 540)
-layout_mode = 2
-size_flags_vertical = 3
-pivot_offset = Vector2(496, 270)
-texture = ExtResource("5")
-expand_mode = 1
-stretch_mode = 6
-
-[node name="StartButton" type="Button" parent="Safe/Root"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 136)
-layout_mode = 2
-theme_override_font_sizes/font_size = 54
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.1, 0.55, 1, 0.55)
+theme_override_constants/shadow_outline_size = 8
+theme_override_font_sizes/font_size = 48
 text = "START RUN"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="DailyButton" type="Button" parent="Safe/Root"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 96)
+[node name="StartSubRow" type="HBoxContainer" parent="Safe/Root/CtaStack/StartSlot/StartButton/StartCenter/StartLabels"]
 layout_mode = 2
-theme_override_styles/normal = SubResource("button_secondary")
-theme_override_styles/hover = SubResource("button_secondary")
-theme_override_styles/pressed = SubResource("button_secondary")
-theme_override_font_sizes/font_size = 36
+alignment = 1
+theme_override_constants/separation = 14
+
+[node name="SubLineL" type="ColorRect" parent="Safe/Root/CtaStack/StartSlot/StartButton/StartCenter/StartLabels/StartSubRow"]
+custom_minimum_size = Vector2(64, 2)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.75, 0.92, 1, 0.65)
+
+[node name="StartSub" type="Label" parent="Safe/Root/CtaStack/StartSlot/StartButton/StartCenter/StartLabels/StartSubRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "ENDLESS MODE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SubLineR" type="ColorRect" parent="Safe/Root/CtaStack/StartSlot/StartButton/StartCenter/StartLabels/StartSubRow"]
+custom_minimum_size = Vector2(64, 2)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.75, 0.92, 1, 0.65)
+
+[node name="DailySlot" type="Control" parent="Safe/Root/CtaStack"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 108)
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="DailyChrome" type="TextureRect" parent="Safe/Root/CtaStack/DailySlot"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="DailyButton" type="Button" parent="Safe/Root/CtaStack/DailySlot"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"ButtonSecondary"
+theme_override_styles/normal = SubResource("chrome_btn")
+theme_override_styles/hover = SubResource("chrome_btn")
+theme_override_styles/pressed = SubResource("chrome_btn")
+theme_override_styles/disabled = SubResource("chrome_btn")
+theme_override_styles/focus = SubResource("chrome_btn")
+flat = true
+text = ""
+
+[node name="DailyCenter" type="CenterContainer" parent="Safe/Root/CtaStack/DailySlot/DailyButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 56.0
+offset_top = 16.0
+offset_right = -56.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="DailyContent" type="HBoxContainer" parent="Safe/Root/CtaStack/DailySlot/DailyButton/DailyCenter"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="TargetIcon" type="TextureRect" parent="Safe/Root/CtaStack/DailySlot/DailyButton/DailyCenter/DailyContent"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("21")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DailyLabels" type="VBoxContainer" parent="Safe/Root/CtaStack/DailySlot/DailyButton/DailyCenter/DailyContent"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 2
+
+[node name="DailyTitle" type="Label" parent="Safe/Root/CtaStack/DailySlot/DailyButton/DailyCenter/DailyContent/DailyLabels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 28
 text = "DAILY CHALLENGE"
+horizontal_alignment = 0
 
-[node name="Shortcuts" type="HBoxContainer" parent="Safe/Root"]
+[node name="DailySub" type="Label" parent="Safe/Root/CtaStack/DailySlot/DailyButton/DailyCenter/DailyContent/DailyLabels"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_colors/font_color = Color(0.85, 0.65, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "COMPLETE AND EARN REWARDS"
+horizontal_alignment = 0
 
-[node name="ShipsButton" type="Button" parent="Safe/Root/Shortcuts"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 88)
+[node name="DailyChevron" type="TextureRect" parent="Safe/Root/CtaStack/DailySlot/DailyButton/DailyCenter/DailyContent"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("22")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Shortcuts" type="HBoxContainer" parent="Safe/Root/CtaStack"]
+clip_contents = false
+custom_minimum_size = Vector2(0, 104)
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 16
+
+[node name="ShipsSlot" type="Control" parent="Safe/Root/CtaStack/Shortcuts"]
+clip_contents = false
+custom_minimum_size = Vector2(0, 104)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 34
+size_flags_vertical = 0
+
+[node name="ShipsChrome" type="TextureRect" parent="Safe/Root/CtaStack/Shortcuts/ShipsSlot"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("18")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="ShipsButton" type="Button" parent="Safe/Root/CtaStack/Shortcuts/ShipsSlot"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"ButtonTertiary"
+theme_override_styles/normal = SubResource("chrome_btn")
+theme_override_styles/hover = SubResource("chrome_btn")
+theme_override_styles/pressed = SubResource("chrome_btn")
+theme_override_styles/focus = SubResource("chrome_btn")
+flat = true
+text = ""
+
+[node name="ShipsCenter" type="CenterContainer" parent="Safe/Root/CtaStack/Shortcuts/ShipsSlot/ShipsButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 36.0
+offset_top = 14.0
+offset_right = -36.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ShipsContent" type="HBoxContainer" parent="Safe/Root/CtaStack/Shortcuts/ShipsSlot/ShipsButton/ShipsCenter"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="ShipsIcon" type="TextureRect" parent="Safe/Root/CtaStack/Shortcuts/ShipsSlot/ShipsButton/ShipsCenter/ShipsContent"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("26")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ShipsLabels" type="VBoxContainer" parent="Safe/Root/CtaStack/Shortcuts/ShipsSlot/ShipsButton/ShipsCenter/ShipsContent"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 0
+
+[node name="ShipsLabel" type="Label" parent="Safe/Root/CtaStack/Shortcuts/ShipsSlot/ShipsButton/ShipsCenter/ShipsContent/ShipsLabels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 26
 text = "SHIPS"
 
-[node name="UpgradesButton" type="Button" parent="Safe/Root/Shortcuts"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 88)
+[node name="ShipsSub" type="Label" parent="Safe/Root/CtaStack/Shortcuts/ShipsSlot/ShipsButton/ShipsCenter/ShipsContent/ShipsLabels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.82, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "COLLECTION"
+
+[node name="UpgradesSlot" type="Control" parent="Safe/Root/CtaStack/Shortcuts"]
+clip_contents = false
+custom_minimum_size = Vector2(0, 104)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 34
+size_flags_vertical = 0
+
+[node name="UpgradesChrome" type="TextureRect" parent="Safe/Root/CtaStack/Shortcuts/UpgradesSlot"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("19")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="UpgradesButton" type="Button" parent="Safe/Root/CtaStack/Shortcuts/UpgradesSlot"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"ButtonTertiary"
+theme_override_styles/normal = SubResource("chrome_btn")
+theme_override_styles/hover = SubResource("chrome_btn")
+theme_override_styles/pressed = SubResource("chrome_btn")
+theme_override_styles/focus = SubResource("chrome_btn")
+flat = true
+text = ""
+
+[node name="UpgradesCenter" type="CenterContainer" parent="Safe/Root/CtaStack/Shortcuts/UpgradesSlot/UpgradesButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 36.0
+offset_top = 14.0
+offset_right = -36.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="UpgradesContent" type="HBoxContainer" parent="Safe/Root/CtaStack/Shortcuts/UpgradesSlot/UpgradesButton/UpgradesCenter"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="UpgradesIcon" type="TextureRect" parent="Safe/Root/CtaStack/Shortcuts/UpgradesSlot/UpgradesButton/UpgradesCenter/UpgradesContent"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("27")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="UpgradesLabels" type="VBoxContainer" parent="Safe/Root/CtaStack/Shortcuts/UpgradesSlot/UpgradesButton/UpgradesCenter/UpgradesContent"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 0
+
+[node name="UpgradesLabel" type="Label" parent="Safe/Root/CtaStack/Shortcuts/UpgradesSlot/UpgradesButton/UpgradesCenter/UpgradesContent/UpgradesLabels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 26
 text = "UPGRADES"
+
+[node name="UpgradesSub" type="Label" parent="Safe/Root/CtaStack/Shortcuts/UpgradesSlot/UpgradesButton/UpgradesCenter/UpgradesContent/UpgradesLabels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.82, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "POWER UP"

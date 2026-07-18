@@ -24,11 +24,14 @@ var _cooldown: float = 0.0
 ## this run's bolts without mutating the shared .tres. Rebuilt only when the
 ## multiplier changes, so firing itself allocates nothing.
 var _effective_projectile: ProjectileData = null
+var _fire_loop_held: bool = false
 
 
 func _process(delta: float) -> void:
 	if not firing_active or data == null or pool == null:
+		_release_fire_loop()
 		return
+	_ensure_fire_loop()
 	_cooldown -= delta
 	# while-loop keeps fire cadence stable even if a frame is long, without
 	# allocating; each iteration reuses a pooled projectile.
@@ -36,6 +39,24 @@ func _process(delta: float) -> void:
 	while _cooldown <= 0.0:
 		_fire()
 		_cooldown += interval
+
+
+func _ensure_fire_loop() -> void:
+	if _fire_loop_held:
+		return
+	AudioManager.start_fire_loop()
+	_fire_loop_held = true
+
+
+func _release_fire_loop() -> void:
+	if not _fire_loop_held:
+		return
+	AudioManager.stop_fire_loop()
+	_fire_loop_held = false
+
+
+func _exit_tree() -> void:
+	_release_fire_loop()
 
 
 func _fire() -> void:
@@ -47,14 +68,16 @@ func _fire() -> void:
 	var spread := data.spread_degrees + bonus_spread_degrees
 	if count <= 1:
 		pool.spawn(origin, Vector2.UP, projectile)
-		return
-	# Even fan centered on straight-up.
-	var step := spread / float(count - 1)
-	var start := -spread * 0.5
-	for i in count:
-		var angle_deg := start + step * float(i)
-		var dir := Vector2.UP.rotated(deg_to_rad(angle_deg))
-		pool.spawn(origin, dir, projectile)
+	else:
+		# Even fan centered on straight-up.
+		var step := spread / float(count - 1)
+		var start := -spread * 0.5
+		for i in count:
+			var angle_deg := start + step * float(i)
+			var dir := Vector2.UP.rotated(deg_to_rad(angle_deg))
+			pool.spawn(origin, dir, projectile)
+	# One muzzle + fire cue per volley (not per bolt).
+	GameFeel.weapon_fire(origin)
 
 
 # --- Upgrade hooks (called by UpgradeManager) --------------------------------

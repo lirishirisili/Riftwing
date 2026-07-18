@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/combat/enemy_data.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/placeholders/enemy_drone_placeholder.svg" id="2"]
+[ext_resource type="Texture2D" path="res://assets/art/enemies/void_scout.svg" id="2"]
 
 [resource]
 script = ExtResource("1")
@@ -10,7 +10,7 @@ max_health = 16.0
 contact_damage = 12.0
 energy_drop = 1
 sprite = ExtResource("2")
-sprite_scale = 0.11
-hit_radius = 40.0
-tint = Color(0.549020, 0.262745, 1, 1)
+sprite_scale = 0.125
+hit_radius = 46.0
+tint = Color(0.58, 0.26, 1, 1)
 can_shoot = false

@@ -27,3 +27,5 @@ prerequisites = PackedStringArray("plasma")
 max_level = 3
 weight = 3.5
 effects = Array[Resource]([SubResource("projectiles"), SubResource("spread")])
+synergy_ids = PackedStringArray("plasma_overcharge")
+synergy_hint = "Synergy: Overcharged Spread"

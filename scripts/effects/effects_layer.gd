@@ -56,13 +56,30 @@ func _exit_tree() -> void:
 
 
 func spawn_hit_flash(world_pos: Vector2, color: Color) -> void:
+	_spawn_flash(world_pos, color, GameFeel.hit_spark_particles(), HitFlash.Style.IMPACT)
+
+
+func spawn_muzzle_flash(world_pos: Vector2, color: Color) -> void:
+	# Muzzle is tiny + short — skip on LOW so mid-range devices stay clear.
+	if GameFeel.quality == GameFeel.Quality.LOW:
+		return
+	_spawn_flash(world_pos, color, 0, HitFlash.Style.MUZZLE)
+
+
+func spawn_shield_burst(world_pos: Vector2, color: Color) -> void:
+	if GameFeel.quality == GameFeel.Quality.LOW:
+		return
+	_spawn_flash(world_pos, color, GameFeel.hit_spark_particles() / 2, HitFlash.Style.SHIELD)
+
+
+func _spawn_flash(world_pos: Vector2, color: Color, sparks: int, style: int) -> void:
 	if _flash_pool == null:
 		return
 	var node := _flash_pool.acquire() as HitFlash
 	if node == null:
 		return
 	node.release_callback = Callable(_flash_pool, "release")
-	node.spawn(world_pos, color, GameFeel.hit_spark_particles())
+	node.spawn(world_pos, color, sparks, style)
 
 
 func spawn_explosion(world_pos: Vector2, is_major: bool) -> void:

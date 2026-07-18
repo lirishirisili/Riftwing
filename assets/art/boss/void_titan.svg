@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+<defs>
+  <linearGradient id="p" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8C43FF"/><stop offset="1" stop-color="#FF38F2"/></linearGradient>
+  <linearGradient id="o" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FFB000"/><stop offset="1" stop-color="#FF4B16"/></linearGradient>
+  <linearGradient id="core" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FFFFFF"/><stop offset="0.4" stop-color="#C9A0FF"/><stop offset="1" stop-color="#8C43FF"/></linearGradient>
+  <filter id="g"><feGaussianBlur stdDeviation="12" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<!-- Claws -->
+<path d="M80 280 L220 200 L260 420 L100 520 Z" fill="#1A1525" stroke="#FF7A1A" stroke-width="10"/>
+<path d="M944 280 L804 200 L764 420 L924 520 Z" fill="#1A1525" stroke="#FF7A1A" stroke-width="10"/>
+<path d="M120 560 L260 480 L300 760 L140 820 Z" fill="#14101C" stroke="#8C43FF" stroke-width="8"/>
+<path d="M904 560 L764 480 L724 760 L884 820 Z" fill="#14101C" stroke="#8C43FF" stroke-width="8"/>
+<!-- Body -->
+<path d="M512 80 L680 180 L760 360 L700 560 L560 720 L512 900 L464 720 L324 560 L264 360 L344 180 Z" fill="#121018" stroke="#6A2CFF" stroke-width="12"/>
+<!-- Crystals -->
+<path d="M400 200 L460 120 L500 280 Z" fill="url(#p)" opacity="0.95" filter="url(#g)"/>
+<path d="M620 200 L560 110 L520 280 Z" fill="url(#p)" opacity="0.95" filter="url(#g)"/>
+<path d="M340 360 L300 280 L380 400 Z" fill="url(#p)" opacity="0.85"/>
+<path d="M684 360 L724 280 L644 400 Z" fill="url(#p)" opacity="0.85"/>
+<!-- Core + beam -->
+<ellipse cx="512" cy="420" rx="90" ry="110" fill="url(#core)" filter="url(#g)"/>
+<rect x="470" y="500" width="84" height="380" fill="url(#core)" opacity="0.75" filter="url(#g)"/>
+<!-- Orange vents -->
+<circle cx="420" cy="480" r="18" fill="url(#o)"/>
+<circle cx="604" cy="480" r="18" fill="url(#o)"/>
+<circle cx="512" cy="560" r="22" fill="url(#o)"/>
+</svg>

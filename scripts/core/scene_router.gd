@@ -14,6 +14,7 @@ const SCREEN_MOVEMENT_DEBUG := "movement_debug"
 const SCREEN_PROJECTILE_STRESS_TEST := "projectile_stress_test"
 const SCREEN_ENEMY_WAVE_DEBUG := "enemy_wave_debug"
 const SCREEN_BOSS_DEBUG := "boss_debug"
+const SCREEN_VISUAL_FOUNDATION := "visual_foundation"
 const SCREEN_RUN := "run"
 const SCREEN_RESULTS := "results"
 const SCREEN_MAIN_MENU := "main_menu"
@@ -30,6 +31,7 @@ const _SCREEN_SCENES := {
 	SCREEN_PROJECTILE_STRESS_TEST: "res://scenes/weapons/projectile_stress_test.tscn",
 	SCREEN_ENEMY_WAVE_DEBUG: "res://scenes/gameplay/enemy_wave_debug.tscn",
 	SCREEN_BOSS_DEBUG: "res://scenes/gameplay/boss_debug.tscn",
+	SCREEN_VISUAL_FOUNDATION: "res://scenes/gameplay/visual_foundation.tscn",
 	SCREEN_RUN: "res://scenes/gameplay/run_scene.tscn",
 	SCREEN_RESULTS: "res://scenes/ui/results_screen.tscn",
 	SCREEN_MAIN_MENU: "res://scenes/ui/main_menu.tscn",

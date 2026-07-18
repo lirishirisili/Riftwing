@@ -31,6 +31,12 @@ var _invuln_time: float = 0.0
 var _alive: bool = true
 
 @onready var _core: CollisionShape2D = $CollisionCore
+@onready var _sprite: Sprite2D = $Sprite
+@onready var _engine: Sprite2D = $EngineGlow
+@onready var _engine_r: Sprite2D = $EngineGlowRight
+
+var _spawn_scale: float = 1.0
+var _spawn_time: float = 0.0
 
 
 func _ready() -> void:
@@ -41,6 +47,8 @@ func _ready() -> void:
 	_health = combat_data.max_health
 	_adapt_play_rect()
 	_target = _clamp_to_bounds(global_position)
+	_spawn_time = 0.35
+	_spawn_scale = 0.2
 	set_process(true)
 	set_process_unhandled_input(true)
 	get_viewport().size_changed.connect(_adapt_play_rect)
@@ -54,12 +62,52 @@ func _process(delta: float) -> void:
 	# Frame-rate independent exponential smoothing toward the target.
 	var t := 1.0 - exp(-data.follow_smoothing * delta)
 	global_position = global_position.lerp(_target, t)
+	_update_presentation(delta)
 	if _invuln_time > 0.0:
 		_invuln_time = maxf(0.0, _invuln_time - delta)
 		# Blink while invulnerable for readable feedback.
 		modulate.a = 0.4 if int(_invuln_time * 20.0) % 2 == 0 else 1.0
 	else:
 		modulate.a = 1.0
+	# Low-HP: keep alpha readable; tint via sprite only so collision stays clear.
+	if _sprite != null and _alive and combat_data != null and combat_data.max_health > 0.0:
+		var hp_frac := _health / combat_data.max_health
+		if hp_frac <= 0.3:
+			var warn := 0.55 + 0.45 * absf(sin(Time.get_ticks_msec() * 0.012))
+			_sprite.modulate = Color(1.0, warn * 0.55, warn * 0.45, 1.0)
+		else:
+			_sprite.modulate = Color.WHITE
+
+
+func _update_presentation(delta: float) -> void:
+	# Subtle bank toward lateral motion; separate engine pulse (not baked in hull).
+	var dx := _target.x - global_position.x
+	if _sprite != null:
+		_sprite.rotation = lerpf(_sprite.rotation, clampf(dx * 0.0022, -0.28, 0.28), 1.0 - exp(-10.0 * delta))
+	if _spawn_time > 0.0:
+		_spawn_time = maxf(0.0, _spawn_time - delta)
+		_spawn_scale = lerpf(0.2, 1.0, 1.0 - (_spawn_time / 0.35))
+		scale = Vector2(_spawn_scale, _spawn_scale)
+	elif scale != Vector2.ONE:
+		scale = Vector2.ONE
+	var pulse := 0.82 + 0.18 * sin(Time.get_ticks_msec() * 0.014)
+	var thrust := clampf(absf(dx) / 220.0, 0.0, 1.0)
+	var low_hp := combat_data != null and combat_data.max_health > 0.0 \
+		and (_health / combat_data.max_health) <= 0.3
+	_update_engine_plume(_engine, -28.0, pulse, thrust, low_hp)
+	_update_engine_plume(_engine_r, 28.0, pulse, thrust, low_hp)
+
+
+func _update_engine_plume(node: Sprite2D, x: float, pulse: float, thrust: float, low_hp: bool) -> void:
+	if node == null:
+		return
+	if low_hp:
+		node.modulate = Color(1.0, 0.35 + 0.35 * pulse, 0.12, 0.8 + 0.2 * pulse)
+		node.scale = Vector2(0.12 + 0.04 * thrust, 0.26 + 0.12 * pulse + 0.08 * thrust)
+	else:
+		node.modulate = Color(0.15, 0.92, 1.0, 0.8 + 0.2 * pulse)
+		node.scale = Vector2(0.11 + 0.03 * thrust, 0.24 + 0.1 * pulse + 0.08 * thrust)
+	node.position = Vector2(x, 58.0 + 5.0 * thrust)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -111,7 +159,11 @@ func is_alive() -> bool:
 
 ## Applies damage unless currently invulnerable. Called by enemy projectiles.
 func take_damage(amount: float) -> void:
-	if not _alive or _invuln_time > 0.0:
+	if not _alive:
+		return
+	if _invuln_time > 0.0:
+		# Invuln window acts as a brief shield: feedback only, no HP change.
+		GameFeel.shield_impact(global_position)
 		return
 	_health = maxf(0.0, _health - amount)
 	_invuln_time = combat_data.invuln_seconds
@@ -129,6 +181,7 @@ func _on_area_entered(area: Area2D) -> void:
 		if gained > 0:
 			_energy += gained
 			energy_changed.emit(_energy)
+			GameFeel.pickup_collected(global_position)
 	elif area is Enemy:
 		take_damage((area as Enemy).data.contact_damage if (area as Enemy).data != null else 0.0)
 

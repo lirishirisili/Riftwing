@@ -543,22 +543,24 @@ func _draw() -> void:
 
 func _draw_radial_telegraph(t: float) -> void:
 	var danger := Palette.get_color("danger")
-	danger.a = 0.3 + 0.5 * t
-	# Predicted ring.
-	draw_arc(Vector2.ZERO, data.hit_radius * 2.2, 0.0, TAU, 64, danger, 3.0 + 3.0 * t, true)
+	danger.a = 0.35 + 0.5 * t
+	# Predicted ring + soft outer halo (still below bullets via boss z).
+	draw_arc(Vector2.ZERO, data.hit_radius * 2.35, 0.0, TAU, 64, Color(danger.r, danger.g, danger.b, 0.2 + 0.25 * t), 8.0, true)
+	draw_arc(Vector2.ZERO, data.hit_radius * 2.2, 0.0, TAU, 64, danger, 3.5 + 3.0 * t, true)
 	# Highlight the safe gaps in cyan so the corridor is obvious.
 	var n: int = _current.radial_bullets
 	var gap_slots := _gap_slot_set(n)
 	var step := TAU / float(n)
 	var safe := Palette.get_color("cyan")
-	safe.a = 0.5 + 0.4 * t
+	safe.a = 0.55 + 0.4 * t
 	var r := data.hit_radius * 2.2
 	for i in n:
 		if not gap_slots.has(i):
 			continue
 		var a := _pattern_spin + step * float(i)
 		var p := Vector2.RIGHT.rotated(a) * r
-		draw_circle(p, 10.0 + 6.0 * t, safe)
+		draw_circle(p, 12.0 + 7.0 * t, safe)
+		draw_arc(p, 16.0 + 8.0 * t, 0.0, TAU, 16, Color(1, 1, 1, 0.45 + 0.35 * t), 2.0, true)
 
 
 func _draw_laser_telegraph(t: float) -> void:
@@ -568,18 +570,19 @@ func _draw_laser_telegraph(t: float) -> void:
 	var danger := Palette.get_color("danger")
 	# Faint swept sector = the whole danger zone; the un-swept side is safe.
 	var sector := danger
-	sector.a = 0.12 + 0.12 * t
-	draw_arc(Vector2.ZERO, reach * 0.5, start + PI * 0.5, start + span + PI * 0.5, 32, sector, 2.0, true)
+	sector.a = 0.14 + 0.16 * t
+	draw_arc(Vector2.ZERO, reach * 0.5, start + PI * 0.5, start + span + PI * 0.5, 36, sector, 2.5, true)
 	var steps := 10
 	for i in steps + 1:
 		var a := start + span * float(i) / float(steps)
 		var d := Vector2.DOWN.rotated(a)
-		draw_line(Vector2.ZERO, d * reach, Color(sector.r, sector.g, sector.b, sector.a * 0.5), 2.0)
-	# Bright aim line where the beam will begin.
+		draw_line(Vector2.ZERO, d * reach, Color(sector.r, sector.g, sector.b, sector.a * 0.55), 2.0)
+	# Bright aim line where the beam will begin + tip marker.
 	var beam := danger
-	beam.a = 0.5 + 0.5 * t
+	beam.a = 0.55 + 0.45 * t
 	var start_dir := Vector2.DOWN.rotated(start)
-	draw_line(Vector2.ZERO, start_dir * reach, beam, 3.0 + 3.0 * t, true)
+	draw_line(Vector2.ZERO, start_dir * reach, beam, 3.5 + 3.5 * t, true)
+	draw_circle(start_dir * (reach * 0.55), 8.0 + 6.0 * t, Color(1.0, 0.9, 0.4, 0.5 + 0.4 * t))
 
 
 func _draw_laser_active() -> void:
@@ -588,13 +591,13 @@ func _draw_laser_active() -> void:
 	var w := _current.laser_half_width
 	var core := Palette.get_color("danger")
 	# Outer glow then bright core so the beam reads but a safe side stays clear.
-	draw_line(Vector2.ZERO, dir * reach, Color(core.r, core.g, core.b, 0.35), w * 2.0, true)
+	draw_line(Vector2.ZERO, dir * reach, Color(core.r, core.g, core.b, 0.3), w * 2.2, true)
 	draw_line(Vector2.ZERO, dir * reach, Color(1.0, 0.85, 0.9, 0.95), w, true)
 
 
 func _draw_summon_telegraph(t: float) -> void:
 	var danger := Palette.get_color("purple")
-	danger.a = 0.35 + 0.45 * t
+	danger.a = 0.4 + 0.45 * t
 	var count: int = _current.summon_per_wave
 	var mid := float(count - 1) * 0.5
 	var center_x := screen_size.x * 0.5
@@ -603,7 +606,8 @@ func _draw_summon_telegraph(t: float) -> void:
 	for i in count:
 		var x := center_x + (float(i) - mid) * _current.summon_spacing
 		var local := to_local(Vector2(x, hold_y))
-		draw_arc(local, 30.0 + 10.0 * t, 0.0, TAU, 24, danger, 3.0, true)
+		draw_arc(local, 34.0 + 12.0 * t, 0.0, TAU, 28, danger, 3.5, true)
+		draw_circle(local, 6.0 + 4.0 * t, Color(1.0, 0.85, 1.0, 0.45 + 0.4 * t))
 
 
 func pool_reset() -> void:

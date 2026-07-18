@@ -95,9 +95,7 @@ func _on_upgrade_selected(upgrade: UpgradeData) -> void:
 func _on_upgrade_screen_closed() -> void:
 	_level_up_queue = maxi(0, _level_up_queue - 1)
 	_xp.consume_pending_level()
-	# More levels pending (a big burst)? Show the next choice before resuming.
-	if _level_up_queue > 0:
-		_try_open_upgrade_screen()
+	# No auto-chain — banked XP waits for the next gain (same as run host).
 
 
 func _process(_delta: float) -> void:
@@ -117,6 +115,9 @@ func _on_enemy_killed(_enemy: Enemy) -> void:
 
 
 func _update_readout(active: int) -> void:
+	_readout.visible = GameFeel.debug_markers_enabled
+	if not _readout.visible:
+		return
 	var es := _enemy_pool.get_stats()
 	var bs := _enemy_bullet_pool.get_stats()
 	var ps := _pickup_pool.get_stats()
@@ -158,6 +159,7 @@ func _update_readout(active: int) -> void:
 
 
 func _on_overlay_draw() -> void:
-	# Mark the player's small collision core for clarity.
+	if not GameFeel.debug_markers_enabled:
+		return
 	var core := _player.get_core_global_position()
 	_overlay.draw_circle(core, 6.0, Color(0, 0.84, 1, 0.9))

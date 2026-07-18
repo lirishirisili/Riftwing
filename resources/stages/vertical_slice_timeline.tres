@@ -16,4 +16,4 @@ final_boss = ExtResource("5")
 mini_boss_at = 60.0
 boss_warning_at = 150.0
 guaranteed_level_up_at = 18.0
-guaranteed_level_up_xp = 40
+guaranteed_level_up_xp = 10

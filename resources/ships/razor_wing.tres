@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="ShipData" load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/progression/ship_data.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/placeholders/player_ship_placeholder.svg" id="2"]
+[ext_resource type="Texture2D" path="res://assets/art/ships/vanguard_mk2.svg" id="2"]
 [ext_resource type="Resource" path="res://resources/ships/tracks/weapons_track.tres" id="3"]
 [ext_resource type="Resource" path="res://resources/ships/tracks/shield_track.tres" id="4"]
 [ext_resource type="Resource" path="res://resources/ships/tracks/engine_track.tres" id="5"]

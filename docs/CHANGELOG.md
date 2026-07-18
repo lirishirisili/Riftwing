@@ -1,5 +1,133 @@
 # Changelog
 
+## Main Menu Visual Fidelity
+- Regenerated metallic `logo_riftwing.png` (true alpha) + cinematic `hero_vanguard_menu.png` matching the high-fi mockup ship.
+- CTA chrome: full-bleed glow hex SVGs (`cta_start_hex` / `cta_daily_bar` / `cta_nav_hex`) stretched to slot; START RUN + `ENDLESS MODE` perfectly centered.
+- Menu always uses dedicated hero PNG (no hangar SVG overwrite); `vanguard_mk2.tres` `hero_texture` points at menu art.
+- SafeArea ignores Windows taskbar misreports; stretch `keep_width`; bottom pad keeps nav fully visible.
+- Brand remains **RIFTWING** only (reference mockups may show legacy names — never in production).
+- Target mockup: `references/01_main_menu_target.png`. Probe covers chrome assets + pad/timer.
+
+## Game Icon Art
+- Replaced prototype launcher/store icons with final ship+nebula art under `assets/branding/`.
+- Generated `icon_main_192.png`, `icon_adaptive_fg_432.png`, `icon_adaptive_bg_432.png` (navy), `icon_ios_1024.png`, plus `icon_source.png` master.
+- Paths unchanged in `project.godot` and `export_presets.cfg` (Android launcher/splash + iOS 1024).
+
+## Fire SFX Comfort (Shmup Loop)
+- Continuous autofire no longer spam one-shot `fire` cues every volley (Cave/aircraft-style sustain).
+- Soft looping `fire_loop.ogg` on a dedicated channel (~−14 dB); `GameFeel.weapon_fire` keeps muzzle VFX only.
+- Loop suppressed during upgrade pause / HUD pause; stopped on run end / quit. Hit voice cap tightened to 3.
+
+## Audio Banks + Settings
+- Synthesized neon arcade OGG banks under `assets/audio/sfx` and `assets/audio/music` (`tools/generate_audio_banks.gd`).
+- `AudioManager` plays real streams via SFX pool + dual music players (crossfade), Master/Music/SFX buses, voice caps on fire/hit, and persisted prefs (`user://audio_prefs.cfg`).
+- Music hooks: menu/hangar/map → menu; run → run; mini/final boss → boss; results stops music then fanfare/fail stingers.
+- Settings: AUDIO mute + MUSIC/SFX volume steps (20%) persist across sessions. Validated via `tests/vfx_audio_polish_probe.gd`.
+
+## Gameplay Space Backdrop Refresh
+- New generated layers: rich purple/teal nebula (`parallax_nebula_rift.png`), soft spiral galaxy core, and a large purple planet accent.
+- `SpaceBackground` rebuilt as world-space scrolling `Sprite2D` pairs (not `ParallaxBackground`/CanvasLayer) so the backdrop actually appears under the run camera — stars → nebula → galaxy → planet → debris, with a dimmer center lane for bolt readability.
+
+## Upgrade Pacing — No Choice Cascade
+- `ExperienceTracker` emits at most one `leveled_up` while a choice is pending; excess XP banks instead of flooding the queue.
+- Closing the upgrade screen no longer immediately opens the next level — the next pick waits for fresh XP after combat.
+- Guaranteed level-up grant retuned to 10 XP (one level), fixing the LEVEL 2→3→4→5→6 back-to-back cascade from the old 40 XP dump.
+
+## Gameplay Fun Ladder (G1–G4)
+- **G1:** Level curve retuned for first pick ~15–20s; `GameFeel.upgrade_applied` halo/muzzle after each card so power lands immediately.
+- **G2:** Void Elite spawn ~45–50s in early/mid waves (fat energy drop + major death FX); combo HUD heat colors + scale pop; `GameFeel.combo_peak` on x5 milestones.
+- **G3:** Stage stars are clear / ≥50% HP / score objectives (map + results copy); hangar track costs lowered so early runs can buy a meaningful upgrade.
+- **G4:** Upgrade cards show synergy hints when partners are owned; early-run rarity weighting suppresses Legendary/Epic until mid levels.
+
+## Upgrade Screen — Stack / Glow Bleed Fix
+- Synchronous `_clear_cards()` kills card tweens, removes children immediately, and runs on open + close so sequential level-ups never leave ghost cards (no 6-card stack).
+- `UpgradeCard` / Cards row `clip_contents`; glow overflow reduced to ±6px so rarity glow no longer bleeds into LEVEL header or REROLL.
+- Header / brand / reroll `z_index` raised above the card row. Probe covers back-to-back level-ups (`tests/upgrade_cards_probe.gd`).
+
+## Visual Fidelity — Results / Victory (H)
+- Closer results fidelity to `references/07_victory.png`: larger VICTORY/DEFEAT title with cyan wing bar accents, framed RIFTWING brand chip, NeonPanel + outer double-border mission stats, stronger gold NEW BEST! badge, square glowing reward chrome slots.
+- Victory CTAs: gold `ButtonReward` Next Sector, blue `ButtonPrimary` Upgrade Ship; defeat keeps `ButtonPrimary` Replay + `ButtonSecondary` Upgrade. Sticky scroll CTAs (`_ensure_scroll_layout`) kept. Optional victory-only `CPUParticles2D` confetti. Hero defaults to `vanguard_mk2.svg`. RewardCalculator / SaveManager grant dedupe unchanged. Validated via `tests/results_screen_probe.gd`.
+
+## Visual Fidelity — Upgrade Cards (G)
+- Stronger rarity glow (cyan / purple / gold outer+inner pulse); legendary pulses hardest.
+- Hex icon plate via `hex_frame.svg`, centered NEW badge, clearer rarity pill under the icon, title tinted by rarity.
+- Dim veil raised slightly (~0.70) while combat remains readable; disabled gold `ButtonReward` stub `REROLL · SOON` (no economy).
+- Card width fit from prior milestone unchanged; UpgradeManager roll/apply untouched. Validated via `tests/upgrade_cards_probe.gd`.
+
+## Visual Fidelity — Gameplay HUD (E)
+- Bottom vitals use `bottom_hud_frame.svg` chrome; HP caption has `icon_health`; XP bar keeps progression wiring but reads as a purple shield slot with `icon_shield` (no shield combat system).
+- Level badge sits on `hex_frame.svg`; pause uses a hex shell + stronger Chip/tertiary chrome; ability buttons stay ≥112 with wider bottom spacing.
+- Boss bar keeps M23 chip-safe width; stronger VOID TITAN / segmented chrome plate. Presentation only — no combat logic changes. Validated via `tests/gameplay_hud_probe.gd`.
+
+## Visual Fidelity — Hangar (D)
+- Hangar bay uses `assets/art/env/hangar_pad.svg` under the featured ship (default hero art `vanguard_mk2.svg`).
+- Stronger cyan EQUIPPED glow on the ship strip; clearer per-stat chips (accent borders, tinted icons, value glow).
+- Upgrade rows color-coded by track (weapons purple, shield/engine cyan, drones green, ultimate orange) via border/modulate; shield track accent token set to cyan.
+- Disabled stub CTA `UPGRADE ALL · SOON` (no economy). SaveManager purchase/select unchanged. Validated via `tests/hangar_probe.gd`.
+
+## Visual Fidelity — Main Menu (B)
+- Main menu presentation pass toward `references/01_main_menu.png`: hero title ~76px **RIFTWING**, subtitle **SPACE SURVIVOR**, purple NeonPanel event shell titled **VOID INVASION**.
+- Hero uses Vanguard Mk2 art, larger engine glow, and a right-side `planet_accent` TextureRect; top chrome chips use `ChipPanel` with stronger caption contrast.
+- CTA hierarchy unchanged in wiring: `ButtonPrimary` Start Run, `ButtonSecondary` Daily, `ButtonTertiary` Ships/Upgrades; SaveManager + SceneRouter navigation preserved.
+
+## Visual Fidelity — Stage Map (C)
+- Closer map fidelity to `references/02_stage_select.png`: stronger multi-ring pulse on selected/current nodes, `map_node_locked.svg` padlock on locked nodes, `map_node_active.svg` on current/selected, solid purple→cyan cleared paths and clearer dashed muted locked paths.
+- Detail panel uses shared `NeonPanel` (corner-cut) + `ChipPanel` power chips; dominant `ButtonPrimary` LAUNCH; short titles like `1-5  VOID OUTPOST`. Unlock / HARD / Launch logic unchanged. Branding **RIFTWING** only.
+
+## Visual Fidelity — Combat Actors / VFX (F)
+- Player ship uses Vanguard key art with dual cyan engine plumes; enemies/bosses use new Void art.
+- Space background: planet accent layer + deeper center dim for bolt readability under bloom.
+- Damage numbers scale/tint by quality (larger orange pops on HIGH).
+
+## Visual Fidelity — Design System (A)
+- Shared neon/chamfer theme (`ButtonReward`, `NeonPanel`, sharper CTA corners, stronger glow shadows).
+- `GlowController` on AppRoot (WorldEnvironment bloom gated by GameFeel LOW/MED/HIGH).
+- Chrome kit: `assets/ui/chrome/*`, `HexChip`, neon `HudSegmentedBar` / `AbilityButton` rings.
+- Key art folders + Vanguard / Void Scout / Shooter / Titan / hangar pad / planet SVGs wired into resources.
+- Docs: `docs/01_VISUAL_DIRECTION.md`, `docs/visual_fidelity/DESIGN_SYSTEM.md`.
+
+## Milestone 23 - Final Mobile Visual QA
+- Audited the production vertical slice (menu / map / HUD / combat / upgrades / boss / results / hangar) at 1080×1920, 1080×2400, and 1080×2478; wrote `docs/FINAL_MOBILE_VISUAL_QA.md`.
+- Fixed highest-impact issues: boss bar inset from HUD chips, HUD XP label, pause/theme consistency, tall-aspect camera centering, results sticky CTAs + scroll, upgrade card width fit, shorter map/hangar labels, clearer muted HUD type.
+- Effects remain below bullets; no new gameplay systems. Validated via `tests/final_mobile_visual_qa_probe.gd`.
+
+## Milestone 22 - VFX and Audio Polish
+- Expanded `AudioManager` with a cue catalog (ui / combat / world / music groups), aliases (`weapon_fire` → `fire`), and catalog-default priorities while preserving focus ducking.
+- Extended `GameFeel` intents: `weapon_fire`, `shield_impact`, `pickup_collected`, `ability_activated` (still feedback-only). Wired plasma muzzle/fire, invuln shield bursts, pickup collect, and HUD ability flashes through them.
+- Polished pooled VFX: `HitFlash` styles (impact / muzzle / shield), richer explosions, clearer projectile trails, enemy entrance + telegraph rings, boss telegraph accents, engine low-HP pulse. Effects stay pooled and below bullets. Validated via `tests/vfx_audio_polish_probe.gd`.
+
+## Milestone 21 - Production Results Screen
+- Upgraded results into a production summary: parallax atmosphere (victory/defeat tint), featured ship + engine glow, VICTORY/DEFEAT headlines, run emblem badge, score with NEW BEST, icon-backed mission stats, richer reward chips, stage stars when cleared.
+- Actions: dominant Next Sector (victory) / Replay (defeat), Upgrade Ship, Home; Replay relaunches the same stage. RewardCalculator + SaveManager dedupe unchanged. Validated via `tests/results_screen_probe.gd`.
+
+## Milestone 20 - Production Upgrade Choice Cards
+- Polished the in-run upgrade overlay: RIFTWING brand, combat-paused hint, header chip, pulsing divider, softer dim veil, and a disabled `REROLL · SOON` stub (no reroll economy yet).
+- Production cards: rarity frames + glow (cyan rare / purple epic / gold legendary pulse), rarity badge, icon plate, NEW/UNLOCK labels, category emblem derived from effect kind, press/hover/selection feedback. UpgradeManager roll/apply logic unchanged. Validated via `tests/upgrade_cards_probe.gd`.
+
+## Milestone 19 - Production Galaxy Map
+- Upgraded stage select into a production sector map: deep-space parallax, glowing mission paths (cyan cleared / purple unlocked / dashed locked), pulsing selected + “current” node rings, gold completed markers, and a clearer cleared-count header.
+- Mission panel uses production chrome (power chips, cyan-framed detail, dominant Launch CTA pulse) with shared theme button variations. Launch / unlock / HARD / save behavior unchanged. Branding remains **RIFTWING** / SECTOR MAP. Validated via `tests/stage_map_probe.gd`.
+
+## Milestone 18 - Production Hangar
+- Upgraded hangar to a production bay: parallax hangar atmosphere, holographic platform + engine glow under the featured ship, idle ship motion, identity column (name / tier / power / equip), icon-backed stat chips, and a clearer locked·owned·equipped ship strip.
+- Polished upgrade rows (accent rim, framed icon, progress bar chrome, primary/secondary CTA states) without changing SaveManager purchase, lock, or persistence rules. Currencies / Back use shared theme chip + tertiary styles. Validated via existing `tests/hangar_probe.gd`.
+
+## Milestone 17 - Production Main Menu
+- Redesigned the home screen into a cinematic RIFTWING composition: layered parallax (stars / nebula / debris), vignettes, distant enemy atmosphere, engine-glow + featured ship idle motion, event banner pulse, and a dominant Start Run CTA.
+- Added reusable theme type variations `ButtonPrimary` / `ButtonSecondary` / `ButtonTertiary` (+ `ChipPanel`) in `riftwing_theme.tres`; menu buttons use them instead of plain prototype blocks.
+- Top chrome: commander profile (selected ship + power bar), currencies, settings. Brand wordmark remains **RIFTWING** with `SPACE SURVIVOR` subtitle. Navigation unchanged (map / daily placeholder / hangar / settings). Debug markers forced off on entry. Validated via `tests/main_menu_probe.gd` at 1080×1920 / 2400 / 2478.
+
+## Milestone 16 - Production Gameplay HUD
+- Built reusable in-run HUD components: `HudSegmentedBar`, `AbilityButton`, and `GameplayHUD` (`scenes/ui/gameplay_hud.tscn`) with safe-area margins for 1080×1920 / 2400 / 2478.
+- Top: live score + rift-energy currency, wave/phase chip (hidden while boss bar is active), pause + combo; Bottom: HP bar (damage/low-health feedback), XP bar, level badge, left/right ability buttons with charge + cooldown rings (feedback hooks only — no combat loop change).
+- Wired into `run_scene` / `RunController`; pause overlay Resume / Quit to Menu; boss bar compacted under the top chip row. Validated via `tests/gameplay_hud_probe.gd`. Meta screens untouched.
+
+## Milestone 15 - Visual Foundation
+- Raised gameplay visual quality without new features: parallax `space_background` (stars / nebula / debris + center dim) replaces flat ColorRect on run / boss / wave hosts; tall viewports expand playable sky via stretch+fit.
+- Debug presentation: overlay **hidden by default**; F3 toggles overlay + collision markers; optional three-finger toggle; run/boss/wave cyan cores and verbose readouts gated. `Engine.max_fps = 60`.
+- Scale / language: player ~189px + separate `engine_glow` pulse/tilt/spawn; enemies violet with orange cores; Titan/Wisp larger; friendly cyan needles vs hostile magenta orbs; pickups ~72px. Enemy bolt pool prewarm cut 512→256 on run/boss.
+- Added `visual_foundation` validation scene + `tests/visual_foundation_probe.gd` (1080×1920 / 2400 / 2478). Gap notes in `docs/VISUAL_FOUNDATION_GAP.md`. Gameplay/save/navigation untouched beyond visuals.
+
 ## Milestone 14 - Export Validation
 - Centralized provisional store identity in `manifests/product_identity.json` (`com.lishistudio.riftwing`, version `0.1.0` / code `1`, Android minSdk 24 / targetSdk 35, iOS 15.0, portrait). Synced `project.godot` `config/version` and launcher icon.
 - Hardened `export_presets.cfg`: **Android Debug** (installable APK, arm64, vibrate-only permission, branding icons/splash, editor debug keystore only), **Android Release** (AAB + Gradle, empty release keystore fields), **iOS** (bundle id / versions / export-project-only, empty Team/provisioning). Review/docs/tests excluded from packs. Added `.gitignore` for `build/`, keystores, and `export_credentials.cfg`.

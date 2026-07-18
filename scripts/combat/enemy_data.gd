@@ -17,6 +17,9 @@ extends Resource
 ## Energy pickups dropped on death.
 @export_range(0, 20) var energy_drop: int = 1
 
+## Elite / chest beat: tougher silhouette + guaranteed fat energy drop.
+@export var is_elite: bool = false
+
 ## Body sprite and its scale (SVGs author at 1024px, so scale is small).
 @export var sprite: Texture2D
 @export_range(0.01, 2.0, 0.01) var sprite_scale: float = 0.12

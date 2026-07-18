@@ -1,0 +1,426 @@
+[gd_scene load_steps=11 format=3 uid="uid://c0riftwgameplayhud"]
+
+[ext_resource type="Script" path="res://scripts/ui/gameplay_hud.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/hud_segmented_bar.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ability_button.tscn" id="3"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_coin.svg" id="4"]
+[ext_resource type="Texture2D" path="res://assets/ui/panel_dark_9slice.svg" id="5"]
+[ext_resource type="Texture2D" path="res://assets/ui/chrome/bottom_hud_frame.svg" id="6"]
+[ext_resource type="Texture2D" path="res://assets/ui/chrome/hex_frame.svg" id="7"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_health.svg" id="8"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_shield.svg" id="9"]
+
+[sub_resource type="StyleBoxTexture" id="chip_panel"]
+texture = ExtResource("5")
+texture_margin_left = 18.0
+texture_margin_top = 18.0
+texture_margin_right = 18.0
+texture_margin_bottom = 18.0
+modulate_color = Color(0.05, 0.14, 0.28, 0.92)
+
+[sub_resource type="StyleBoxFlat" id="pause_panel"]
+bg_color = Color(0.027451, 0.094118, 0.168627, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.843137, 1, 0.7)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+content_margin_left = 28
+content_margin_top = 24
+content_margin_right = 28
+content_margin_bottom = 24
+
+[node name="GameplayHUD" type="Control"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1")
+
+[node name="Safe" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 24
+
+[node name="Root" type="VBoxContainer" parent="Safe"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="Top" type="HBoxContainer" parent="Safe/Root"]
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="ScoreChip" type="PanelContainer" parent="Safe/Root/Top"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_type_variation = &"ChipPanel"
+theme_override_styles/panel = SubResource("chip_panel")
+
+[node name="VBox" type="VBoxContainer" parent="Safe/Root/Top/ScoreChip"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="ScoreCaption" type="Label" parent="Safe/Root/Top/ScoreChip/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.58, 0.7, 0.84, 1)
+theme_override_font_sizes/font_size = 18
+text = "SCORE"
+
+[node name="ScoreValue" type="Label" parent="Safe/Root/Top/ScoreChip/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.957, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 34
+text = "0"
+
+[node name="CurrencyRow" type="HBoxContainer" parent="Safe/Root/Top/ScoreChip/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="CoinIcon" type="TextureRect" parent="Safe/Root/Top/ScoreChip/VBox/CurrencyRow"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture = ExtResource("4")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CurrencyValue" type="Label" parent="Safe/Root/Top/ScoreChip/VBox/CurrencyRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.69, 0, 1)
+theme_override_font_sizes/font_size = 26
+text = "0"
+
+[node name="WaveChip" type="PanelContainer" parent="Safe/Root/Top"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ChipPanel"
+theme_override_styles/panel = SubResource("chip_panel")
+
+[node name="WaveLabel" type="Label" parent="Safe/Root/Top/WaveChip"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.84, 1, 1)
+theme_override_font_sizes/font_size = 28
+text = "WAVE 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PauseCol" type="VBoxContainer" parent="Safe/Root/Top"]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_constants/separation = 4
+
+[node name="PauseShell" type="Control" parent="Safe/Root/Top/PauseCol"]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+
+[node name="HexBg" type="TextureRect" parent="Safe/Root/Top/PauseCol/PauseShell"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7")
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(0.75, 0.95, 1, 1)
+
+[node name="PauseButton" type="Button" parent="Safe/Root/Top/PauseCol/PauseShell"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+focus_mode = 0
+flat = true
+theme_type_variation = &"ButtonTertiary"
+theme_override_colors/font_color = Color(0.85, 0.96, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0, 0.84, 1, 1)
+theme_override_font_sizes/font_size = 36
+text = "❚❚"
+
+[node name="ComboLabel" type="Label" parent="Safe/Root/Top/PauseCol"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.69, 0, 1)
+theme_override_font_sizes/font_size = 22
+text = ""
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="Safe/Root"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="Bottom" type="HBoxContainer" parent="Safe/Root"]
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 22
+alignment = 1
+
+[node name="AbilityLeft" parent="Safe/Root/Bottom" instance=ExtResource("3")]
+custom_minimum_size = Vector2(112, 112)
+layout_mode = 2
+size_flags_vertical = 4
+ring_color = Color(0, 0.84, 1, 1)
+max_charges = 3
+cooldown_seconds = 7.0
+
+[node name="Vitals" type="Control" parent="Safe/Root/Bottom"]
+custom_minimum_size = Vector2(0, 132)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+mouse_filter = 2
+
+[node name="BottomHudFrame" type="TextureRect" parent="Safe/Root/Bottom/Vitals"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 8.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Content" type="MarginContainer" parent="Safe/Root/Bottom/Vitals"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 18
+
+[node name="VitalsRow" type="HBoxContainer" parent="Safe/Root/Bottom/Vitals/Content"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="Bars" type="VBoxContainer" parent="Safe/Root/Bottom/Vitals/Content/VitalsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_constants/separation = 4
+
+[node name="HealthMeta" type="HBoxContainer" parent="Safe/Root/Bottom/Vitals/Content/VitalsRow/Bars"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="HealthIcon" type="TextureRect" parent="Safe/Root/Bottom/Vitals/Content/VitalsRow/Bars/HealthMeta"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("8")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HealthCaption" type="Label" parent="Safe/Root/Bottom/Vitals/Content/VitalsRow/Bars/HealthMeta"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.58, 0.7, 0.84, 1)
+theme_override_font_sizes/font_size = 16
+text = "HP"
+
+[node name="HealthValue" type="Label" parent="Safe/Root/Bottom/Vitals/Content/VitalsRow/Bars/HealthMeta"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.84, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "100"
+
+[node name="HealthBar" type="Control" parent="Safe/Root/Bottom/Vitals/Content/VitalsRow/Bars"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+script = ExtResource("2")
+segment_count = 12
+fill_color = Color(0, 0.84, 1, 1)
+
+[node name="LevelBadge" type="Control" parent="Safe/Root/Bottom/Vitals/Content/VitalsRow"]
+custom_minimum_size = Vector2(88, 88)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="HexBg" type="TextureRect" parent="Safe/Root/Bottom/Vitals/Content/VitalsRow/LevelBadge"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LevelCol" type="VBoxContainer" parent="Safe/Root/Bottom/Vitals/Content/VitalsRow/LevelBadge"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="LevelCaption" type="Label" parent="Safe/Root/Bottom/Vitals/Content/VitalsRow/LevelBadge/LevelCol"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.58, 0.7, 0.84, 1)
+theme_override_font_sizes/font_size = 13
+text = "LV"
+horizontal_alignment = 1
+
+[node name="LevelValue" type="Label" parent="Safe/Root/Bottom/Vitals/Content/VitalsRow/LevelBadge/LevelCol"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.957, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 34
+text = "1"
+horizontal_alignment = 1
+
+[node name="XpCol" type="VBoxContainer" parent="Safe/Root/Bottom/Vitals/Content/VitalsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_constants/separation = 4
+
+[node name="EnergyMeta" type="HBoxContainer" parent="Safe/Root/Bottom/Vitals/Content/VitalsRow/XpCol"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ShieldIcon" type="TextureRect" parent="Safe/Root/Bottom/Vitals/Content/VitalsRow/XpCol/EnergyMeta"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("9")
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(0.85, 0.55, 1, 1)
+
+[node name="EnergyCaption" type="Label" parent="Safe/Root/Bottom/Vitals/Content/VitalsRow/XpCol/EnergyMeta"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.72, 0.55, 0.95, 1)
+theme_override_font_sizes/font_size = 16
+text = "XP"
+
+[node name="EnergyValue" type="Label" parent="Safe/Root/Bottom/Vitals/Content/VitalsRow/XpCol/EnergyMeta"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.42, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "0/10"
+
+[node name="EnergyBar" type="Control" parent="Safe/Root/Bottom/Vitals/Content/VitalsRow/XpCol"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+script = ExtResource("2")
+segment_count = 10
+fill_color = Color(0.55, 0.26, 1, 1)
+track_color = Color(0.08, 0.03, 0.18, 0.92)
+low_threshold = 0.0
+
+[node name="AbilityRight" parent="Safe/Root/Bottom" instance=ExtResource("3")]
+custom_minimum_size = Vector2(112, 112)
+layout_mode = 2
+size_flags_vertical = 4
+ring_color = Color(0.55, 0.26, 1, 1)
+max_charges = 2
+cooldown_seconds = 9.0
+
+[node name="PauseOverlay" type="Control" parent="."]
+visible = false
+process_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="PauseOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.01, 0.03, 0.08, 0.72)
+
+[node name="Center" type="CenterContainer" parent="PauseOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="PauseOverlay/Center"]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("pause_panel")
+
+[node name="VBox" type="VBoxContainer" parent="PauseOverlay/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="PauseOverlay/Center/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.84, 1, 1)
+theme_override_font_sizes/font_size = 40
+text = "PAUSED"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="PauseOverlay/Center/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.58, 0.7, 0.84, 1)
+theme_override_font_sizes/font_size = 20
+text = "RIFTWING"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="PauseOverlay/Center/Panel/VBox"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+focus_mode = 0
+theme_type_variation = &"ButtonPrimary"
+theme_override_font_sizes/font_size = 28
+text = "RESUME"
+
+[node name="QuitButton" type="Button" parent="PauseOverlay/Center/Panel/VBox"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+focus_mode = 0
+theme_type_variation = &"ButtonTertiary"
+theme_override_font_sizes/font_size = 24
+text = "QUIT TO MENU"

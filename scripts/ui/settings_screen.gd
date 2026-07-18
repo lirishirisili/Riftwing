@@ -2,15 +2,16 @@ class_name SettingsScreen
 extends Control
 ## Settings screen reachable from the main menu's gear button.
 ##
-## Exposes the options the prototype can honestly back today: master audio
-## (AudioManager.enabled), effects quality (GameFeel LOW/MED/HIGH, persisted),
-## a haptics toggle (persisted and honored by GameFeel), and a two-tap Reset
-## Progress that clears the SaveManager.
+## Master mute + Music/SFX volume steps (persisted via AudioManager prefs),
+## effects quality, haptics, and two-tap Reset Progress.
 
 const _BASE_PADDING := 56.0
+const _VOL_STEP := 0.2
 
 @onready var _safe: MarginContainer = %Safe
 @onready var _audio_button: Button = %AudioButton
+@onready var _music_button: Button = %MusicButton
+@onready var _sfx_button: Button = %SfxButton
 @onready var _quality_button: Button = %QualityButton
 @onready var _haptics_button: Button = %HapticsButton
 @onready var _reset_button: Button = %ResetButton
@@ -22,17 +23,22 @@ var _reset_armed := false
 
 func _ready() -> void:
 	_audio_button.pressed.connect(_on_audio)
+	_music_button.pressed.connect(_on_music)
+	_sfx_button.pressed.connect(_on_sfx)
 	_quality_button.pressed.connect(_on_quality)
 	_haptics_button.pressed.connect(_on_haptics)
 	_reset_button.pressed.connect(_on_reset)
 	_back.pressed.connect(_on_back)
 	get_viewport().size_changed.connect(_apply_safe_area)
 	_apply_safe_area()
+	AudioManager.play_music("menu")
 	_refresh()
 
 
 func _refresh() -> void:
 	_audio_button.text = "AUDIO:  %s" % ("ON" if AudioManager.enabled else "OFF")
+	_music_button.text = "MUSIC:  %d%%" % int(round(AudioManager.music_linear * 100.0))
+	_sfx_button.text = "SFX:  %d%%" % int(round(AudioManager.sfx_linear * 100.0))
 	_quality_button.text = "EFFECTS:  %s" % GameFeel.quality_name()
 	_haptics_button.text = "HAPTICS:  %s" % ("ON" if GameFeel.haptics_enabled else "OFF")
 	_reset_button.text = "RESET PROGRESS?  TAP AGAIN" if _reset_armed else "RESET PROGRESS"
@@ -41,7 +47,27 @@ func _refresh() -> void:
 
 
 func _on_audio() -> void:
-	AudioManager.enabled = not AudioManager.enabled
+	AudioManager.set_enabled(not AudioManager.enabled)
+	if AudioManager.enabled:
+		AudioManager.play_music("menu")
+	_click()
+	_refresh()
+
+
+func _on_music() -> void:
+	var next := AudioManager.music_linear + _VOL_STEP
+	if next > 1.001:
+		next = 0.0
+	AudioManager.set_music_volume(next)
+	_click()
+	_refresh()
+
+
+func _on_sfx() -> void:
+	var next := AudioManager.sfx_linear + _VOL_STEP
+	if next > 1.001:
+		next = 0.0
+	AudioManager.set_sfx_volume(next)
 	_click()
 	_refresh()
 

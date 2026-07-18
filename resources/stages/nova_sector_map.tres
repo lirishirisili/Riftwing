@@ -18,7 +18,7 @@ first_clear_rift_core = 1
 map_position = Vector2(200, 100)
 planet_modulate = Color(0.35, 0.85, 0.55, 1)
 starts_unlocked = true
-stars_combo_for_2 = 4
+stars_hp_ratio_for_2 = 0.5
 stars_score_for_3 = 3500
 
 [sub_resource type="Resource" id="stage_2"]
@@ -36,7 +36,7 @@ first_clear_rift_core = 1
 map_position = Vector2(520, 220)
 planet_modulate = Color(1, 0.45, 0.25, 1)
 starts_unlocked = true
-stars_combo_for_2 = 5
+stars_hp_ratio_for_2 = 0.5
 stars_score_for_3 = 4000
 
 [sub_resource type="Resource" id="stage_3"]
@@ -54,7 +54,7 @@ first_clear_rift_core = 1
 map_position = Vector2(220, 360)
 planet_modulate = Color(0.45, 0.75, 1, 1)
 starts_unlocked = true
-stars_combo_for_2 = 5
+stars_hp_ratio_for_2 = 0.5
 stars_score_for_3 = 4500
 
 [sub_resource type="Resource" id="stage_4"]
@@ -72,7 +72,7 @@ first_clear_rift_core = 1
 map_position = Vector2(540, 500)
 planet_modulate = Color(0.95, 0.3, 0.35, 1)
 starts_unlocked = false
-stars_combo_for_2 = 6
+stars_hp_ratio_for_2 = 0.5
 stars_score_for_3 = 5000
 
 [sub_resource type="Resource" id="stage_5"]
@@ -90,7 +90,7 @@ first_clear_rift_core = 1
 map_position = Vector2(240, 640)
 planet_modulate = Color(0.55, 0.35, 0.95, 1)
 starts_unlocked = false
-stars_combo_for_2 = 6
+stars_hp_ratio_for_2 = 0.5
 stars_score_for_3 = 5500
 
 [sub_resource type="Resource" id="stage_6"]
@@ -108,7 +108,7 @@ first_clear_rift_core = 1
 map_position = Vector2(560, 780)
 planet_modulate = Color(0.25, 0.9, 0.85, 1)
 starts_unlocked = false
-stars_combo_for_2 = 7
+stars_hp_ratio_for_2 = 0.5
 stars_score_for_3 = 6000
 
 [sub_resource type="Resource" id="stage_7"]
@@ -126,7 +126,7 @@ first_clear_rift_core = 1
 map_position = Vector2(260, 920)
 planet_modulate = Color(0.7, 0.25, 0.85, 1)
 starts_unlocked = false
-stars_combo_for_2 = 7
+stars_hp_ratio_for_2 = 0.5
 stars_score_for_3 = 6500
 
 [sub_resource type="Resource" id="stage_8"]
@@ -144,7 +144,7 @@ first_clear_rift_core = 2
 map_position = Vector2(500, 1060)
 planet_modulate = Color(1, 0.7, 0.2, 1)
 starts_unlocked = false
-stars_combo_for_2 = 8
+stars_hp_ratio_for_2 = 0.5
 stars_score_for_3 = 7000
 
 [resource]

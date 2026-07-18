@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/enemy_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/art/enemies/void_shooter.svg" id="2"]
+[ext_resource type="Resource" path="res://resources/weapons/enemy_plasma_projectile.tres" id="3"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Void Elite"
+max_health = 95.0
+contact_damage = 22.0
+energy_drop = 8
+sprite = ExtResource("2")
+sprite_scale = 0.22
+hit_radius = 78.0
+tint = Color(1, 0.45, 0.2, 1)
+can_shoot = true
+shoot_telegraph = 0.55
+burst_count = 5
+burst_spread_degrees = 42.0
+shoot_rest = 0.9
+projectile = ExtResource("3")
+is_elite = true

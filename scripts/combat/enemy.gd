@@ -82,12 +82,19 @@ func _process(delta: float) -> void:
 		Phase.ENTER:
 			var t: float = clampf(_phase_time / _entry_seconds, 0.0, 1.0)
 			global_position = _enter_from.lerp(_hold_pos, ease(t, 0.4))
+			queue_redraw()
 			if t >= 1.0:
 				_enter_phase(Phase.WAIT)
 		Phase.WAIT:
-			global_position = _hold_pos
+			# Soft hover so formations do not feel glued to a grid.
+			var bob := sin(_phase_time * 2.4) * 6.0
+			global_position = _hold_pos + Vector2(0.0, bob)
+			if _sprite != null:
+				_sprite.rotation = sin(_phase_time * 1.7) * 0.08
 			if data.can_shoot:
 				_update_shooting(delta)
+			if _telegraphing:
+				queue_redraw()
 			if _phase_time >= _wait_seconds:
 				_enter_phase(Phase.EXIT)
 		Phase.EXIT:
@@ -100,14 +107,25 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	if data == null:
 		return
-	# Telegraph: a warning ring + aim line toward the player so bursts are
-	# readable on a small screen (docs/02_GAMEPLAY_SPEC.md: every attack telegraphed).
+	# Orange energy core (visual language: violet hull + warm core).
+	var core_r := data.hit_radius * 0.28
+	draw_circle(Vector2(0.0, 6.0), core_r * 1.6, Color(1.0, 0.45, 0.12, 0.35))
+	draw_circle(Vector2(0.0, 6.0), core_r, Color(1.0, 0.55, 0.15, 0.9))
+	# Entrance: soft expanding ring so arrivals read without covering bolts.
+	if _phase == Phase.ENTER:
+		var et := clampf(_phase_time / _entry_seconds, 0.0, 1.0)
+		var er := data.hit_radius * (1.2 + 1.4 * et)
+		draw_arc(Vector2.ZERO, er, 0.0, TAU, 32, Color(0.55, 0.25, 1.0, 0.55 * (1.0 - et)), 3.0, true)
+	# Telegraph: warning ring + aim line toward the player (readable on phones).
 	if _telegraphing:
 		var r := data.hit_radius
-		draw_arc(Vector2.ZERO, r * 1.7, 0.0, TAU, 40, Color("#FF3B3B"), 4.0, true)
+		var pulse := 0.7 + 0.3 * absf(sin(Time.get_ticks_msec() * 0.02))
+		draw_arc(Vector2.ZERO, r * 1.85, 0.0, TAU, 40, Color(1.0, 0.23, 0.3, pulse), 4.5, true)
+		draw_arc(Vector2.ZERO, r * 1.35, 0.0, TAU, 28, Color(1.0, 0.85, 0.35, 0.55 * pulse), 2.0, true)
 		if player != null:
 			var aim := to_local(player.global_position).normalized()
-			draw_line(aim * r * 1.2, aim * r * 4.2, Color(1.0, 0.23, 0.23, 0.7), 3.0, true)
+			draw_line(aim * r * 1.2, aim * r * 4.6, Color(1.0, 0.23, 0.23, 0.8), 3.5, true)
+			draw_circle(aim * r * 4.6, 5.0, Color(1.0, 0.9, 0.4, 0.85))
 
 
 ## Applies damage from a player projectile. Handles death + drops once.
@@ -179,7 +197,7 @@ func _fire_burst() -> void:
 func _die() -> void:
 	# Feel: tougher enemies (shooters here) get a large explosion + hit-stop.
 	# Reading max_health is read-only; it never changes balance.
-	var is_major := data.can_shoot or data.max_health >= 40.0
+	var is_major := data.is_elite or data.can_shoot or data.max_health >= 40.0
 	GameFeel.enemy_death(global_position, is_major)
 	_drop_energy()
 	died.emit(self)

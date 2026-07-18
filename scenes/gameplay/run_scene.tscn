@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://c0riftwrunslice01"]
+[gd_scene load_steps=28 format=3 uid="uid://c0riftwrunslice01"]
 
 [ext_resource type="Script" path="res://scripts/gameplay/run_controller.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/effects/effects_layer.tscn" id="2"]
@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" path="res://scenes/pickups/energy_pickup.tscn" id="12"]
 [ext_resource type="PackedScene" path="res://scenes/bosses/boss.tscn" id="13"]
 [ext_resource type="PackedScene" path="res://scenes/ui/boss_health_bar.tscn" id="14"]
+[ext_resource type="PackedScene" path="res://scenes/ui/gameplay_hud.tscn" id="28"]
 [ext_resource type="Script" path="res://scripts/spawning/wave_director.gd" id="15"]
 [ext_resource type="Resource" path="res://resources/waves/slice_wave_early.tres" id="16"]
 [ext_resource type="Script" path="res://scripts/progression/experience_tracker.gd" id="17"]
@@ -26,15 +27,13 @@
 [ext_resource type="Resource" path="res://resources/upgrades/arc_laser.tres" id="24"]
 [ext_resource type="Resource" path="res://resources/upgrades/guardian_drone.tres" id="25"]
 [ext_resource type="Resource" path="res://resources/stages/vertical_slice_timeline.tres" id="26"]
+[ext_resource type="PackedScene" path="res://scenes/gameplay/space_background.tscn" id="27"]
 
 [node name="RunScene" type="Node2D"]
 script = ExtResource("1")
 timeline = ExtResource("26")
 
-[node name="Background" type="ColorRect" parent="."]
-offset_right = 1080.0
-offset_bottom = 1920.0
-color = Color(0.008, 0.02, 0.055, 1)
+[node name="SpaceBackground" parent="." instance=ExtResource("27")]
 
 [node name="CameraRig" parent="." instance=ExtResource("3")]
 position = Vector2(540, 960)
@@ -49,7 +48,7 @@ prewarm_count = 256
 [node name="EnemyProjectilePool" type="Node" parent="."]
 script = ExtResource("7")
 projectile_scene = ExtResource("9")
-prewarm_count = 512
+prewarm_count = 256
 fires_at_player = true
 
 [node name="EnemyPool" type="Node" parent="."]
@@ -93,6 +92,8 @@ anchor_bottom = 1.0
 
 [node name="UI" type="CanvasLayer" parent="."]
 
+[node name="GameplayHUD" parent="UI" instance=ExtResource("28")]
+
 [node name="BossHealthBar" parent="UI" instance=ExtResource("14")]
 visible = false
 
@@ -113,6 +114,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Readout" type="Label" parent="UI"]
+visible = false
 offset_left = 24.0
 offset_top = 210.0
 offset_right = 1040.0

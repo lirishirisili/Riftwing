@@ -1,47 +1,109 @@
-[gd_scene load_steps=6 format=3 uid="uid://c0riftwresult00"]
+[gd_scene load_steps=12 format=3 uid="uid://c0riftwresult00"]
 
 [ext_resource type="Script" path="res://scripts/ui/results_screen.gd" id="1"]
 [ext_resource type="Theme" path="res://resources/theme/riftwing_theme.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/parallax_far_stars.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/parallax_nebula.png" id="4"]
+[ext_resource type="Texture2D" path="res://assets/art/ships/vanguard_mk2.svg" id="5"]
+[ext_resource type="Texture2D" path="res://assets/effects/engine_glow.svg" id="6"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_boss.svg" id="7"]
 
-[sub_resource type="StyleBoxFlat" id="score_panel"]
-bg_color = Color(0.027451, 0.094118, 0.168627, 0.92)
+[sub_resource type="StyleBoxFlat" id="brand_frame"]
+bg_color = Color(0.02, 0.06, 0.14, 0.75)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0, 0.843137, 1, 0.7)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
-shadow_color = Color(0, 0.843137, 1, 0.25)
+border_color = Color(0, 0.84, 1, 0.65)
+corner_radius_top_left = 2
+corner_radius_top_right = 10
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 10
+content_margin_left = 20
+content_margin_top = 6
+content_margin_right = 20
+content_margin_bottom = 6
+shadow_color = Color(0, 0.75, 1, 0.28)
 shadow_size = 8
 
-[sub_resource type="StyleBoxFlat" id="button_reward"]
-bg_color = Color(0.72, 0.42, 0.05, 1)
+[sub_resource type="StyleBoxFlat" id="score_panel"]
+bg_color = Color(0.02, 0.06, 0.12, 0.94)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(1, 0.69, 0, 0.95)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-shadow_color = Color(1, 0.69, 0, 0.35)
-shadow_size = 6
+border_color = Color(0, 0.9, 1, 0.85)
+corner_radius_top_left = 2
+corner_radius_top_right = 14
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 14
+content_margin_left = 18
+content_margin_top = 14
+content_margin_right = 18
+content_margin_bottom = 14
+shadow_color = Color(0, 0.8, 1, 0.4)
+shadow_size = 14
 
-[sub_resource type="StyleBoxFlat" id="button_secondary"]
-bg_color = Color(0.09, 0.25, 0.55, 1)
+[sub_resource type="StyleBoxFlat" id="stats_outer"]
+bg_color = Color(0.01, 0.04, 0.1, 0.55)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.08, 0.35, 0.7, 0.85)
+corner_radius_top_left = 2
+corner_radius_top_right = 16
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 16
+content_margin_left = 6
+content_margin_top = 6
+content_margin_right = 6
+content_margin_bottom = 6
+shadow_color = Color(0, 0.55, 1, 0.35)
+shadow_size = 16
+
+[sub_resource type="StyleBoxFlat" id="best_badge"]
+bg_color = Color(0.55, 0.32, 0.02, 0.98)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0, 0.843137, 1, 0.75)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
+border_color = Color(1, 0.85, 0.25, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 12
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 12
+content_margin_left = 14
+content_margin_top = 6
+content_margin_right = 14
+content_margin_bottom = 6
+shadow_color = Color(1, 0.75, 0.1, 0.65)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="emblem_panel"]
+bg_color = Color(0.08, 0.05, 0.16, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.69, 0, 0.75)
+corner_radius_top_left = 2
+corner_radius_top_right = 14
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 14
+content_margin_left = 14
+content_margin_top = 12
+content_margin_right = 14
+content_margin_bottom = 12
+shadow_color = Color(1, 0.69, 0, 0.35)
+shadow_size = 10
+
+[sub_resource type="Gradient" id="confetti_gradient"]
+offsets = PackedFloat32Array(0, 0.45, 1)
+colors = PackedColorArray(0, 0.95, 1, 1, 1, 0.45, 0.85, 1, 1, 0.75, 0.15, 0)
+
+[sub_resource type="GradientTexture1D" id="confetti_ramp"]
+gradient = SubResource("confetti_gradient")
 
 [node name="ResultsScreen" type="Control"]
 layout_mode = 3
@@ -51,116 +113,377 @@ anchor_bottom = 1.0
 theme = ExtResource("2")
 script = ExtResource("1")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Base" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.011765, 0.027451, 0.070588, 1)
+mouse_filter = 2
+color = Color(0.01, 0.02, 0.06, 1)
+
+[node name="Background" type="ParallaxBackground" parent="."]
+
+[node name="LayerFar" type="ParallaxLayer" parent="Background"]
+motion_scale = Vector2(0.12, 0.12)
+motion_mirroring = Vector2(0, 1920)
+
+[node name="Sprite" type="Sprite2D" parent="Background/LayerFar"]
+modulate = Color(0.7, 0.8, 1, 0.8)
+centered = false
+texture = ExtResource("3")
+
+[node name="LayerNebula" type="ParallaxLayer" parent="Background"]
+motion_scale = Vector2(0.35, 0.35)
+motion_mirroring = Vector2(0, 1920)
+
+[node name="NebulaSprite" type="Sprite2D" parent="Background/LayerNebula"]
+unique_name_in_owner = true
+modulate = Color(0.55, 0.4, 1, 0.5)
+centered = false
+texture = ExtResource("4")
+
+[node name="VignetteTop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 240.0
+mouse_filter = 2
+color = Color(0.01, 0.02, 0.06, 0.45)
+
+[node name="VignetteBottom" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -280.0
+mouse_filter = 2
+color = Color(0.01, 0.02, 0.08, 0.55)
+
+[node name="Confetti" type="CPUParticles2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(540, 120)
+emitting = false
+amount = 48
+lifetime = 2.4
+one_shot = true
+explosiveness = 0.88
+randomness = 0.45
+lifetime_randomness = 0.35
+emission_shape = 3
+emission_rect_extents = Vector2(420, 20)
+direction = Vector2(0, 1)
+spread = 55.0
+gravity = Vector2(0, 280)
+initial_velocity_min = 120.0
+initial_velocity_max = 320.0
+angular_velocity_min = -180.0
+angular_velocity_max = 180.0
+scale_amount_min = 3.0
+scale_amount_max = 7.0
+color_ramp = SubResource("confetti_ramp")
 
 [node name="Safe" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme_override_constants/margin_left = 48
-theme_override_constants/margin_top = 64
-theme_override_constants/margin_right = 48
-theme_override_constants/margin_bottom = 64
+theme_override_constants/margin_left = 36
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 36
+theme_override_constants/margin_bottom = 40
 
 [node name="Root" type="VBoxContainer" parent="Safe"]
 layout_mode = 2
-theme_override_constants/separation = 22
+theme_override_constants/separation = 12
+
+[node name="BrandFrame" type="PanelContainer" parent="Safe/Root"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("brand_frame")
+
+[node name="Brand" type="Label" parent="Safe/Root/BrandFrame"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "RIFTWING"
+horizontal_alignment = 1
 
 [node name="Header" type="VBoxContainer" parent="Safe/Root"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
-[node name="Title" type="Label" parent="Safe/Root/Header"]
+[node name="TitleRow" type="HBoxContainer" parent="Safe/Root/Header"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 92
-text = "SECTOR CLEARED"
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="LeftWings" type="HBoxContainer" parent="Safe/Root/Header/TitleRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 5
+alignment = 2
+
+[node name="Bar1" type="ColorRect" parent="Safe/Root/Header/TitleRow/LeftWings"]
+custom_minimum_size = Vector2(6, 18)
+layout_mode = 2
+size_flags_vertical = 8
+color = Color(0, 0.85, 1, 0.55)
+
+[node name="Bar2" type="ColorRect" parent="Safe/Root/Header/TitleRow/LeftWings"]
+custom_minimum_size = Vector2(6, 32)
+layout_mode = 2
+size_flags_vertical = 8
+color = Color(0, 0.9, 1, 0.8)
+
+[node name="Bar3" type="ColorRect" parent="Safe/Root/Header/TitleRow/LeftWings"]
+custom_minimum_size = Vector2(6, 48)
+layout_mode = 2
+size_flags_vertical = 8
+color = Color(0.35, 0.98, 1, 1)
+
+[node name="Title" type="Label" parent="Safe/Root/Header/TitleRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0.75, 1, 0.65)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 0
+theme_override_constants/shadow_outline_size = 16
+theme_override_font_sizes/font_size = 96
+text = "VICTORY"
 horizontal_alignment = 1
+
+[node name="RightWings" type="HBoxContainer" parent="Safe/Root/Header/TitleRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 5
+alignment = 0
+
+[node name="Bar1" type="ColorRect" parent="Safe/Root/Header/TitleRow/RightWings"]
+custom_minimum_size = Vector2(6, 48)
+layout_mode = 2
+size_flags_vertical = 8
+color = Color(0.35, 0.98, 1, 1)
+
+[node name="Bar2" type="ColorRect" parent="Safe/Root/Header/TitleRow/RightWings"]
+custom_minimum_size = Vector2(6, 32)
+layout_mode = 2
+size_flags_vertical = 8
+color = Color(0, 0.9, 1, 0.8)
+
+[node name="Bar3" type="ColorRect" parent="Safe/Root/Header/TitleRow/RightWings"]
+custom_minimum_size = Vector2(6, 18)
+layout_mode = 2
+size_flags_vertical = 8
+color = Color(0, 0.85, 1, 0.55)
 
 [node name="Subtitle" type="Label" parent="Safe/Root/Header"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0.843137, 1, 1)
-theme_override_font_sizes/font_size = 30
-text = "RIFTWING"
+theme_override_colors/font_color = Color(1, 0.69, 0, 1)
+theme_override_font_sizes/font_size = 26
+text = "SECTOR CLEARED"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="HeroRow" type="HBoxContainer" parent="Safe/Root"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HeroStage" type="Control" parent="Safe/Root/HeroRow"]
+custom_minimum_size = Vector2(0, 220)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EngineGlow" type="TextureRect" parent="Safe/Root/HeroRow/HeroStage"]
+unique_name_in_owner = true
+modulate = Color(0.25, 0.75, 1, 0.7)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -140.0
+offset_top = -10.0
+offset_right = 140.0
+offset_bottom = 180.0
+pivot_offset = Vector2(140, 95)
+mouse_filter = 2
+texture = ExtResource("6")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HeroShip" type="TextureRect" parent="Safe/Root/HeroRow/HeroStage"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+pivot_offset = Vector2(200, 110)
+mouse_filter = 2
+texture = ExtResource("5")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EmblemPanel" type="PanelContainer" parent="Safe/Root/HeroRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("emblem_panel")
+
+[node name="EmblemBox" type="VBoxContainer" parent="Safe/Root/HeroRow/EmblemPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="EmblemIcon" type="TextureRect" parent="Safe/Root/HeroRow/EmblemPanel/EmblemBox"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("7")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EmblemTitle" type="Label" parent="Safe/Root/HeroRow/EmblemPanel/EmblemBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+theme_override_font_sizes/font_size = 22
+text = "SOLID RUN"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="EmblemSub" type="Label" parent="Safe/Root/HeroRow/EmblemPanel/EmblemBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.75, 0.9, 1)
+theme_override_font_sizes/font_size = 18
+text = "Keep pushing"
 horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="ScorePanel" type="PanelContainer" parent="Safe/Root"]
 layout_mode = 2
+theme_type_variation = &"NeonPanel"
 theme_override_styles/panel = SubResource("score_panel")
 
 [node name="ScoreBox" type="VBoxContainer" parent="Safe/Root/ScorePanel"]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="ScoreLabel" type="Label" parent="Safe/Root/ScorePanel/ScoreBox"]
+[node name="ScoreTop" type="HBoxContainer" parent="Safe/Root/ScorePanel/ScoreBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.458824, 0.572549, 0.709804, 1)
-theme_override_font_sizes/font_size = 28
+alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="Safe/Root/ScorePanel/ScoreBox/ScoreTop"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0.84, 1, 1)
+theme_override_font_sizes/font_size = 24
 text = "SCORE"
+horizontal_alignment = 1
+
+[node name="BestBadge" type="PanelContainer" parent="Safe/Root/ScorePanel/ScoreBox/ScoreTop"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("best_badge")
+
+[node name="BestBadgeLabel" type="Label" parent="Safe/Root/ScorePanel/ScoreBox/ScoreTop/BestBadge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.92, 0.45, 1)
+theme_override_colors/font_shadow_color = Color(1, 0.7, 0.1, 0.55)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 0
+theme_override_constants/shadow_outline_size = 6
+theme_override_font_sizes/font_size = 22
+text = "NEW BEST!"
 horizontal_alignment = 1
 
 [node name="ScoreValue" type="Label" parent="Safe/Root/ScorePanel/ScoreBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.690196, 0, 1)
-theme_override_font_sizes/font_size = 88
+theme_override_colors/font_color = Color(0.98, 0.98, 1, 1)
+theme_override_colors/font_shadow_color = Color(1, 0.69, 0, 0.35)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 0
+theme_override_constants/shadow_outline_size = 10
+theme_override_font_sizes/font_size = 76
 text = "0"
 horizontal_alignment = 1
 
 [node name="StatsPanel" type="PanelContainer" parent="Safe/Root"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_styles/panel = SubResource("stats_outer")
 
-[node name="StatsBox" type="VBoxContainer" parent="Safe/Root/StatsPanel"]
+[node name="StatsNeon" type="PanelContainer" parent="Safe/Root/StatsPanel"]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_type_variation = &"NeonPanel"
+
+[node name="StatsOuter" type="VBoxContainer" parent="Safe/Root/StatsPanel/StatsNeon"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="StatsHeader" type="Label" parent="Safe/Root/StatsPanel/StatsNeon/StatsOuter"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "MISSION COMPLETE"
+
+[node name="StatsBox" type="VBoxContainer" parent="Safe/Root/StatsPanel/StatsNeon/StatsOuter"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 10
 
 [node name="RewardTitle" type="Label" parent="Safe/Root"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0.843137, 1, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 24
 text = "REWARDS"
 horizontal_alignment = 1
 
 [node name="RewardPanel" type="PanelContainer" parent="Safe/Root"]
 layout_mode = 2
+theme_type_variation = &"NeonPanel"
 
 [node name="RewardBox" type="HBoxContainer" parent="Safe/Root/RewardPanel"]
+unique_name_in_owner = true
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 16
 alignment = 1
 
 [node name="ProgressPanel" type="PanelContainer" parent="Safe/Root"]
 layout_mode = 2
+theme_type_variation = &"NeonPanel"
 
 [node name="ProgressLabel" type="Label" parent="Safe/Root/ProgressPanel"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 24
 text = "SECTOR 1 CLEARED"
 horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="Buttons" type="VBoxContainer" parent="Safe/Root"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
 
 [node name="PrimaryRow" type="HBoxContainer" parent="Safe/Root/Buttons"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 14
 
 [node name="UpgradeShip" type="Button" parent="Safe/Root/Buttons/PrimaryRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/normal = SubResource("button_secondary")
-theme_override_styles/hover = SubResource("button_secondary")
-theme_override_styles/pressed = SubResource("button_secondary")
-theme_override_font_sizes/font_size = 32
+theme_type_variation = &"ButtonPrimary"
+theme_override_font_sizes/font_size = 28
 text = "UPGRADE SHIP"
 
 [node name="NextSector" type="Button" parent="Safe/Root/Buttons/PrimaryRow"]
@@ -168,15 +491,28 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/normal = SubResource("button_reward")
-theme_override_styles/hover = SubResource("button_reward")
-theme_override_styles/pressed = SubResource("button_reward")
-theme_override_font_sizes/font_size = 34
-text = "NEXT SECTOR"
+theme_type_variation = &"ButtonReward"
+theme_override_font_sizes/font_size = 30
+text = "NEXT SECTOR  >>"
 
-[node name="Home" type="Button" parent="Safe/Root/Buttons"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 80)
+[node name="SecondaryRow" type="HBoxContainer" parent="Safe/Root/Buttons"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+theme_override_constants/separation = 14
+
+[node name="ReplayButton" type="Button" parent="Safe/Root/Buttons/SecondaryRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ButtonTertiary"
+theme_override_font_sizes/font_size = 26
+text = "REPLAY"
+
+[node name="Home" type="Button" parent="Safe/Root/Buttons/SecondaryRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ButtonTertiary"
+theme_override_font_sizes/font_size = 26
 text = "HOME"

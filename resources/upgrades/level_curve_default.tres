@@ -4,5 +4,5 @@
 
 [resource]
 script = ExtResource("1")
-step_costs = PackedInt32Array(3, 5, 6, 8, 10)
-overflow_step = 12
+step_costs = PackedInt32Array(10, 8, 10, 12, 14)
+overflow_step = 16

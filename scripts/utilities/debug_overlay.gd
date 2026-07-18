@@ -1,10 +1,12 @@
 extends CanvasLayer
 ## Developer overlay: FPS, memory, safe-area, quality, pools, audio focus.
 ##
-## Toggle with "debug_toggle" (F3) and the safe-area outline with
-## "debug_toggle_safe_area" (F4). Purely diagnostic; no gameplay logic.
+## Hidden by default (milestone 15). Toggle with F3 (`debug_toggle`) or a
+## three-finger tap on touch devices. Safe-area outline toggles with F4.
+## Purely diagnostic; no gameplay logic.
 
 var _screen_id: String = "-"
+var _active_touches: Dictionary = {}
 
 @onready var _panel: PanelContainer = $Panel
 @onready var _label: Label = $Panel/Margin/Info
@@ -13,6 +15,10 @@ var _screen_id: String = "-"
 
 func _ready() -> void:
 	layer = 128
+	visible = false
+	GameFeel.debug_markers_enabled = false
+	if _safe_rect_draw != null:
+		_safe_rect_draw.visible = false
 	add_to_group("debug_ui")
 	_safe_rect_draw.draw.connect(_on_safe_rect_draw)
 	set_process(true)
@@ -78,11 +84,30 @@ func _pool_summary() -> String:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("debug_toggle"):
-		visible = not visible
+		_toggle_overlay()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("debug_toggle_safe_area"):
 		_safe_rect_draw.visible = not _safe_rect_draw.visible
 		get_viewport().set_input_as_handled()
+	elif event is InputEventScreenTouch:
+		_handle_touch(event as InputEventScreenTouch)
+
+
+func _handle_touch(touch: InputEventScreenTouch) -> void:
+	if touch.canceled or not touch.pressed:
+		_active_touches.erase(touch.index)
+		return
+	_active_touches[touch.index] = true
+	# Optional mobile toggle: three concurrent fingers (does not steal one-finger drag).
+	if _active_touches.size() >= 3:
+		_toggle_overlay()
+		_active_touches.clear()
+		get_viewport().set_input_as_handled()
+
+
+func _toggle_overlay() -> void:
+	visible = not visible
+	GameFeel.debug_markers_enabled = visible
 
 
 func _on_safe_rect_draw() -> void:

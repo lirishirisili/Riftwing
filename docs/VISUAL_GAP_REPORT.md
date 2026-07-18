@@ -18,7 +18,7 @@ Capture size for review: **1080×1920**. Also spot-check 19.5:9 and 20:9.
 ## By category (remaining after this pass)
 
 ### Hierarchy
-- Main menu: Start Run dominant; Daily secondary purple; Ships/Upgrades tertiary.
+- Main menu: hex Start chrome + play icon dominant; purple Daily bar; icon Ships/Upgrades; cinematic keyart + holo pad (see `references/01_main_menu_target.png`). Remaining: licensed display font, photoreal ship plate vs SVG hero.
 - Results: celebration title → score → stats → rewards → CTAs.
 - Boss HUD already top-centered; ability buttons still deferred (no art).
 

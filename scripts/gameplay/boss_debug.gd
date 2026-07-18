@@ -202,6 +202,9 @@ func _on_player_died() -> void:
 
 
 func _update_readout() -> void:
+	_readout.visible = GameFeel.debug_markers_enabled
+	if not _readout.visible:
+		return
 	var lines: Array[String] = []
 	lines.append("BOSS DEBUG  [Q quality  K damage  R restart]")
 	lines.append("FPS %d" % Engine.get_frames_per_second())
@@ -232,6 +235,7 @@ func _update_readout() -> void:
 
 
 func _on_overlay_draw() -> void:
-	# Mark the player's small collision core for clarity while dodging.
+	if not GameFeel.debug_markers_enabled:
+		return
 	var core := _player.get_core_global_position()
 	_overlay.draw_circle(core, 6.0, Color(0, 0.84, 1, 0.9))

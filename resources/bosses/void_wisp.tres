@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="BossData" load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/combat/boss_data.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/placeholders/boss_void_titan_placeholder.svg" id="2"]
+[ext_resource type="Texture2D" path="res://assets/art/boss/void_titan.svg" id="2"]
 [ext_resource type="Resource" path="res://resources/bosses/void_titan_radial.tres" id="3"]
 [ext_resource type="Resource" path="res://resources/bosses/void_titan_laser.tres" id="4"]
 
@@ -10,8 +10,8 @@ script = ExtResource("1")
 display_name = "VOID WISP"
 max_health = 420.0
 sprite = ExtResource("2")
-sprite_scale = 0.32
-hit_radius = 95.0
+sprite_scale = 0.48
+hit_radius = 120.0
 contact_damage = 12.0
 health_segments = 8
 warning_seconds = 1.6

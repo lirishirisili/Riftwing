@@ -1,12 +1,13 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/player_ship.gd" id="1"]
 [ext_resource type="Resource" path="res://resources/balance/player_movement_default.tres" id="2"]
-[ext_resource type="Texture2D" path="res://assets/placeholders/player_ship_placeholder.svg" id="3"]
+[ext_resource type="Texture2D" path="res://assets/art/ships/vanguard_mk2.svg" id="3"]
 [ext_resource type="Resource" path="res://resources/balance/player_combat_default.tres" id="4"]
+[ext_resource type="Texture2D" path="res://assets/effects/engine_glow.svg" id="5"]
 
 [sub_resource type="CircleShape2D" id="core_shape"]
-radius = 18.0
+radius = 32.0
 
 [node name="PlayerShip" type="Area2D"]
 collision_layer = 1
@@ -15,8 +16,22 @@ script = ExtResource("1")
 data = ExtResource("2")
 combat_data = ExtResource("4")
 
+[node name="EngineGlow" type="Sprite2D" parent="."]
+z_index = -1
+position = Vector2(-28, 62)
+scale = Vector2(0.12, 0.28)
+texture = ExtResource("5")
+modulate = Color(0.15, 0.9, 1, 0.95)
+
+[node name="EngineGlowRight" type="Sprite2D" parent="."]
+z_index = -1
+position = Vector2(28, 62)
+scale = Vector2(0.12, 0.28)
+texture = ExtResource("5")
+modulate = Color(0.15, 0.9, 1, 0.95)
+
 [node name="Sprite" type="Sprite2D" parent="."]
-scale = Vector2(0.15, 0.15)
+scale = Vector2(0.2, 0.2)
 texture = ExtResource("3")
 
 [node name="CollisionCore" type="CollisionShape2D" parent="."]

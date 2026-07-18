@@ -1,77 +1,98 @@
 class_name UpgradeScreen
 extends CanvasLayer
-## The paused three-card upgrade choice.
+## Production paused three-card upgrade choice (prompts/20_upgrade_cards_production.md).
 ##
-## Presented on level-up: it pauses the tree, dims the frozen combat behind a
-## darkening veil, and lays out exactly three UpgradeCards built from the rolled
-## UpgradeData. Selecting a card plays a selection animation plus a sound hook
-## and a haptic hook, then emits `upgrade_selected` and hides. No reroll this
-## milestone (docs/02_GAMEPLAY_SPEC.md).
-##
-## The layer processes while paused so its animations run with combat frozen.
+## Dims frozen combat, presents rarity-framed UpgradeCards, and applies the pick
+## through UpgradeManager. Reroll is presentation-only (disabled stub). Animations
+## run while the tree is paused. Branding: RIFTWING.
 
-## Emitted after the player picks a card and the selection animation begins.
 signal upgrade_selected(upgrade: UpgradeData)
-## Emitted once the screen has fully closed and gameplay may resume.
 signal closed()
 
 const _CARD_SCENE := preload("res://scenes/ui/upgrade_card.tscn")
 
 @onready var _veil: ColorRect = $Veil
 @onready var _panel: Control = $Center
-@onready var _title: Label = $Center/Layout/Title
-@onready var _subtitle: Label = $Center/Layout/Subtitle
+@onready var _title: Label = $Center/Layout/HeaderChip/HeaderCol/Title
+@onready var _subtitle: Label = $Center/Layout/HeaderChip/HeaderCol/Subtitle
 @onready var _card_row: HBoxContainer = $Center/Layout/Cards
+@onready var _reroll_button: Button = %RerollButton
+@onready var _divider: ColorRect = $Center/Layout/Divider
 
 var _manager: UpgradeManager
 var _cards: Array[UpgradeCard] = []
 var _selecting: bool = false
+var _pulse_time := 0.0
 
 
 func _ready() -> void:
-	# Everything here must animate while the tree is paused for the choice.
 	process_mode = Node.PROCESS_MODE_WHEN_PAUSED
 	layer = 64
 	visible = false
 	get_viewport().size_changed.connect(_apply_safe_area)
 	_apply_safe_area()
+	if _reroll_button != null:
+		_reroll_button.pressed.connect(_on_reroll_pressed)
+	set_process(true)
 
 
-## Keep the three-card row inside notches / home indicators on tall phones.
+func _process(delta: float) -> void:
+	if not visible:
+		return
+	_pulse_time += delta
+	if _divider != null:
+		_divider.modulate.a = 0.45 + absf(sin(_pulse_time * 1.6)) * 0.35
+
+
 func _apply_safe_area() -> void:
 	if _panel == null:
 		return
 	var safe := SafeArea.get_logical_rect(get_tree())
 	var full := get_viewport().get_visible_rect().size
-	_panel.add_theme_constant_override("margin_left", int(40.0 + safe.position.x))
-	_panel.add_theme_constant_override("margin_right", int(40.0 + (full.x - (safe.position.x + safe.size.x))))
-	_panel.add_theme_constant_override("margin_top", int(80.0 + safe.position.y))
-	_panel.add_theme_constant_override("margin_bottom", int(80.0 + (full.y - (safe.position.y + safe.size.y))))
+	_panel.add_theme_constant_override("margin_left", int(28.0 + safe.position.x))
+	_panel.add_theme_constant_override("margin_right", int(28.0 + (full.x - (safe.position.x + safe.size.x))))
+	_panel.add_theme_constant_override("margin_top", int(64.0 + safe.position.y))
+	_panel.add_theme_constant_override("margin_bottom", int(64.0 + (full.y - (safe.position.y + safe.size.y))))
+	call_deferred("_fit_card_widths")
 
 
-## Binds the manager that supplies choices and applies the pick.
+## Shrink three-up cards so safe-area insets never clip horizontal edges.
+func _fit_card_widths() -> void:
+	if _card_row == null or _cards.is_empty():
+		return
+	var avail := _card_row.size.x
+	if avail <= 1.0:
+		avail = get_viewport().get_visible_rect().size.x - 80.0
+	var sep := float(_card_row.get_theme_constant("separation"))
+	var n := _cards.size()
+	var width := floorf((avail - sep * float(n - 1)) / float(n))
+	width = clampf(width, 260.0, 310.0)
+	for card in _cards:
+		card.custom_minimum_size = Vector2(width, card.custom_minimum_size.y)
+
+
 func configure(manager: UpgradeManager) -> void:
 	_manager = manager
 
 
-## Rolls three choices, pauses the game, and shows the cards. Returns false when
-## nothing is offerable (caller should then just resume).
+## Rolls three choices, pauses the game, and shows the cards.
 func open(level: int) -> bool:
 	if _manager == null:
 		return false
-	var choices := _manager.roll_choices(3)
+	var choices := _manager.roll_choices(3, level)
 	if choices.is_empty():
 		return false
 
 	_selecting = false
+	_clear_cards()
 	_title.text = "LEVEL %d" % level
 	_subtitle.text = "CHOOSE AN UPGRADE"
 	_build_cards(choices)
 
 	visible = true
 	get_tree().paused = true
+	AudioManager.set_fire_loop_suppressed(true)
 	_animate_open()
-	# Sound + light haptic on the choice appearing.
 	AudioManager.play_sfx("upgrade_open", Vector2.ZERO, AudioManager.PRIORITY_HIGH)
 	var haptics: HapticsService = PlatformServices.haptics
 	if GameFeel.haptics_enabled and haptics != null:
@@ -80,27 +101,45 @@ func open(level: int) -> bool:
 	return true
 
 
-func _build_cards(choices: Array[UpgradeData]) -> void:
+## Immediately removes prior cards so level-ups never stack ghost UI / glow.
+func _clear_cards() -> void:
 	for card in _cards:
-		card.queue_free()
+		if card != null and is_instance_valid(card):
+			if card.has_method("kill_anims"):
+				card.call("kill_anims")
+			card.modulate = Color.WHITE
+			card.scale = Vector2.ONE
+			var parent := card.get_parent()
+			if parent != null:
+				parent.remove_child(card)
+			card.free()
 	_cards.clear()
+	if _card_row != null:
+		for child in _card_row.get_children():
+			_card_row.remove_child(child)
+			child.free()
+
+
+func _build_cards(choices: Array[UpgradeData]) -> void:
+	_clear_cards()
 	for upgrade in choices:
 		var card := _CARD_SCENE.instantiate() as UpgradeCard
 		_card_row.add_child(card)
 		var next_level := _manager.level_of(upgrade.id) + 1
-		card.populate(upgrade, next_level)
+		var synergy := _manager.synergy_hint_for(upgrade)
+		card.populate(upgrade, next_level, synergy)
 		card.chosen.connect(_on_card_chosen)
 		_cards.append(card)
+	call_deferred("_fit_card_widths")
 
 
 func _animate_open() -> void:
 	_veil.color.a = 0.0
 	var veil_tween := create_tween().set_ignore_time_scale(true)
-	# Slight dim, not a blackout, so frozen combat stays readable behind it.
-	veil_tween.tween_property(_veil, "color:a", 0.62, 0.18)
-	# Stagger the card entrances for a bit of life.
+	# Stronger dim for card focus; combat silhouette stays readable underneath.
+	veil_tween.tween_property(_veil, "color:a", 0.7, 0.2)
 	for i in _cards.size():
-		_cards[i].animate_in(0.04 * float(i))
+		_cards[i].animate_in(0.05 * float(i))
 
 
 func _on_card_chosen(upgrade: UpgradeData) -> void:
@@ -108,8 +147,6 @@ func _on_card_chosen(upgrade: UpgradeData) -> void:
 		return
 	_selecting = true
 
-	# Selection feedback: animation on the chosen card, dim the rest, plus the
-	# sound and haptic hooks (docs/03_SCREEN_SPEC.md: scale, border, haptic, sound).
 	for card in _cards:
 		if card.get_upgrade() == upgrade:
 			card.play_selection()
@@ -123,19 +160,31 @@ func _on_card_chosen(upgrade: UpgradeData) -> void:
 	_manager.apply(upgrade)
 	upgrade_selected.emit(upgrade)
 
-	# Let the selection animation read before closing.
 	var close_tween := create_tween().set_ignore_time_scale(true)
-	close_tween.tween_interval(0.22)
-	close_tween.tween_property(_veil, "color:a", 0.0, 0.14)
+	close_tween.tween_interval(0.26)
+	close_tween.tween_property(_veil, "color:a", 0.0, 0.16)
 	close_tween.tween_callback(_finish_close)
 
 
 func _finish_close() -> void:
+	_clear_cards()
 	visible = false
 	get_tree().paused = false
+	AudioManager.set_fire_loop_suppressed(false)
 	closed.emit()
 
 
-## Is a choice currently on screen?
+## Live card count for probes (children of Cards row only).
+func get_card_count() -> int:
+	if _card_row == null:
+		return 0
+	return _card_row.get_child_count()
+
+
 func is_open() -> bool:
 	return visible
+
+
+func _on_reroll_pressed() -> void:
+	# Presentation stub — reroll economy is not part of this milestone.
+	AudioManager.play_sfx("ui_back", Vector2.ZERO, AudioManager.PRIORITY_LOW)

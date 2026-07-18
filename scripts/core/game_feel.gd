@@ -1,10 +1,10 @@
 extends Node
 ## Central game-feel facade (autoload).
 ##
-## Gameplay code calls a handful of intent methods here (projectile hit, enemy
-## death, player hit) and this router fans them out to the pooled effects layer,
-## the camera rig (screen shake), the HapticsService, and the AudioManager. It
-## also owns the effect quality level and short hit-stop.
+## Gameplay code calls intent methods here (hits, deaths, fire, shield, pickup,
+## ability) and this router fans them out to the pooled effects layer, the camera
+## rig (screen shake), the HapticsService, and the AudioManager. It also owns the
+## effect quality level and short hit-stop.
 ##
 ## This layer is purely feedback: it never changes damage, health, spawns, or any
 ## balance value. Every route is guarded so scenes that register no effects layer
@@ -27,6 +27,8 @@ const _HAPTICS_CFG := "user://haptics_enabled.cfg"
 var quality: int = Quality.HIGH
 ## Player preference; when false, haptic hooks no-op even if the service exists.
 var haptics_enabled: bool = true
+## Set by DebugOverlay when F3 / three-finger debug is active (milestone 15).
+var debug_markers_enabled: bool = false
 
 # Registered feedback sinks (weak by pattern: cleared on scene teardown).
 var _effects: Node = null
@@ -46,6 +48,12 @@ var counters := {
 	"shake": 0,
 	"hitstop": 0,
 	"haptic": 0,
+	"muzzle": 0,
+	"shield": 0,
+	"pickup": 0,
+	"ability": 0,
+	"upgrade": 0,
+	"combo": 0,
 }
 
 
@@ -87,11 +95,17 @@ func clear_sinks() -> void:
 func set_quality(level: int) -> void:
 	quality = clampi(level, Quality.LOW, Quality.HIGH)
 	_save_prefs()
+	_notify_glow()
 
 
 func cycle_quality() -> void:
 	quality = (quality + 1) % 3
 	_save_prefs()
+	_notify_glow()
+
+
+func _notify_glow() -> void:
+	get_tree().call_group("glow_controller", "apply_from_game_feel")
 
 
 func set_haptics_enabled(enabled: bool) -> void:
@@ -204,10 +218,79 @@ func enemy_death(world_pos: Vector2, is_major: bool) -> void:
 func player_hit(world_pos: Vector2) -> void:
 	if _effects != null:
 		_effects.spawn_hit_flash(world_pos, Palette.get_color("danger"))
-	_add_trauma(0.5)
+		counters["hit_flash"] += 1
+	_add_trauma(0.55)
 	request_hitstop(HITSTOP_MIN_SECONDS)
 	_haptic("heavy")
-	AudioManager.play_sfx("player_hit", world_pos, AudioManager.PRIORITY_HIGH)
+	AudioManager.play_sfx("player_hit", world_pos)
+
+
+## Player weapon volley. Muzzle flash only — continuous fire uses AudioManager
+## fire loop (shmup sustain), not a one-shot per volley.
+func weapon_fire(world_pos: Vector2) -> void:
+	if _effects != null:
+		_effects.spawn_muzzle_flash(world_pos, Palette.get_color("cyan", Color(0.2, 0.95, 1.0)))
+		counters["muzzle"] += 1
+
+
+## Invulnerability / shield absorbed a hit (no HP loss).
+func shield_impact(world_pos: Vector2) -> void:
+	if _effects != null:
+		_effects.spawn_shield_burst(world_pos, Palette.get_color("cyan", Color(0.2, 0.95, 1.0)))
+		counters["shield"] += 1
+	_add_trauma(0.14)
+	_haptic("light")
+	AudioManager.play_sfx("shield_impact", world_pos)
+
+
+## Energy pickup collected.
+func pickup_collected(world_pos: Vector2) -> void:
+	if _effects != null and quality != Quality.LOW:
+		_effects.spawn_hit_flash(world_pos, Palette.get_color("green", Color(0.25, 0.95, 0.55)))
+		counters["pickup"] += 1
+	_haptic("light")
+	AudioManager.play_sfx("pickup", world_pos)
+
+
+## Ability button feedback (presentation only — no combat resolution).
+func ability_activated(world_pos: Vector2, tint: Color) -> void:
+	if _effects != null:
+		_effects.spawn_shield_burst(world_pos, tint)
+		counters["ability"] += 1
+	_add_trauma(0.2)
+	_haptic("medium")
+	AudioManager.play_sfx("ability", world_pos)
+
+
+## Post-upgrade power-fantasy beat: short halo + muzzle so the pick "lands".
+func upgrade_applied(world_pos: Vector2, tint: Color = Color(0.2, 0.95, 1.0)) -> void:
+	if _effects != null:
+		_effects.spawn_shield_burst(world_pos, tint)
+		_effects.spawn_muzzle_flash(world_pos + Vector2(0, -36), tint)
+		counters["upgrade"] += 1
+	_add_trauma(0.22)
+	_haptic("medium")
+	AudioManager.play_sfx("upgrade_select", world_pos, AudioManager.PRIORITY_MEDIUM)
+
+
+## Combo milestone juice (presentation only — does not change kill scoring).
+func combo_peak(world_pos: Vector2, combo: int) -> void:
+	if combo < 5:
+		return
+	if _effects != null and quality != Quality.LOW:
+		var tint := Palette.get_color("orange", Color(1, 0.55, 0.15))
+		if combo >= 15:
+			tint = Palette.get_color("gold", Color(1, 0.84, 0.25))
+		elif combo >= 10:
+			tint = Palette.get_color("purple", Color(0.7, 0.35, 1.0))
+		_effects.spawn_hit_flash(world_pos, tint)
+		counters["combo"] += 1
+	if combo >= 10:
+		_add_trauma(0.18)
+		_haptic("medium")
+	else:
+		_haptic("light")
+	AudioManager.play_sfx("pickup", world_pos, AudioManager.PRIORITY_LOW)
 
 
 # --- Screen shake ------------------------------------------------------------

@@ -26,7 +26,10 @@ RunScene
 |- Player
 |- WaveDirector
 |- CameraRig
-`- HUD
+`- UI (CanvasLayer)
+   |- GameplayHUD (score, currency, wave chip, pause, HP/XP bars, ability buttons)
+   |- BossHealthBar (top-center when a boss is active)
+   `- debug readout / phase banner
 ```
 
 ## Folder structure
@@ -66,10 +69,20 @@ project/
 - WaveDirector: data-driven timed spawn instructions; supports `stop_and_clear` / `start_wave` for phase handoffs.
 - PoolManager: pools bullets, enemies, effects, pickups, and damage labels.
 - DamageSystem: hit data, armor, criticals, invulnerability, and death events.
-- UpgradeManager: offered choices, application, levels, and synergies.
+- UpgradeManager: offered choices (rarity-weighted by run level), application, levels, and synergy hints.
 - SaveManager: versioned local save with atomic writes.
 - SceneRouter: transitions between menu, map, hangar, run, and results.
-- AudioManager: music snapshots, sound priorities, and volume groups.
+- AudioManager: named cue catalog with ui/combat/world/music groups, aliases, priorities, SFX player pool, Music/SFX buses, `play_music` crossfade, soft autofire `fire_loop` (not per-shot), focus ducking, and `user://audio_prefs.cfg` (enabled + volumes). Banks under `assets/audio/`.
+- GameFeel: feedback intents (`projectile_hit`, `enemy_death`, `player_hit`, `weapon_fire`, `shield_impact`, `pickup_collected`, `ability_activated`) routing to pooled effects, shake, haptics, and AudioManager; owns LOW/MEDIUM/HIGH effect budgets.
+- `riftwing_theme.tres`: shared UI chrome including `ButtonPrimary` / `ButtonSecondary` / `ButtonTertiary` type variations used by production menus.
+- HangarScreen: production ship bay UI over SaveManager hangar data (select / unlock / `try_purchase_upgrade`); holographic `hangar_pad`, color-coded upgrade rows, and disabled Upgrade All stub remain presentation-only.
+- StageMapScreen: production sector map UI over `StageMapData` + `StageProgress` / SaveManager campaign unlocks; Launch still routes to `SCREEN_RUN`. Visual chrome uses `NeonPanel`, map-node SVGs (`map_node_active` / `map_node_locked`), and drawn path/pulse rings — no gameplay systems in the map screen.
+- UpgradeScreen / UpgradeCard: production rarity-framed choice overlay; UpgradeManager remains the only apply path.
+- ResultsScreen: production run summary UI; grants remain `RewardCalculator` → `SaveManager.grant_run_rewards` (once per `run_id`). Scrollable summary with sticky CTAs for safe-area phones.
+- CameraRig: rest position tracks viewport center (shake via offset) so tall 19.5:9 / 20:9 frames stay filled.
+- GlowController: quality-gated WorldEnvironment bloom (LOW off / MED soft / HIGH restrained).
+- Theme: `ButtonPrimary` / `Secondary` / `Tertiary` / `ButtonReward`, `ChipPanel`, `NeonPanel` chamfer neon chrome.
+- Key art under `assets/art/` and UI chrome under `assets/ui/chrome/` — never full reference screenshots as UI.
 
 ## Data resources
 Use custom Resources such as:
@@ -120,6 +133,6 @@ Campaign / galaxy map persistence (schema v3+) lives under `campaign`:
 - `selected_stage_id` — last inspected / played stage
 - `difficulty` — `normal` (playable) or `hard` (UI-locked in the prototype)
 - `cleared_stage_ids` — stages beaten at least once
-- `stage_stars` — per-stage best star rating (0-3)
+- `stage_stars` — per-stage best star rating (0-3); computed additively on victory from clear / end HP ratio / score thresholds on `StageNodeData`
 
 Mission copy, recommended power, reward previews, map positions, and unlock seeds are authored as `StageNodeData` / `StageMapData` Resources. Unlock rule: `starts_unlocked` or previous stage cleared.

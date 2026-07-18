@@ -27,3 +27,5 @@ prerequisites = PackedStringArray("plasma")
 max_level = 5
 weight = 6.0
 effects = Array[Resource]([SubResource("fire_rate"), SubResource("damage")])
+synergy_ids = PackedStringArray("plasma_spread_array", "guardian_drone")
+synergy_hint = "Synergy: Spread / Drone fire rate"

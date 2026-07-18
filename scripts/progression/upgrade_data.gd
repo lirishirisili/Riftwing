@@ -38,6 +38,12 @@ enum Rarity { RARE, EPIC, LEGENDARY }
 ## Effects applied each time this upgrade is chosen.
 @export var effects: Array[UpgradeEffectData] = []
 
+## Owned upgrade / weapon ids that activate the synergy hint on the card.
+@export var synergy_ids: PackedStringArray = PackedStringArray()
+
+## Short line shown when any synergy_id is already owned (e.g. "Synergy: Overcharged Spread").
+@export var synergy_hint: String = ""
+
 
 ## Palette token for this rarity (border / accent color).
 func rarity_color_token() -> String:

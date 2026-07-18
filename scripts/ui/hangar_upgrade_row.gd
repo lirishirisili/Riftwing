@@ -5,6 +5,8 @@ extends PanelContainer
 ## Purchase uses a two-tap confirm so the player sees the preview before spending.
 ## The row never spends currency itself — it emits `upgrade_requested` and the
 ## hangar screen calls SaveManager.try_purchase_upgrade.
+## Track chrome is color-coded: weapons purple, shield/engine cyan, drones green,
+## ultimate orange.
 
 signal upgrade_requested(track_id: String)
 signal confirm_armed(track_id: String)
@@ -41,15 +43,55 @@ func setup(track_data: HangarUpgradeTrackData) -> void:
 		_apply_track_chrome()
 
 
+func _track_accent() -> Color:
+	if track == null:
+		return Palette.get_color("cyan", Color(0, 0.84, 1))
+	# Explicit category roles match references/03_hangar.png (accent_token is fallback).
+	match track.category:
+		HangarUpgradeTrackData.Category.WEAPONS:
+			return Palette.get_color("purple", Color(0.55, 0.26, 1))
+		HangarUpgradeTrackData.Category.SHIELD, HangarUpgradeTrackData.Category.ENGINE:
+			return Palette.get_color("cyan", Color(0, 0.84, 1))
+		HangarUpgradeTrackData.Category.DRONES:
+			return Palette.get_color("green", Color(0.21, 0.89, 0.44))
+		HangarUpgradeTrackData.Category.ULTIMATE:
+			return Palette.get_color("orange", Color(1, 0.48, 0.1))
+		_:
+			return Palette.get_color(track.accent_token, Color(0, 0.84, 1))
+
+
 func _apply_track_chrome() -> void:
 	if track == null:
 		return
 	_title.text = track.title
 	if track.icon != null:
 		_icon.texture = track.icon
-	var accent := Palette.get_color(track.accent_token, Color(0, 0.84, 1))
+	var accent := _track_accent()
 	_title.add_theme_color_override("font_color", accent)
+	_benefit.add_theme_color_override("font_color", accent.lightened(0.15))
 	_bar.modulate = accent
+	# Soft row tint + stronger accent rim so tracks read at a glance.
+	modulate = Color(
+		lerpf(1.0, accent.r, 0.12),
+		lerpf(1.0, accent.g, 0.12),
+		lerpf(1.0, accent.b, 0.12),
+		1.0)
+	var style := get_theme_stylebox("panel")
+	if style is StyleBoxFlat:
+		var flat := (style as StyleBoxFlat).duplicate() as StyleBoxFlat
+		flat.border_width_left = 5
+		flat.border_width_top = 2
+		flat.border_width_right = 2
+		flat.border_width_bottom = 2
+		flat.border_color = Color(accent.r, accent.g, accent.b, 0.85)
+		flat.shadow_color = Color(accent.r, accent.g, accent.b, 0.28)
+		flat.shadow_size = 6
+		add_theme_stylebox_override("panel", flat)
+	var fill := _bar.get_theme_stylebox("fill")
+	if fill is StyleBoxFlat:
+		var fill_flat := (fill as StyleBoxFlat).duplicate() as StyleBoxFlat
+		fill_flat.bg_color = accent
+		_bar.add_theme_stylebox_override("fill", fill_flat)
 
 
 ## Updates level / cost / affordability without rebuilding the row.
@@ -82,11 +124,18 @@ func refresh(level: int, cost: int, can_afford: bool, ship_locked: bool) -> void
 
 	_button.disabled = false
 	if _armed:
-		_button.text = "CONFIRM  %s" % _format_int(cost)
+		_button.text = "BUY  %s" % _format_int(cost)
+		_button.theme_type_variation = &"ButtonPrimary"
 		_button.modulate = Palette.get_color("gold", Color(1, 0.69, 0)) if can_afford else Palette.get_color("danger", Color(1, 0.23, 0.31))
 	else:
-		_button.text = "UPGRADE  %s" % _format_int(cost)
-		_button.modulate = Color.WHITE if can_afford else Color(0.55, 0.55, 0.6, 1)
+		_button.text = "UP  %s" % _format_int(cost)
+		_button.theme_type_variation = &"ButtonSecondary"
+		var accent := _track_accent()
+		_button.modulate = Color(
+			lerpf(1.0, accent.r, 0.35),
+			lerpf(1.0, accent.g, 0.35),
+			lerpf(1.0, accent.b, 0.35),
+			1.0) if can_afford else Color(0.55, 0.55, 0.6, 1)
 
 
 func clear_arm() -> void:

@@ -1,25 +1,12 @@
-[gd_scene load_steps=6 format=3 uid="uid://c0riftwstagemap"]
+[gd_scene load_steps=8 format=3 uid="uid://c0riftwstagemap"]
 
 [ext_resource type="Script" path="res://scripts/ui/stage_map_screen.gd" id="1"]
 [ext_resource type="Theme" path="res://resources/theme/riftwing_theme.tres" id="2"]
 [ext_resource type="Texture2D" path="res://assets/icons/icon_energy.svg" id="3"]
 [ext_resource type="Texture2D" path="res://assets/icons/icon_crystal.svg" id="4"]
-
-[sub_resource type="StyleBoxFlat" id="panel"]
-bg_color = Color(0.027451, 0.094118, 0.168627, 0.92)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0, 0.843137, 1, 0.4)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
-content_margin_left = 18
-content_margin_top = 14
-content_margin_right = 18
-content_margin_bottom = 14
+[ext_resource type="Texture2D" path="res://assets/backgrounds/parallax_far_stars.png" id="5"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/parallax_nebula.png" id="6"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/parallax_foreground_asteroids.png" id="7"]
 
 [node name="StageMapScreen" type="Control"]
 layout_mode = 3
@@ -34,7 +21,55 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.011765, 0.027451, 0.070588, 1)
+mouse_filter = 2
+color = Color(0.01, 0.02, 0.06, 1)
+
+[node name="Background" type="ParallaxBackground" parent="."]
+
+[node name="LayerFar" type="ParallaxLayer" parent="Background"]
+motion_scale = Vector2(0.12, 0.12)
+motion_mirroring = Vector2(0, 1920)
+
+[node name="Sprite" type="Sprite2D" parent="Background/LayerFar"]
+modulate = Color(0.72, 0.8, 1, 0.85)
+centered = false
+texture = ExtResource("5")
+
+[node name="LayerNebula" type="ParallaxLayer" parent="Background"]
+motion_scale = Vector2(0.34, 0.34)
+motion_mirroring = Vector2(0, 1920)
+
+[node name="Sprite" type="Sprite2D" parent="Background/LayerNebula"]
+modulate = Color(0.65, 0.4, 1, 0.55)
+centered = false
+texture = ExtResource("6")
+
+[node name="LayerDebris" type="ParallaxLayer" parent="Background"]
+motion_scale = Vector2(0.65, 0.65)
+motion_mirroring = Vector2(0, 1920)
+
+[node name="Sprite" type="Sprite2D" parent="Background/LayerDebris"]
+modulate = Color(0.85, 0.9, 1, 0.28)
+centered = false
+texture = ExtResource("7")
+
+[node name="VignetteTop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 200.0
+mouse_filter = 2
+color = Color(0.01, 0.02, 0.06, 0.5)
+
+[node name="VignetteBottom" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -320.0
+mouse_filter = 2
+color = Color(0.01, 0.02, 0.08, 0.58)
 
 [node name="Safe" type="MarginContainer" parent="."]
 unique_name_in_owner = true
@@ -42,14 +77,14 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme_override_constants/margin_left = 36
-theme_override_constants/margin_top = 36
-theme_override_constants/margin_right = 36
-theme_override_constants/margin_bottom = 36
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
 
 [node name="Root" type="VBoxContainer" parent="Safe"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="TopBar" type="HBoxContainer" parent="Safe/Root"]
 layout_mode = 2
@@ -59,18 +94,21 @@ theme_override_constants/separation = 12
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_colors/font_color = Color(0, 0.843137, 1, 1)
-theme_override_font_sizes/font_size = 34
+theme_override_colors/font_shadow_color = Color(0, 0.55, 1, 0.4)
+theme_override_constants/shadow_outline_size = 6
+theme_override_font_sizes/font_size = 30
 text = "RIFTWING"
 
 [node name="EnergyChip" type="PanelContainer" parent="Safe/Root/TopBar"]
 layout_mode = 2
+theme_type_variation = &"ChipPanel"
 
 [node name="Box" type="HBoxContainer" parent="Safe/Root/TopBar/EnergyChip"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="Icon" type="TextureRect" parent="Safe/Root/TopBar/EnergyChip/Box"]
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(34, 34)
 layout_mode = 2
 size_flags_vertical = 4
 texture = ExtResource("3")
@@ -82,18 +120,19 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_colors/font_color = Color(0, 0.843137, 1, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 26
 text = "0"
 
 [node name="CoreChip" type="PanelContainer" parent="Safe/Root/TopBar"]
 layout_mode = 2
+theme_type_variation = &"ChipPanel"
 
 [node name="Box" type="HBoxContainer" parent="Safe/Root/TopBar/CoreChip"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="Icon" type="TextureRect" parent="Safe/Root/TopBar/CoreChip/Box"]
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(34, 34)
 layout_mode = 2
 size_flags_vertical = 4
 texture = ExtResource("4")
@@ -104,8 +143,8 @@ stretch_mode = 5
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 4
-theme_override_colors/font_color = Color(0.549020, 0.262745, 1, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.54902, 0.262745, 1, 1)
+theme_override_font_sizes/font_size = 26
 text = "0"
 
 [node name="Spacer" type="Control" parent="Safe/Root/TopBar"]
@@ -114,9 +153,10 @@ size_flags_horizontal = 3
 
 [node name="BackButton" type="Button" parent="Safe/Root/TopBar"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(140, 72)
+custom_minimum_size = Vector2(140, 68)
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_type_variation = &"ButtonTertiary"
+theme_override_font_sizes/font_size = 26
 text = "BACK"
 
 [node name="Header" type="VBoxContainer" parent="Safe/Root"]
@@ -125,27 +165,39 @@ theme_override_constants/separation = 2
 
 [node name="Title" type="Label" parent="Safe/Root/Header"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 42
-text = "STAGE SELECT"
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 38
+text = "SECTOR MAP"
 horizontal_alignment = 1
 
 [node name="Subtitle" type="Label" parent="Safe/Root/Header"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.458824, 0.572549, 0.709804, 1)
-theme_override_font_sizes/font_size = 26
-text = "SECTOR MAP"
+theme_override_colors/font_color = Color(0.55, 0.35, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "STAGE SELECT"
 horizontal_alignment = 1
 
-[node name="SectorLabel" type="Label" parent="Safe/Root"]
+[node name="SectorRow" type="HBoxContainer" parent="Safe/Root"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 16
+
+[node name="SectorLabel" type="Label" parent="Safe/Root/SectorRow"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.690196, 0, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 26
 text = "01  NOVA SECTOR"
-horizontal_alignment = 1
+
+[node name="ProgressLabel" type="Label" parent="Safe/Root/SectorRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.84, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "0 / 8"
 
 [node name="MapScroll" type="ScrollContainer" parent="Safe/Root"]
-custom_minimum_size = Vector2(0, 420)
+custom_minimum_size = Vector2(0, 400)
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
@@ -163,21 +215,23 @@ alignment = 1
 
 [node name="NormalButton" type="Button" parent="Safe/Root/DifficultyRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 72)
+custom_minimum_size = Vector2(240, 68)
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_type_variation = &"ButtonPrimary"
+theme_override_font_sizes/font_size = 26
 text = "NORMAL"
 
 [node name="HardButton" type="Button" parent="Safe/Root/DifficultyRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 72)
+custom_minimum_size = Vector2(240, 68)
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_type_variation = &"ButtonTertiary"
+theme_override_font_sizes/font_size = 26
 text = "HARD  🔒"
 
 [node name="DetailPanel" type="PanelContainer" parent="Safe/Root"]
 layout_mode = 2
-theme_override_styles/panel = SubResource("panel")
+theme_type_variation = &"NeonPanel"
 
 [node name="DetailBox" type="VBoxContainer" parent="Safe/Root/DetailPanel"]
 layout_mode = 2
@@ -186,61 +240,72 @@ theme_override_constants/separation = 8
 [node name="DetailTitle" type="Label" parent="Safe/Root/DetailPanel/DetailBox"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
 theme_override_font_sizes/font_size = 30
-text = "SECTOR 01"
+text = "1-1  RIFT GATE"
 autowrap_mode = 3
 
 [node name="DetailEnemy" type="Label" parent="Safe/Root/DetailPanel/DetailBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.549020, 0.262745, 1, 1)
-theme_override_font_sizes/font_size = 26
+theme_override_colors/font_color = Color(0.72, 0.45, 1, 1)
+theme_override_font_sizes/font_size = 24
 text = "VOID SWARM"
 
 [node name="DetailObjective" type="Label" parent="Safe/Root/DetailPanel/DetailBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.458824, 0.572549, 0.709804, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 22
 text = "Objective"
 autowrap_mode = 3
 
 [node name="PowerRow" type="HBoxContainer" parent="Safe/Root/DetailPanel/DetailBox"]
 layout_mode = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 12
 
-[node name="PowerRecommended" type="Label" parent="Safe/Root/DetailPanel/DetailBox/PowerRow"]
-unique_name_in_owner = true
+[node name="RecChip" type="PanelContainer" parent="Safe/Root/DetailPanel/DetailBox/PowerRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 26
+theme_type_variation = &"ChipPanel"
+
+[node name="PowerRecommended" type="Label" parent="Safe/Root/DetailPanel/DetailBox/PowerRow/RecChip"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
 text = "REC  0"
+horizontal_alignment = 1
 
-[node name="PowerYours" type="Label" parent="Safe/Root/DetailPanel/DetailBox/PowerRow"]
-unique_name_in_owner = true
+[node name="YouChip" type="PanelContainer" parent="Safe/Root/DetailPanel/DetailBox/PowerRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 26
+theme_type_variation = &"ChipPanel"
+
+[node name="PowerYours" type="Label" parent="Safe/Root/DetailPanel/DetailBox/PowerRow/YouChip"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
 text = "YOU  0"
-horizontal_alignment = 2
+horizontal_alignment = 1
 
 [node name="RewardsLabel" type="Label" parent="Safe/Root/DetailPanel/DetailBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(1, 0.85, 0.45, 1)
+theme_override_font_sizes/font_size = 22
 text = "REWARDS"
 
 [node name="FirstClearLabel" type="Label" parent="Safe/Root/DetailPanel/DetailBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 22
 text = "FIRST CLEAR"
 
 [node name="StarsLabel" type="Label" parent="Safe/Root/DetailPanel/DetailBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.690196, 0, 1)
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 24
 text = "STARS  ☆☆☆"
 
 [node name="LockLabel" type="Label" parent="Safe/Root/DetailPanel/DetailBox"]
@@ -248,7 +313,7 @@ unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.231373, 0.309804, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 22
 text = "LOCKED"
 horizontal_alignment = 1
 
@@ -256,15 +321,16 @@ horizontal_alignment = 1
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 22
 text = ""
 horizontal_alignment = 1
 
 [node name="LaunchButton" type="Button" parent="Safe/Root/DetailPanel/DetailBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 104)
+custom_minimum_size = Vector2(0, 124)
 layout_mode = 2
-theme_override_font_sizes/font_size = 44
+theme_type_variation = &"ButtonPrimary"
+theme_override_font_sizes/font_size = 46
 text = "LAUNCH"
 
 [node name="NavRow" type="HBoxContainer" parent="Safe/Root"]
@@ -276,5 +342,6 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_type_variation = &"ButtonTertiary"
 theme_override_font_sizes/font_size = 28
 text = "HANGAR"

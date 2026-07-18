@@ -21,3 +21,5 @@ prerequisites = PackedStringArray()
 max_level = 1
 weight = 1.5
 effects = Array[Resource]([SubResource("acquire")])
+synergy_ids = PackedStringArray("plasma_overcharge")
+synergy_hint = "Synergy: Drone + Fire Rate"

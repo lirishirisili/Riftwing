@@ -5,31 +5,35 @@
 [node name="BossHealthBar" type="Control"]
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -480.0
-offset_top = 40.0
-offset_right = 480.0
-offset_bottom = 150.0
+offset_left = -400.0
+offset_top = 108.0
+offset_right = 400.0
+offset_bottom = 204.0
 mouse_filter = 2
 script = ExtResource("1")
 
 [node name="Name" type="Label" parent="."]
 layout_mode = 0
-offset_left = 12.0
-offset_right = 700.0
-offset_bottom = 44.0
-theme_override_colors/font_color = Color(0.972549, 0.909804, 1, 1)
-theme_override_font_sizes/font_size = 34
+offset_left = 10.0
+offset_right = 520.0
+offset_bottom = 38.0
+theme_override_colors/font_color = Color(0.97, 0.93, 1, 1)
+theme_override_colors/font_outline_color = Color(0.35, 0.08, 0.55, 0.85)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 30
 text = "VOID TITAN"
 
 [node name="Phase" type="Label" parent="."]
 layout_mode = 0
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -260.0
-offset_right = -12.0
-offset_bottom = 44.0
-theme_override_colors/font_color = Color(1, 0.219608, 0.309804, 1)
-theme_override_font_sizes/font_size = 30
+offset_left = -128.0
+offset_right = -8.0
+offset_bottom = 38.0
+theme_override_colors/font_color = Color(1, 0.35, 0.42, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.02, 0.08, 0.8)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 22
 text = "PHASE 1"
 horizontal_alignment = 2
 
@@ -44,6 +48,8 @@ offset_top = 380.0
 offset_right = 420.0
 offset_bottom = 620.0
 theme_override_colors/font_color = Color(1, 0.219608, 0.309804, 1)
+theme_override_colors/font_outline_color = Color(0.08, 0.0, 0.05, 0.9)
+theme_override_constants/outline_size = 8
 theme_override_font_sizes/font_size = 88
 text = "! WARNING !
 VOID TITAN"

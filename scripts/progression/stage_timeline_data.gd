@@ -29,5 +29,5 @@ extends Resource
 ## even if pickup RNG is light (0 = disabled).
 @export_range(0.0, 120.0, 0.5) var guaranteed_level_up_at: float = 18.0
 
-## XP amount granted at guaranteed_level_up_at (enough for one level on default curve).
-@export_range(0, 500) var guaranteed_level_up_xp: int = 40
+## XP amount granted at guaranteed_level_up_at (one level on the default curve).
+@export_range(0, 500) var guaranteed_level_up_xp: int = 10

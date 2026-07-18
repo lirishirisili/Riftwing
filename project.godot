@@ -18,6 +18,10 @@ config/features=PackedStringArray("4.7", "Mobile")
 boot_splash/bg_color=Color(0.011765, 0.027451, 0.070588, 1)
 config/icon="res://assets/branding/icon_main_192.png"
 
+[audio]
+
+buses/default_bus_layout="res://default_bus_layout.tres"
+
 [autoload]
 
 Palette="*res://scripts/core/palette.gd"
@@ -34,7 +38,7 @@ window/size/viewport_height=1920
 window/size/window_width_override=540
 window/size/window_height_override=960
 window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
+window/stretch/aspect="keep_width"
 window/handheld/orientation=1
 
 [gui]

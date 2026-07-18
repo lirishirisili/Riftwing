@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1008 140">
+  <defs>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#00D7FF" stop-opacity="0.95"/>
+      <stop offset="0.5" stop-color="#83E8FF" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#176BFF" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <!-- Dark tech plate -->
+  <path d="M18 28 H990 L1000 70 L990 112 H18 L8 70 Z" fill="#06101F" fill-opacity="0.88" stroke="url(#edge)" stroke-width="3" filter="url(#glow)"/>
+  <!-- Inner bevel -->
+  <path d="M34 40 H974 L982 70 L974 100 H34 L26 70 Z" fill="none" stroke="#00D7FF" stroke-opacity="0.35" stroke-width="1.5"/>
+  <!-- Corner ticks -->
+  <path d="M40 36 H90 M40 36 V58" fill="none" stroke="#00D7FF" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M968 36 H918 M968 36 V58" fill="none" stroke="#00D7FF" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M40 104 H90 M40 104 V82" fill="none" stroke="#00D7FF" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M968 104 H918 M968 104 V82" fill="none" stroke="#00D7FF" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

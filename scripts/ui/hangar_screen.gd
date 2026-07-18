@@ -1,24 +1,27 @@
 class_name HangarScreen
 extends Control
-## Permanent ship hangar (prompts/09_hangar.md, docs/03_SCREEN_SPEC.md).
+## Production ship hangar — visual fidelity pass toward references/03_hangar.png.
 ##
-## Shows the selected ship, a sidebar of ship placeholders (locked ships keep a
-## padlock — no monetization), attack/defense/HP/critical totals, and five
-## upgrade rows backed by HangarUpgradeTrackData Resources. Costs spend local
-## Rift Energy only. Branding reads RIFTWING; the reference image is visual
-## direction only and is never used as a texture.
+## Featured ship bay with hangar_pad hologram / engine glow, ship strip with
+## locked·equipped states, clearer stat chips, and color-coded upgrade rows.
+## Purchase logic stays in SaveManager — this screen only presents and requests.
+## Branding is RIFTWING only.
 
 const _CATALOG_PATH := "res://resources/ships/ship_catalog_default.tres"
 const _ROW_SCENE := preload("res://scenes/ui/hangar_upgrade_row.tscn")
-const _BASE_PADDING := 36.0
+const _BASE_PADDING := 32.0
+const _SCROLL_SPEED := 14.0
 const _CAPTURE_SIZE := Vector2i(1080, 1920)
 const _CAPTURE_PATH := "user://riftwing_hangar_1080x1920.png"
 
+@onready var _parallax: ParallaxBackground = $Background
 @onready var _safe: MarginContainer = %Safe
 @onready var _energy_value: Label = %EnergyValue
 @onready var _core_value: Label = %CoreValue
 @onready var _ship_list: VBoxContainer = %ShipList
 @onready var _hero_ship: TextureRect = %HeroShip
+@onready var _engine_glow: TextureRect = %EngineGlow
+@onready var _hangar_pad: TextureRect = %HangarPad
 @onready var _ship_name: Label = %ShipName
 @onready var _tier_label: Label = %TierLabel
 @onready var _power_label: Label = %PowerLabel
@@ -30,6 +33,7 @@ const _CAPTURE_PATH := "user://riftwing_hangar_1080x1920.png"
 @onready var _preview_label: Label = %PreviewLabel
 @onready var _feedback_label: Label = %FeedbackLabel
 @onready var _upgrade_box: VBoxContainer = %UpgradeBox
+@onready var _upgrade_all_button: Button = %UpgradeAllButton
 @onready var _back_button: Button = %BackButton
 @onready var _equip_button: Button = %EquipButton
 
@@ -48,6 +52,9 @@ func _ready() -> void:
 
 	_back_button.pressed.connect(_on_back)
 	_equip_button.pressed.connect(_on_equip)
+	# Placeholder CTA — no Upgrade All economy yet.
+	_upgrade_all_button.disabled = true
+	_upgrade_all_button.text = "UPGRADE ALL · SOON"
 	SaveManager.currencies_changed.connect(_on_currencies_changed)
 	SaveManager.hangar_changed.connect(_on_hangar_changed)
 	get_viewport().size_changed.connect(_apply_safe_area)
@@ -57,12 +64,21 @@ func _ready() -> void:
 	_build_ship_list()
 	_build_upgrade_rows()
 	_refresh_all()
+	GameFeel.debug_markers_enabled = false
+	AudioManager.play_music("menu")
 
 
 func _process(delta: float) -> void:
+	_parallax.scroll_offset.y += delta * _SCROLL_SPEED
 	_hero_time += delta
-	var pulse := 1.0 + sin(_hero_time * 1.5) * 0.018
+	var pulse := 1.0 + sin(_hero_time * 1.45) * 0.02
 	_hero_ship.scale = Vector2(pulse, pulse)
+	_hero_ship.rotation = sin(_hero_time * 0.5) * 0.03
+	_engine_glow.scale = Vector2(0.95 + sin(_hero_time * 3.1) * 0.08, 1.05 + sin(_hero_time * 2.3) * 0.05)
+	_engine_glow.modulate.a = 0.5 + sin(_hero_time * 2.8) * 0.22
+	var holo := 0.72 + absf(sin(_hero_time * 1.6)) * 0.22
+	_hangar_pad.modulate = Color(0.55, 0.95, 1.0, holo)
+	_hangar_pad.scale = Vector2(1.0 + sin(_hero_time * 1.2) * 0.035, 1.0 + sin(_hero_time * 1.2) * 0.02)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -88,13 +104,14 @@ func _build_ship_list() -> void:
 		if ship == null:
 			continue
 		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(120, 132)
+		btn.custom_minimum_size = Vector2(132, 148)
 		btn.focus_mode = Control.FOCUS_NONE
+		btn.theme_type_variation = &"ButtonTertiary"
 		btn.expand_icon = true
 		btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
-		btn.add_theme_constant_override("icon_max_width", 72)
-		btn.add_theme_font_size_override("font_size", 18)
+		btn.add_theme_constant_override("icon_max_width", 78)
+		btn.add_theme_font_size_override("font_size", 16)
 		if ship.portrait != null:
 			btn.icon = ship.portrait
 		btn.pressed.connect(_on_ship_pressed.bind(ship.id))
@@ -134,22 +151,29 @@ func _refresh_currencies() -> void:
 
 func _refresh_ship_list() -> void:
 	var selected := SaveManager.get_selected_ship_id()
+	var cyan := Palette.get_color("cyan", Color(0, 0.84, 1))
 	for ship in _catalog.ships:
 		if ship == null or not _ship_buttons.has(ship.id):
 			continue
 		var btn: Button = _ship_buttons[ship.id]
 		var unlocked := SaveManager.is_ship_unlocked(ship.id)
 		var viewing := ship.id == _viewed_ship_id
+		var equipped := unlocked and ship.id == selected
 		if not unlocked:
 			btn.text = "LOCKED"
-			btn.modulate = Color(0.45, 0.45, 0.5, 1) * ship.accent_modulate
-		elif ship.id == selected:
+			btn.modulate = Color(0.5, 0.48, 0.55, 1) * ship.accent_modulate
+			btn.self_modulate = Color(0.72, 0.72, 0.78, 1)
+		elif equipped:
 			btn.text = "EQUIPPED"
-			btn.modulate = ship.accent_modulate
+			# Strong cyan neon glow so the equipped strip reads like the reference.
+			btn.modulate = Color(1.08, 1.12, 1.2, 1) * ship.accent_modulate
+			btn.self_modulate = Color(cyan.r * 1.35, cyan.g * 1.2, cyan.b * 1.15, 1.0)
+			if viewing:
+				btn.self_modulate = Color(cyan.r * 1.55, cyan.g * 1.35, cyan.b * 1.25, 1.0)
 		else:
 			btn.text = "OWNED"
 			btn.modulate = ship.accent_modulate
-		btn.self_modulate = Palette.get_color("cyan", Color(0, 0.84, 1)) if viewing else Color.WHITE
+			btn.self_modulate = Color(cyan.r * 0.85, cyan.g * 0.95, cyan.b, 1.0) if viewing else Color.WHITE
 
 
 func _refresh_ship_panel() -> void:
@@ -176,25 +200,38 @@ func _refresh_ship_panel() -> void:
 	_crit_value.text = stats.critical_display()
 	if ship.hero_texture != null:
 		_hero_ship.texture = ship.hero_texture
+	elif ship.portrait != null:
+		_hero_ship.texture = ship.portrait
 	_hero_ship.modulate = ship.accent_modulate if unlocked else ship.accent_modulate * Color(0.4, 0.4, 0.45, 1)
+	_engine_glow.visible = unlocked
+	_hangar_pad.modulate.a = 0.9 if unlocked else 0.28
 
 	if unlocked:
 		_lock_banner.visible = false
 		var is_selected := SaveManager.get_selected_ship_id() == ship.id
 		_equip_button.disabled = is_selected
 		_equip_button.text = "EQUIPPED" if is_selected else "EQUIP SHIP"
+		_equip_button.theme_type_variation = &"ButtonSecondary" if is_selected else &"ButtonPrimary"
 	else:
 		_lock_banner.visible = true
 		_lock_banner.text = "LOCKED  ·  %s" % ship.unlock_hint
 		_equip_button.disabled = true
 		_equip_button.text = "LOCKED"
+		_equip_button.theme_type_variation = &"ButtonTertiary"
 
 
 func _refresh_upgrade_rows() -> void:
 	var ship := _catalog.find_by_id(_viewed_ship_id)
 	if ship == null:
 		return
-	if _rows.is_empty():
+	# Rebuild rows when switching ships (tracks differ per ShipData).
+	var needs_rebuild := _rows.is_empty()
+	if not needs_rebuild:
+		for track in ship.tracks():
+			if not _rows.has(track.id):
+				needs_rebuild = true
+				break
+	if needs_rebuild:
 		_build_upgrade_rows()
 
 	var unlocked := SaveManager.is_ship_unlocked(ship.id)
@@ -218,6 +255,7 @@ func _on_ship_pressed(ship_id: String) -> void:
 	_click()
 	_refresh_all()
 	_preview_label.text = "Tap a ship to inspect. Equip unlocked ships. Locked ships have no purchase path."
+	_preview_label.add_theme_color_override("font_color", Palette.get_color("muted", Color(0.46, 0.57, 0.71)))
 
 
 func _on_equip() -> void:
@@ -264,7 +302,7 @@ func _on_upgrade_requested(track_id: String) -> void:
 	if ok:
 		_click()
 		var haptics: HapticsService = PlatformServices.haptics
-		if haptics != null:
+		if haptics != null and GameFeel.haptics_enabled:
 			haptics.medium()
 		_show_feedback("%s upgraded" % track.title, false)
 		_preview_label.text = "Upgrade applied. Stats updated."
@@ -299,7 +337,7 @@ func _on_hangar_changed(_selected: String) -> void:
 func _click() -> void:
 	AudioManager.play_sfx("ui_confirm", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
 	var haptics: HapticsService = PlatformServices.haptics
-	if haptics != null:
+	if haptics != null and GameFeel.haptics_enabled:
 		haptics.light()
 
 
@@ -335,6 +373,16 @@ func _apply_safe_area() -> void:
 	_safe.add_theme_constant_override("margin_top", int(_BASE_PADDING + safe.position.y))
 	_safe.add_theme_constant_override("margin_right", int(_BASE_PADDING + (full.x - (safe.position.x + safe.size.x))))
 	_safe.add_theme_constant_override("margin_bottom", int(_BASE_PADDING + (full.y - (safe.position.y + safe.size.y))))
+	call_deferred("_recenter_hero_pivot")
+
+
+func _recenter_hero_pivot() -> void:
+	if _hero_ship != null:
+		_hero_ship.pivot_offset = _hero_ship.size * 0.5
+	if _engine_glow != null:
+		_engine_glow.pivot_offset = _engine_glow.size * 0.5
+	if _hangar_pad != null:
+		_hangar_pad.pivot_offset = _hangar_pad.size * 0.5
 
 
 func _capture_screenshot() -> void:

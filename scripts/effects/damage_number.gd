@@ -24,8 +24,17 @@ func spawn(world_pos: Vector2, amount: int) -> void:
 	visible = true
 	set_process(true)
 	if _label != null:
-		_label.text = str(amount)
-		_label.modulate = Palette.get_color("white", Color.WHITE)
+		_label.text = "+%d" % amount if amount >= 100 else str(amount)
+		# HIGH quality: warmer / larger pops like the reference score flashes.
+		if GameFeel.quality == GameFeel.Quality.HIGH and amount >= 40:
+			_label.add_theme_font_size_override("font_size", 42)
+			_label.modulate = Palette.get_color("orange", Color(1.0, 0.55, 0.12))
+		elif GameFeel.quality == GameFeel.Quality.MEDIUM:
+			_label.add_theme_font_size_override("font_size", 34)
+			_label.modulate = Palette.get_color("white", Color.WHITE)
+		else:
+			_label.add_theme_font_size_override("font_size", 28)
+			_label.modulate = Palette.get_color("white", Color.WHITE)
 
 
 func _process(delta: float) -> void:

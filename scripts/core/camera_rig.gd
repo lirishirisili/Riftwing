@@ -29,6 +29,16 @@ func _ready() -> void:
 	# effects layer instead of cancelling; use real time for the noise walk.
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	GameFeel.register_camera(self)
+	_center_on_viewport()
+	get_viewport().size_changed.connect(_center_on_viewport)
+
+
+## Rest position tracks the logical viewport center so tall 19.5:9 / 20:9
+## frames do not leave an empty band above the authored playfield. Shake still
+## applies via `offset`, never by fighting this rest position.
+func _center_on_viewport() -> void:
+	var vp := get_viewport().get_visible_rect().size
+	position = Vector2(vp.x * 0.5, vp.y * 0.5)
 
 
 ## Adds trauma (clamped to 1). Small values fade almost immediately.

@@ -25,21 +25,22 @@ func spawn(world_pos: Vector2, is_major: bool, particle_count: int) -> void:
 	_major = is_major
 	_age = 0.0
 	_active = true
-	_lifetime = 0.6 if is_major else 0.4
-	_max_radius = 150.0 if is_major else 80.0
-	_color = Palette.get_color("orange", Color(1.0, 0.48, 0.1))
+	_lifetime = 0.65 if is_major else 0.38
+	_max_radius = 160.0 if is_major else 72.0
+	_color = Palette.get_color("magenta", Color(1.0, 0.22, 0.55)) if is_major \
+		else Palette.get_color("orange", Color(1.0, 0.48, 0.1))
 	visible = true
 	set_process(true)
 
 	if _ring_sprite != null:
-		_ring_sprite.modulate = Color(_color, 0.9)
+		_ring_sprite.modulate = Color(_color, 0.85 if is_major else 0.75)
 		_ring_sprite.scale = Vector2.ZERO
 	if _particles != null:
 		if particle_count > 0:
 			_particles.amount = particle_count
 			_particles.color = _color
 			_particles.explosiveness = 1.0
-			_particles.lifetime = _lifetime
+			_particles.lifetime = _lifetime * 0.85
 			_particles.emitting = true
 		else:
 			_particles.emitting = false
@@ -66,16 +67,17 @@ func _draw() -> void:
 	if not _active:
 		return
 	var t := clampf(_age / _lifetime, 0.0, 1.0)
-	# Procedural expanding shock ring.
+	# Procedural expanding shock ring + soft outer glow (kept behind bullets via layer z).
 	var radius := lerpf(8.0, _max_radius, ease(t, 0.35))
 	var alpha := 1.0 - t
-	draw_arc(Vector2.ZERO, radius, 0.0, TAU, 40, Color(_color, alpha * 0.8), (5.0 if _major else 3.0), true)
+	draw_arc(Vector2.ZERO, radius * 1.08, 0.0, TAU, 40, Color(_color, alpha * 0.25), (10.0 if _major else 6.0), true)
+	draw_arc(Vector2.ZERO, radius, 0.0, TAU, 40, Color(_color, alpha * 0.85), (5.0 if _major else 3.0), true)
 	# Light flash core, fades fast.
 	var flash_a := clampf(1.0 - t * 2.5, 0.0, 1.0)
 	if flash_a > 0.0:
-		var core := (46.0 if _major else 26.0)
-		draw_circle(Vector2.ZERO, core, Color(1, 1, 1, flash_a * 0.85))
-		draw_circle(Vector2.ZERO, core * 1.7, Color(_color, flash_a * 0.4))
+		var core := (50.0 if _major else 24.0)
+		draw_circle(Vector2.ZERO, core, Color(1, 1, 1, flash_a * 0.9))
+		draw_circle(Vector2.ZERO, core * 1.7, Color(_color, flash_a * 0.45))
 
 
 func pool_reset() -> void:

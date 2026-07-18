@@ -3,11 +3,11 @@ extends Node
 ## Turns collected energy into run experience and fires level-ups.
 ##
 ## Listens to the player's `energy_changed` signal, accumulates XP, and compares
-## it against a data-driven LevelCurveData. Each crossed threshold emits one
-## `leveled_up`; if several levels are earned at once (a big pickup burst) they
-## are queued and emitted in order so every level shows its own upgrade choice.
-##
-## This node owns no balance numbers: the pacing lives entirely in the curve.
+## it against a data-driven LevelCurveData. At most one `leveled_up` is emitted
+## while a choice is still pending — excess XP banks above the threshold so a
+## big pickup / guaranteed grant never floods the upgrade screen queue. The next
+## level only resolves on a later XP gain after the player finishes the current
+## choice (play → pick → play → pick).
 
 ## Emitted once per level gained. `new_level` is the level just reached.
 signal leveled_up(new_level: int)
@@ -54,9 +54,12 @@ func get_pending_levels() -> int:
 
 
 ## The run flow calls this after showing one upgrade screen to consume a level.
+## Does not immediately fire the next level — banked XP waits for the next gain
+## so choices never cascade back-to-back without combat in between.
 func consume_pending_level() -> void:
 	if _pending_levels > 0:
 		_pending_levels -= 1
+	progress_changed.emit(_level, _xp_into_level, curve.xp_to_reach_next(_level))
 
 
 func _on_energy_changed(total: int) -> void:
@@ -66,17 +69,25 @@ func _on_energy_changed(total: int) -> void:
 		add_experience(gained)
 
 
-## Adds raw XP and rolls level-ups. Exposed directly so a debug command can
-## force a level without collecting pickups.
+## Adds raw XP and rolls at most one level-up while none is pending.
+## Exposed so a debug command can force a level without collecting pickups.
 func add_experience(amount: int) -> void:
 	if amount <= 0:
 		return
 	_xp_into_level += amount
-	var needed := curve.xp_to_reach_next(_level)
-	while _xp_into_level >= needed:
-		_xp_into_level -= needed
-		_level += 1
-		_pending_levels += 1
-		leveled_up.emit(_level)
-		needed = curve.xp_to_reach_next(_level)
+	_try_level_up_once()
 	progress_changed.emit(_level, _xp_into_level, curve.xp_to_reach_next(_level))
+
+
+## Resolves a single threshold crossing. Further crossings stay banked until the
+## pending choice is consumed and more XP arrives.
+func _try_level_up_once() -> void:
+	if _pending_levels > 0:
+		return
+	var needed := curve.xp_to_reach_next(_level)
+	if _xp_into_level < needed:
+		return
+	_xp_into_level -= needed
+	_level += 1
+	_pending_levels = 1
+	leveled_up.emit(_level)

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+<defs>
+  <linearGradient id="hull" x1="0" y1="0" x2="0" y2="1">
+    <stop stop-color="#F4FAFF"/><stop offset="0.45" stop-color="#C5D4E4"/><stop offset="1" stop-color="#3A4E64"/>
+  </linearGradient>
+  <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1">
+    <stop stop-color="#FFB000"/><stop offset="1" stop-color="#FF4B16"/>
+  </linearGradient>
+  <linearGradient id="cyan" x1="0" y1="0" x2="0" y2="1">
+    <stop stop-color="#E8FFFF"/><stop offset="0.3" stop-color="#00D7FF"/><stop offset="1" stop-color="#176BFF" stop-opacity="0"/>
+  </linearGradient>
+  <filter id="g"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<!-- Dual engine plumes -->
+<path d="M340 560 L400 560 L370 980 L300 980 Z" fill="url(#cyan)" opacity="0.85" filter="url(#g)"/>
+<path d="M624 560 L684 560 L724 980 L654 980 Z" fill="url(#cyan)" opacity="0.85" filter="url(#g)"/>
+<!-- Wings -->
+<path d="M512 90 L600 280 L920 420 L820 600 L640 520 L580 740 L512 920 L444 740 L384 520 L204 600 L104 420 L424 280 Z" fill="url(#hull)" stroke="#9EEBFF" stroke-width="8"/>
+<!-- Orange wing accents -->
+<path d="M180 430 L400 340 L370 520 L150 560 Z" fill="url(#orange)" stroke="#FFD39A" stroke-width="6"/>
+<path d="M844 430 L624 340 L654 520 L874 560 Z" fill="url(#orange)" stroke="#FFD39A" stroke-width="6"/>
+<!-- Body core -->
+<path d="M512 140 L555 300 L512 680 L469 300 Z" fill="#152636" stroke="#00D7FF" stroke-width="7"/>
+<ellipse cx="512" cy="390" rx="48" ry="96" fill="#091421" stroke="#20DFFF" stroke-width="8"/>
+<ellipse cx="512" cy="410" rx="26" ry="50" fill="#00D7FF" opacity="0.95"/>
+<!-- Twin nacelles -->
+<rect x="390" y="280" width="70" height="280" rx="28" fill="#2A3D52" stroke="#D9F4FF" stroke-width="7"/>
+<rect x="564" y="280" width="70" height="280" rx="28" fill="#2A3D52" stroke="#D9F4FF" stroke-width="7"/>
+</svg>

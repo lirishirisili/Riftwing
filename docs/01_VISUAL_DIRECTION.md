@@ -19,6 +19,34 @@ Premium neon science fiction with a dark navy base, cyan player energy, purple e
 
 See `manifests/color_tokens.json`.
 
+## Shape language (fidelity pass)
+- Prefer **chamfer / asymmetric neon corners** over soft rounded rectangles.
+- Hex accents for chips, avatars, level badges, pause, and map nodes.
+- Double stroke: dark inner panel + bright neon outer edge.
+- Shared theme variations: `ButtonPrimary`, `ButtonSecondary`, `ButtonTertiary`, `ButtonReward`, `ChipPanel`, `NeonPanel`.
+
+## Typography scale (1080 wide)
+| Role | Size | Use |
+|---|---:|---|
+| Hero brand | 64–80 | RIFTWING |
+| Screen title | 48–72 | VICTORY / SECTOR |
+| CTA | 28–34 | START RUN |
+| Body | 20–24 | objectives |
+| Caption | 16–18 | SCORE / WAVE |
+| Huge number | 40–56 | score values |
+
+Font files (Oxanium / Rajdhani) only after license review. Until then: theme fallback + uppercase + strong size hierarchy.
+
+## Glow budgets
+- `GlowController` on `AppRoot` drives `WorldEnvironment` glow from `GameFeel` quality.
+- HIGH: restrained bloom. MEDIUM: softer. LOW: glow off.
+- Never blur UI text.
+
+## Asset folders
+- `assets/art/ships|enemies|boss|env/` — key art silhouettes
+- `assets/ui/chrome/` — hex frames, HUD frame, currency pods, map nodes
+- Do not use full reference screenshots as in-game UI textures.
+
 ## Gameplay readability rules
 - Player bullets are predominantly cyan/blue and move upward.
 - Enemy bullets are purple, magenta, orange, or red and must never resemble pickups.
@@ -26,6 +54,7 @@ See `manifests/color_tokens.json`.
 - The player ship has a strong white/orange silhouette and cyan engine trail.
 - Background contrast is reduced behind dense projectile patterns.
 - Damage flashes are brief and never cover the entire screen for more than 80 ms.
+- EffectsLayer stays below bullets (`z_index = -5`).
 
 ## Composition
 - Player ship occupies approximately 12-16 percent of screen width during normal gameplay.
@@ -38,8 +67,8 @@ See `manifests/color_tokens.json`.
 - Dark translucent panels with thin cyan or purple outlines.
 - Angular corners and hexagonal accents.
 - Text must be real Godot UI text, never baked into images.
-- Main action buttons use blue; secondary challenge/event actions use purple; high-value reward actions may use gold.
-- Use subtle glow. Do not blur text.
+- Main action buttons use blue; secondary challenge/event actions use purple; high-value reward actions may use gold (`ButtonReward`).
+- Branding is **RIFTWING** only — never Starforge / Galaxy Rush.
 
 ## Motion language
 - UI opens with short 140-220 ms transitions.
@@ -47,6 +76,3 @@ See `manifests/color_tokens.json`.
 - Strong attacks add 30-60 ms hit stop.
 - Explosions combine sprite animation, particles, a radial ring, light flash, and restrained camera shake.
 - Boss entrances use a warning banner, music transition, camera framing, and silhouette reveal.
-
-## Typography
-Recommended direction: Oxanium, Rajdhani, or another readable squared sci-fi family. Do not include font files in the repository unless licensing has been reviewed. Use a fallback sans-serif during prototype development.

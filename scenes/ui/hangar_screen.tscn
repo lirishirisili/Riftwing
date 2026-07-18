@@ -1,26 +1,108 @@
-[gd_scene load_steps=7 format=3 uid="uid://c0riftwhangar00"]
+[gd_scene load_steps=18 format=3 uid="uid://c0riftwhangar00"]
 
 [ext_resource type="Script" path="res://scripts/ui/hangar_screen.gd" id="1"]
 [ext_resource type="Theme" path="res://resources/theme/riftwing_theme.tres" id="2"]
-[ext_resource type="Texture2D" path="res://assets/placeholders/player_ship_placeholder.svg" id="3"]
+[ext_resource type="Texture2D" path="res://assets/art/ships/vanguard_mk2.svg" id="3"]
 [ext_resource type="Texture2D" path="res://assets/icons/icon_energy.svg" id="4"]
 [ext_resource type="Texture2D" path="res://assets/icons/icon_crystal.svg" id="5"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/parallax_far_stars.png" id="6"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/parallax_nebula.png" id="7"]
+[ext_resource type="Texture2D" path="res://assets/effects/engine_glow.svg" id="8"]
+[ext_resource type="Texture2D" path="res://assets/art/env/hangar_pad.svg" id="9"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_missile.svg" id="10"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_shield.svg" id="11"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_health.svg" id="12"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_laser.svg" id="13"]
 
-[sub_resource type="StyleBoxFlat" id="panel"]
-bg_color = Color(0.027451, 0.094118, 0.168627, 0.88)
+[sub_resource type="StyleBoxFlat" id="bay_panel"]
+bg_color = Color(0.02, 0.06, 0.14, 0.78)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0, 0.843137, 1, 0.4)
+border_color = Color(0, 0.84, 1, 0.45)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+content_margin_left = 14
+content_margin_top = 12
+content_margin_right = 14
+content_margin_bottom = 12
+shadow_color = Color(0, 0.55, 0.85, 0.28)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="stat_attack"]
+bg_color = Color(0.06, 0.04, 0.08, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.48, 0.1, 0.75)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
-content_margin_left = 16
-content_margin_top = 12
-content_margin_right = 16
-content_margin_bottom = 12
+content_margin_left = 8
+content_margin_top = 10
+content_margin_right = 8
+content_margin_bottom = 10
+shadow_color = Color(1, 0.4, 0.08, 0.22)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="stat_defense"]
+bg_color = Color(0.02, 0.07, 0.12, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.84, 1, 0.75)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 8
+content_margin_top = 10
+content_margin_right = 8
+content_margin_bottom = 10
+shadow_color = Color(0, 0.7, 0.95, 0.22)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="stat_hp"]
+bg_color = Color(0.02, 0.08, 0.05, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.21, 0.89, 0.44, 0.75)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 8
+content_margin_top = 10
+content_margin_right = 8
+content_margin_bottom = 10
+shadow_color = Color(0.15, 0.75, 0.35, 0.22)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="stat_crit"]
+bg_color = Color(0.06, 0.03, 0.12, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.55, 0.26, 1, 0.75)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 8
+content_margin_top = 10
+content_margin_right = 8
+content_margin_bottom = 10
+shadow_color = Color(0.45, 0.2, 0.9, 0.22)
+shadow_size = 6
 
 [node name="HangarScreen" type="Control"]
 layout_mode = 3
@@ -35,7 +117,46 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.011765, 0.027451, 0.070588, 1)
+mouse_filter = 2
+color = Color(0.01, 0.02, 0.06, 1)
+
+[node name="Background" type="ParallaxBackground" parent="."]
+
+[node name="LayerFar" type="ParallaxLayer" parent="Background"]
+motion_scale = Vector2(0.12, 0.12)
+motion_mirroring = Vector2(0, 1920)
+
+[node name="Sprite" type="Sprite2D" parent="Background/LayerFar"]
+modulate = Color(0.7, 0.78, 1, 0.75)
+centered = false
+texture = ExtResource("6")
+
+[node name="LayerNebula" type="ParallaxLayer" parent="Background"]
+motion_scale = Vector2(0.32, 0.32)
+motion_mirroring = Vector2(0, 1920)
+
+[node name="Sprite" type="Sprite2D" parent="Background/LayerNebula"]
+modulate = Color(0.55, 0.4, 0.95, 0.45)
+centered = false
+texture = ExtResource("7")
+
+[node name="VignetteTop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 220.0
+mouse_filter = 2
+color = Color(0.01, 0.02, 0.06, 0.5)
+
+[node name="VignetteBottom" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -280.0
+mouse_filter = 2
+color = Color(0.01, 0.02, 0.08, 0.55)
 
 [node name="Safe" type="MarginContainer" parent="."]
 unique_name_in_owner = true
@@ -50,7 +171,7 @@ theme_override_constants/margin_bottom = 36
 
 [node name="Root" type="VBoxContainer" parent="Safe"]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 12
 
 [node name="TopBar" type="HBoxContainer" parent="Safe/Root"]
 layout_mode = 2
@@ -60,18 +181,21 @@ theme_override_constants/separation = 12
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_colors/font_color = Color(0, 0.843137, 1, 1)
-theme_override_font_sizes/font_size = 34
+theme_override_colors/font_shadow_color = Color(0, 0.55, 1, 0.4)
+theme_override_constants/shadow_outline_size = 6
+theme_override_font_sizes/font_size = 32
 text = "RIFTWING"
 
 [node name="EnergyChip" type="PanelContainer" parent="Safe/Root/TopBar"]
 layout_mode = 2
+theme_type_variation = &"ChipPanel"
 
 [node name="Box" type="HBoxContainer" parent="Safe/Root/TopBar/EnergyChip"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="Icon" type="TextureRect" parent="Safe/Root/TopBar/EnergyChip/Box"]
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 size_flags_vertical = 4
 texture = ExtResource("4")
@@ -83,18 +207,19 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_colors/font_color = Color(0, 0.843137, 1, 1)
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 28
 text = "0"
 
 [node name="CoreChip" type="PanelContainer" parent="Safe/Root/TopBar"]
 layout_mode = 2
+theme_type_variation = &"ChipPanel"
 
 [node name="Box" type="HBoxContainer" parent="Safe/Root/TopBar/CoreChip"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="Icon" type="TextureRect" parent="Safe/Root/TopBar/CoreChip/Box"]
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 size_flags_vertical = 4
 texture = ExtResource("5")
@@ -105,8 +230,8 @@ stretch_mode = 5
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 4
-theme_override_colors/font_color = Color(0.549020, 0.262745, 1, 1)
-theme_override_font_sizes/font_size = 30
+theme_override_colors/font_color = Color(0.54902, 0.262745, 1, 1)
+theme_override_font_sizes/font_size = 28
 text = "0"
 
 [node name="Spacer" type="Control" parent="Safe/Root/TopBar"]
@@ -117,22 +242,24 @@ size_flags_horizontal = 3
 unique_name_in_owner = true
 custom_minimum_size = Vector2(140, 72)
 layout_mode = 2
-theme_override_font_sizes/font_size = 30
+theme_type_variation = &"ButtonTertiary"
+theme_override_font_sizes/font_size = 28
 text = "BACK"
 
 [node name="Header" type="Label" parent="Safe/Root"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 40
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 36
 text = "SHIP HANGAR  //  UPGRADE"
 horizontal_alignment = 1
 
 [node name="Body" type="HBoxContainer" parent="Safe/Root"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 16
+theme_override_constants/separation = 14
 
 [node name="ShipListScroll" type="ScrollContainer" parent="Safe/Root/Body"]
-custom_minimum_size = Vector2(140, 0)
+custom_minimum_size = Vector2(156, 0)
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
@@ -141,157 +268,271 @@ horizontal_scroll_mode = 0
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="MainColumn" type="VBoxContainer" parent="Safe/Root/Body"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="ShipPanel" type="PanelContainer" parent="Safe/Root/Body/MainColumn"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_styles/panel = SubResource("panel")
+theme_override_styles/panel = SubResource("bay_panel")
 
 [node name="ShipBox" type="VBoxContainer" parent="Safe/Root/Body/MainColumn/ShipPanel"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ShipName" type="Label" parent="Safe/Root/Body/MainColumn/ShipPanel/ShipBox"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 42
-text = "VANGUARD MK-II"
-horizontal_alignment = 1
-
-[node name="TierLabel" type="Label" parent="Safe/Root/Body/MainColumn/ShipPanel/ShipBox"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0.843137, 1, 1)
-theme_override_font_sizes/font_size = 26
-text = "TIER 2  ·  RARE"
-horizontal_alignment = 1
-
-[node name="HeroShip" type="TextureRect" parent="Safe/Root/Body/MainColumn/ShipPanel/ShipBox"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 280)
+[node name="HeroRow" type="HBoxContainer" parent="Safe/Root/Body/MainColumn/ShipPanel/ShipBox"]
 layout_mode = 2
 size_flags_vertical = 3
-pivot_offset = Vector2(360, 140)
+theme_override_constants/separation = 12
+
+[node name="HeroStage" type="Control" parent="Safe/Root/Body/MainColumn/ShipPanel/ShipBox/HeroRow"]
+custom_minimum_size = Vector2(0, 300)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="HangarPad" type="TextureRect" parent="Safe/Root/Body/MainColumn/ShipPanel/ShipBox/HeroRow/HeroStage"]
+unique_name_in_owner = true
+modulate = Color(0.55, 0.95, 1, 0.9)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -210.0
+offset_top = -170.0
+offset_right = 210.0
+offset_bottom = 10.0
+pivot_offset = Vector2(210, 90)
+mouse_filter = 2
+texture = ExtResource("9")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EngineGlow" type="TextureRect" parent="Safe/Root/Body/MainColumn/ShipPanel/ShipBox/HeroRow/HeroStage"]
+unique_name_in_owner = true
+modulate = Color(0.25, 0.75, 1, 0.7)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -20.0
+offset_right = 150.0
+offset_bottom = 220.0
+pivot_offset = Vector2(150, 120)
+mouse_filter = 2
+texture = ExtResource("8")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HeroShip" type="TextureRect" parent="Safe/Root/Body/MainColumn/ShipPanel/ShipBox/HeroRow/HeroStage"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(220, 160)
+mouse_filter = 2
 texture = ExtResource("3")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="PowerLabel" type="Label" parent="Safe/Root/Body/MainColumn/ShipPanel/ShipBox"]
+[node name="IdentityCol" type="VBoxContainer" parent="Safe/Root/Body/MainColumn/ShipPanel/ShipBox/HeroRow"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 6
+
+[node name="ShipName" type="Label" parent="Safe/Root/Body/MainColumn/ShipPanel/ShipBox/HeroRow/IdentityCol"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "VANGUARD MK-II"
+autowrap_mode = 3
+
+[node name="TierLabel" type="Label" parent="Safe/Root/Body/MainColumn/ShipPanel/ShipBox/HeroRow/IdentityCol"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.843137, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "TIER 2  ·  RARE"
+
+[node name="PowerLabel" type="Label" parent="Safe/Root/Body/MainColumn/ShipPanel/ShipBox/HeroRow/IdentityCol"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.690196, 0, 1)
-theme_override_font_sizes/font_size = 34
+theme_override_font_sizes/font_size = 32
 text = "POWER  0"
-horizontal_alignment = 1
 
-[node name="LockBanner" type="Label" parent="Safe/Root/Body/MainColumn/ShipPanel/ShipBox"]
+[node name="LockBanner" type="Label" parent="Safe/Root/Body/MainColumn/ShipPanel/ShipBox/HeroRow/IdentityCol"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.231373, 0.309804, 1)
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 20
 text = "LOCKED"
-horizontal_alignment = 1
+autowrap_mode = 3
 
-[node name="EquipButton" type="Button" parent="Safe/Root/Body/MainColumn/ShipPanel/ShipBox"]
+[node name="EquipButton" type="Button" parent="Safe/Root/Body/MainColumn/ShipPanel/ShipBox/HeroRow/IdentityCol"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 80)
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+theme_type_variation = &"ButtonPrimary"
+theme_override_font_sizes/font_size = 26
 text = "EQUIP SHIP"
 
 [node name="StatsRow" type="HBoxContainer" parent="Safe/Root/Body/MainColumn"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
 [node name="AttackStat" type="PanelContainer" parent="Safe/Root/Body/MainColumn/StatsRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("stat_attack")
 
 [node name="Box" type="VBoxContainer" parent="Safe/Root/Body/MainColumn/StatsRow/AttackStat"]
 layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Icon" type="TextureRect" parent="Safe/Root/Body/MainColumn/StatsRow/AttackStat/Box"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+modulate = Color(1, 0.55, 0.2, 1)
+texture = ExtResource("10")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Label" type="Label" parent="Safe/Root/Body/MainColumn/StatsRow/AttackStat/Box"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.458824, 0.572549, 0.709804, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 0.85)
+theme_override_font_sizes/font_size = 15
 text = "ATTACK"
 horizontal_alignment = 1
 
 [node name="AttackValue" type="Label" parent="Safe/Root/Body/MainColumn/StatsRow/AttackStat/Box"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(1, 0.55, 0.2, 1)
+theme_override_colors/font_shadow_color = Color(1, 0.35, 0.05, 0.45)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 30
 text = "0"
 horizontal_alignment = 1
 
 [node name="DefenseStat" type="PanelContainer" parent="Safe/Root/Body/MainColumn/StatsRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("stat_defense")
 
 [node name="Box" type="VBoxContainer" parent="Safe/Root/Body/MainColumn/StatsRow/DefenseStat"]
 layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Icon" type="TextureRect" parent="Safe/Root/Body/MainColumn/StatsRow/DefenseStat/Box"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+modulate = Color(0, 0.84, 1, 1)
+texture = ExtResource("11")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Label" type="Label" parent="Safe/Root/Body/MainColumn/StatsRow/DefenseStat/Box"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.458824, 0.572549, 0.709804, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 0.85)
+theme_override_font_sizes/font_size = 15
 text = "DEFENSE"
 horizontal_alignment = 1
 
 [node name="DefenseValue" type="Label" parent="Safe/Root/Body/MainColumn/StatsRow/DefenseStat/Box"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0, 0.84, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0.65, 0.9, 0.45)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 30
 text = "0"
 horizontal_alignment = 1
 
 [node name="HpStat" type="PanelContainer" parent="Safe/Root/Body/MainColumn/StatsRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("stat_hp")
 
 [node name="Box" type="VBoxContainer" parent="Safe/Root/Body/MainColumn/StatsRow/HpStat"]
 layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Icon" type="TextureRect" parent="Safe/Root/Body/MainColumn/StatsRow/HpStat/Box"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+modulate = Color(0.21, 0.9, 0.44, 1)
+texture = ExtResource("12")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Label" type="Label" parent="Safe/Root/Body/MainColumn/StatsRow/HpStat/Box"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.458824, 0.572549, 0.709804, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 0.85)
+theme_override_font_sizes/font_size = 15
 text = "HP"
 horizontal_alignment = 1
 
 [node name="HpValue" type="Label" parent="Safe/Root/Body/MainColumn/StatsRow/HpStat/Box"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.21, 0.9, 0.44, 1)
+theme_override_colors/font_shadow_color = Color(0.1, 0.7, 0.3, 0.45)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 30
 text = "0"
 horizontal_alignment = 1
 
 [node name="CritStat" type="PanelContainer" parent="Safe/Root/Body/MainColumn/StatsRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("stat_crit")
 
 [node name="Box" type="VBoxContainer" parent="Safe/Root/Body/MainColumn/StatsRow/CritStat"]
 layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Icon" type="TextureRect" parent="Safe/Root/Body/MainColumn/StatsRow/CritStat/Box"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+modulate = Color(0.75, 0.55, 1, 1)
+texture = ExtResource("13")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Label" type="Label" parent="Safe/Root/Body/MainColumn/StatsRow/CritStat/Box"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.458824, 0.572549, 0.709804, 1)
-theme_override_font_sizes/font_size = 20
-text = "CRITICAL"
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 0.85)
+theme_override_font_sizes/font_size = 15
+text = "CRIT"
 horizontal_alignment = 1
 
 [node name="CritValue" type="Label" parent="Safe/Root/Body/MainColumn/StatsRow/CritStat/Box"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.75, 0.55, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.45, 0.2, 0.9, 0.45)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 30
 text = "0%"
 horizontal_alignment = 1
 
@@ -299,7 +540,7 @@ horizontal_alignment = 1
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.458824, 0.572549, 0.709804, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 20
 text = "Tap UPGRADE to preview, tap CONFIRM to spend Rift Energy."
 autowrap_mode = 3
 
@@ -307,12 +548,12 @@ autowrap_mode = 3
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 24
 text = ""
 horizontal_alignment = 1
 
 [node name="UpgradeScroll" type="ScrollContainer" parent="Safe/Root/Body/MainColumn"]
-custom_minimum_size = Vector2(0, 420)
+custom_minimum_size = Vector2(0, 360)
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
@@ -322,3 +563,13 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 10
+
+[node name="UpgradeAllButton" type="Button" parent="Safe/Root/Body/MainColumn"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+disabled = true
+theme_type_variation = &"ButtonSecondary"
+theme_override_colors/font_disabled_color = Color(1, 0.69, 0, 0.55)
+theme_override_font_sizes/font_size = 26
+text = "UPGRADE ALL · SOON"

@@ -24,6 +24,7 @@ enum Phase {
 @onready var _effects: EffectsLayer = $EffectsLayer
 @onready var _camera: CameraRig = $CameraRig
 @onready var _overlay: Control = $Overlay
+@onready var _hud: GameplayHUD = $UI/GameplayHUD
 @onready var _health_bar: BossHealthBar = $UI/BossHealthBar
 @onready var _readout: Label = $UI/Readout
 @onready var _banner: Label = $UI/PhaseBanner
@@ -110,6 +111,9 @@ func _ready() -> void:
 	_health_bar.visible = false
 	_banner.visible = false
 	_overlay.draw.connect(_on_overlay_draw)
+	_hud.quit_to_menu_requested.connect(_on_hud_quit_to_menu)
+	_hud.ability_left_activated.connect(_on_ability_feedback.bind(true))
+	_hud.ability_right_activated.connect(_on_ability_feedback.bind(false))
 	_begin_run()
 
 
@@ -160,12 +164,17 @@ func _begin_run() -> void:
 	_phase = Phase.EARLY_WAVES
 	_health_bar.visible = false
 	_banner.visible = false
+	_hud.force_resume()
+	_hud.bind(_player, _xp, _stats)
+	_hud.set_boss_bar_visible(false)
+	_hud.set_wave_info(_wave_label_for_phase())
 	_clear_arena_projectiles()
 	_boss.prepare(timeline.mini_boss if timeline != null else null)
 	if timeline != null and timeline.early_wave != null:
 		_director.start_wave(timeline.early_wave)
 	else:
 		_director.start()
+	AudioManager.play_music("run")
 	_show_banner("ENTER THE RIFT", 1.4)
 
 
@@ -268,6 +277,7 @@ func _process(delta: float) -> void:
 	_peak_enemies = maxi(_peak_enemies, active)
 	_overlay.queue_redraw()
 	_update_readout()
+	_update_hud()
 
 
 func _tick_timeline() -> void:
@@ -291,8 +301,10 @@ func _enter_mini_boss() -> void:
 	_director.stop_and_clear()
 	_clear_arena_projectiles()
 	_awaiting_boss_outcome = true
+	_hud.set_wave_info(_wave_label_for_phase())
 	_boss.prepare(timeline.mini_boss)
 	_boss.begin()
+	AudioManager.play_music("boss")
 	_show_banner("MINI-BOSS", 1.2)
 
 
@@ -300,10 +312,13 @@ func _enter_mid_waves() -> void:
 	_phase = Phase.MID_WAVES
 	_awaiting_boss_outcome = false
 	_health_bar.visible = false
+	_hud.set_boss_bar_visible(false)
+	_hud.set_wave_info(_wave_label_for_phase())
 	_clear_arena_projectiles()
 	_boss.prepare(timeline.final_boss)
 	if timeline != null and timeline.mid_wave != null:
 		_director.start_wave(timeline.mid_wave)
+	AudioManager.play_music("run")
 	_show_banner("PUSH FORWARD", 1.0)
 
 
@@ -314,8 +329,10 @@ func _enter_final_boss() -> void:
 	_director.stop_and_clear()
 	_clear_arena_projectiles()
 	_awaiting_boss_outcome = true
+	_hud.set_wave_info(_wave_label_for_phase())
 	_boss.prepare(timeline.final_boss)
 	_boss.begin()
+	AudioManager.play_music("boss")
 	_show_banner("BOSS INCOMING", 1.4)
 
 
@@ -349,6 +366,7 @@ func _try_open_upgrade_screen() -> void:
 		var st: int = _boss.get_state()
 		if st == Boss.State.WARNING or st == Boss.State.ENTER:
 			return
+	_hud.force_resume()
 	var level := _xp.get_level() - (_level_up_queue - 1)
 	if not _upgrade_screen.open(level):
 		_level_up_queue = 0
@@ -356,13 +374,20 @@ func _try_open_upgrade_screen() -> void:
 
 func _on_upgrade_selected(upgrade: UpgradeData) -> void:
 	_last_upgrade = upgrade.id
+	# Instant power-fantasy beat once combat unpauses (GameFeel only).
+	var tint := Palette.get_color("cyan", Color(0.2, 0.95, 1.0))
+	if upgrade != null:
+		tint = Palette.get_color(upgrade.rarity_color_token(), tint)
+	var pos := _player.get_core_global_position() if _player != null else Vector2.ZERO
+	# Deferred so the flash plays after the upgrade screen unpauses the tree.
+	GameFeel.call_deferred("upgrade_applied", pos, tint)
 
 
 func _on_upgrade_screen_closed() -> void:
 	_level_up_queue = maxi(0, _level_up_queue - 1)
 	_xp.consume_pending_level()
-	if _level_up_queue > 0:
-		_try_open_upgrade_screen()
+	# Do not auto-chain another choice here. Banked XP only levels on the next
+	# energy gain so the player always gets combat between picks.
 
 
 func _register_kill() -> void:
@@ -371,6 +396,9 @@ func _register_kill() -> void:
 	_combo_timer = _COMBO_WINDOW
 	if _combo > _stats.best_combo:
 		_stats.best_combo = _combo
+	# Milestone juice every 5 kills in the chain (feedback only).
+	if _combo >= 5 and _combo % 5 == 0 and _player != null:
+		GameFeel.combo_peak(_player.get_core_global_position(), _combo)
 
 
 func _on_enemy_killed(_enemy: Enemy) -> void:
@@ -383,6 +411,7 @@ func _on_add_destroyed() -> void:
 
 func _on_warning_started(boss_name: String) -> void:
 	_health_bar.visible = true
+	_hud.set_boss_bar_visible(true)
 	_health_bar.setup(boss_name, _boss.data.health_segments)
 	_health_bar.show_warning(boss_name)
 
@@ -404,6 +433,7 @@ func _on_boss_defeated() -> void:
 	if _phase == Phase.MINI_BOSS:
 		_awaiting_boss_outcome = false
 		_health_bar.visible = false
+		_hud.set_boss_bar_visible(false)
 		_enter_mid_waves()
 		return
 	if _phase == Phase.FINAL_BOSS:
@@ -421,8 +451,19 @@ func _end_run(victory: bool) -> void:
 	_run_over = true
 	_phase = Phase.ENDING
 	_awaiting_boss_outcome = false
+	if _weapon != null:
+		_weapon.firing_active = false
+	AudioManager.set_fire_loop_suppressed(false)
+	AudioManager.stop_fire_loop()
+	_hud.force_resume()
+	_hud.set_boss_bar_visible(false)
 	_stats.victory = victory
 	_stats.rift_energy_collected = _player.get_energy()
+	if _player != null and _player.combat_data != null and _player.combat_data.max_health > 0.0:
+		_stats.hp_ratio_end = clampf(
+			float(_player.get_health()) / float(_player.combat_data.max_health), 0.0, 1.0)
+	else:
+		_stats.hp_ratio_end = 0.0
 	_director.stop()
 	_results_timer = _RESULTS_DELAY
 	_banner.text = "SECTOR CLEARED" if victory else "RIFTWING DOWN"
@@ -431,11 +472,57 @@ func _end_run(victory: bool) -> void:
 
 func _go_to_results() -> void:
 	_run_over = false
+	_hud.force_resume()
 	SceneRouter.go_to(SceneRouter.SCREEN_RESULTS, {"stats": _stats})
+
+
+func _update_hud() -> void:
+	if _hud == null or _stats == null:
+		return
+	_hud.set_combo(_combo)
+	if not _boss_bar_showing():
+		_hud.set_wave_info(_wave_label_for_phase())
+
+
+func _boss_bar_showing() -> bool:
+	return _health_bar != null and _health_bar.visible
+
+
+func _wave_label_for_phase() -> String:
+	match _phase:
+		Phase.EARLY_WAVES:
+			return "WAVE · EARLY"
+		Phase.MINI_BOSS:
+			return "MINI-BOSS"
+		Phase.MID_WAVES:
+			return "WAVE · MID"
+		Phase.FINAL_BOSS:
+			return "BOSS"
+		Phase.ENDING:
+			return "COMPLETE" if _stats != null and _stats.victory else "DEFEAT"
+		_:
+			return "RIFTWING"
+
+
+func _on_hud_quit_to_menu() -> void:
+	_run_active = false
+	_run_over = true
+	_director.stop()
+	SceneRouter.go_to(SceneRouter.SCREEN_MAIN_MENU)
+
+
+func _on_ability_feedback(is_left: bool) -> void:
+	# Presentation hook only — no combat resolution changes this milestone.
+	var pos := _player.get_core_global_position() + Vector2(0, -80)
+	var tint := Palette.get_color("cyan") if is_left else Palette.get_color("purple")
+	GameFeel.ability_activated(pos, tint)
 
 
 func _update_readout() -> void:
 	if _stats == null or _player == null:
+		return
+	_readout.visible = GameFeel.debug_markers_enabled
+	if not _readout.visible:
 		return
 	var lines: Array[String] = []
 	lines.append("RIFTWING RUN  [F6 mini  F7 boss  F8 win  F9 lose]")
@@ -461,5 +548,7 @@ func _update_readout() -> void:
 
 
 func _on_overlay_draw() -> void:
+	if not GameFeel.debug_markers_enabled:
+		return
 	var core := _player.get_core_global_position()
 	_overlay.draw_circle(core, 6.0, Color(0, 0.84, 1, 0.9))

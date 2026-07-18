@@ -119,6 +119,7 @@ func _smoke_portrait_sizes_with_router(router: Node) -> int:
 		Vector2i(1080, 1920),
 		Vector2i(1080, 2340),
 		Vector2i(1080, 2400),
+		Vector2i(1080, 2478),
 	]
 	var screen_ids := ["main_menu", "hangar", "stage_map", "results"]
 	for size in sizes:

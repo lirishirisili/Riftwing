@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://scripts/gameplay/enemy_wave_debug.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/effects/effects_layer.tscn" id="13"]
@@ -23,14 +23,12 @@
 [ext_resource type="Resource" path="res://resources/upgrades/homing_missiles.tres" id="21"]
 [ext_resource type="Resource" path="res://resources/upgrades/arc_laser.tres" id="22"]
 [ext_resource type="Resource" path="res://resources/upgrades/guardian_drone.tres" id="23"]
+[ext_resource type="PackedScene" path="res://scenes/gameplay/space_background.tscn" id="24"]
 
 [node name="EnemyWaveDebug" type="Node2D"]
 script = ExtResource("1")
 
-[node name="Background" type="ColorRect" parent="."]
-offset_right = 1080.0
-offset_bottom = 1920.0
-color = Color(0.008, 0.02, 0.055, 1)
+[node name="SpaceBackground" parent="." instance=ExtResource("24")]
 
 [node name="CameraRig" parent="." instance=ExtResource("14")]
 position = Vector2(540, 960)
@@ -88,6 +86,7 @@ anchor_bottom = 1.0
 [node name="UI" type="CanvasLayer" parent="."]
 
 [node name="Readout" type="Label" parent="UI"]
+visible = false
 offset_left = 24.0
 offset_top = 24.0
 offset_right = 900.0
