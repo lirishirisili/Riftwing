@@ -158,24 +158,31 @@ func _check_screen_and_launch() -> int:
 		printerr("StageMapScreen missing")
 		return 1
 
-	var brand := screen.find_child("Brand", true, false) as Label
+	var brand := screen.find_child("BrandLabel", true, false) as Label
+	if brand == null:
+		brand = screen.find_child("Brand", true, false) as Label
 	if brand == null or brand.text != "RIFTWING":
 		printerr("branding missing")
 		return 1
 
-	var launch := screen.get_node("%LaunchButton") as Button
+	var launch := screen.get_node_or_null("%LaunchButton") as GlowCtaButton
 	if launch == null:
 		printerr("launch button missing")
 		return 1
+	if screen.find_child("Shell", true, false) == null:
+		printerr("MetaScreenShell missing on stage map")
+		return 1
 	# Default selection is unlocked 1-1 on NORMAL — Launch enabled.
-	if launch.disabled:
+	var launch_btn := launch.get_button()
+	if launch_btn == null or launch_btn.disabled:
 		printerr("launch should be enabled for unlocked stage")
 		return 1
 
 	# Select locked stage via save + refresh signal.
 	sm.call("select_stage", "1-5")
 	await process_frame
-	if not launch.disabled:
+	await process_frame
+	if launch_btn != null and not launch_btn.disabled:
 		printerr("launch must be disabled for locked stage")
 		return 1
 

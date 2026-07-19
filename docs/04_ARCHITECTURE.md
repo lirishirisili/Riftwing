@@ -72,11 +72,12 @@ project/
 - UpgradeManager: offered choices (rarity-weighted by run level), application, levels, and synergy hints.
 - SaveManager: versioned local save with atomic writes.
 - SceneRouter: transitions between menu, map, hangar, run, and results.
-- AudioManager: named cue catalog with ui/combat/world/music groups, aliases, priorities, SFX player pool, Music/SFX buses, `play_music` crossfade, soft autofire `fire_loop` (not per-shot), focus ducking, and `user://audio_prefs.cfg` (enabled + volumes). Banks under `assets/audio/`.
+- AudioManager: named cue catalog with ui/combat/world/music groups, aliases, priorities, SFX player pool, Music/SFX buses, `play_music` crossfade, soft autofire `fire_loop` (not per-shot), focus ducking, and `user://audio_prefs.cfg` (enabled + volumes). Banks under `assets/audio/` are modern sci-fi procedural OGGs (regenerate with `tools/generate_audio_banks.gd`), not chiptune placeholders.
 - GameFeel: feedback intents (`projectile_hit`, `enemy_death`, `player_hit`, `weapon_fire`, `shield_impact`, `pickup_collected`, `ability_activated`) routing to pooled effects, shake, haptics, and AudioManager; owns LOW/MEDIUM/HIGH effect budgets.
-- `riftwing_theme.tres`: shared UI chrome including `ButtonPrimary` / `ButtonSecondary` / `ButtonTertiary` type variations used by production menus.
+- `riftwing_theme.tres`: shared UI chrome including `ButtonPrimary` / `ButtonSecondary` / `ButtonTertiary` and empty-style `ButtonChrome` for glow plates.
+- Shared meta UI kit: `scenes/ui/chrome/glow_cta_button.tscn` + `meta_screen_shell.tscn` — all player-facing meta screens compose these instead of undressed flat primary buttons.
 - HangarScreen: production ship bay UI over SaveManager hangar data (select / unlock / `try_purchase_upgrade`); holographic `hangar_pad`, color-coded upgrade rows, and disabled Upgrade All stub remain presentation-only.
-- StageMapScreen: production sector map UI over `StageMapData` + `StageProgress` / SaveManager campaign unlocks; Launch still routes to `SCREEN_RUN`. Visual chrome uses `NeonPanel`, map-node SVGs (`map_node_active` / `map_node_locked`), and drawn path/pulse rings — no gameplay systems in the map screen.
+- StageMapScreen: production sector map UI over `StageMapData` + `StageProgress` / SaveManager campaign unlocks; Launch still routes to `SCREEN_RUN`. Mounts `MetaScreenShell` and glow LAUNCH/BACK/HANGAR CTAs; map-node SVGs + path/pulse rings unchanged — no gameplay systems in the map screen.
 - UpgradeScreen / UpgradeCard: production rarity-framed choice overlay; UpgradeManager remains the only apply path.
 - ResultsScreen: production run summary UI; grants remain `RewardCalculator` → `SaveManager.grant_run_rewards` (once per `run_id`). Scrollable summary with sticky CTAs for safe-area phones.
 - CameraRig: rest position tracks viewport center (shake via offset) so tall 19.5:9 / 20:9 frames stay filled.
@@ -116,6 +117,7 @@ Prototype implementations are no-op or local. Android and iOS adapters are added
 - Use MultiMesh or simplified emitters if enemy counts become large.
 - Provide effect budgets by quality level (LOW/MEDIUM/HIGH, persisted).
 - App background flushes the save and ducks audio focus (AppRoot lifecycle).
+- Android system Back is owned by AppRoot (`quit_on_go_back=false` + `NOTIFICATION_WM_GO_BACK_REQUEST`): run → HUD pause; meta screens → navigate home; main menu → quit. Screens opt in via `handle_system_back() -> bool`.
 - Profile on real devices, not only desktop.
 - Rendering method: `mobile` (see `project.godot`). Export signing steps: `docs/EXPORT_SIGNING.md`.
 

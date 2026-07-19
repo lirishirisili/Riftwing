@@ -30,9 +30,19 @@ func _check_brand_and_colors() -> int:
 		"res://scripts/ui/results_screen.gd",
 		"res://scripts/ui/hangar_screen.gd",
 		"res://scripts/ui/stage_map_screen.gd",
+		"res://scripts/ui/settings_screen.gd",
 		"res://scenes/ui/main_menu.tscn",
 		"res://scenes/ui/results_screen.tscn",
+		"res://scenes/ui/chrome/glow_cta_button.tscn",
+		"res://scenes/ui/chrome/meta_screen_shell.tscn",
 	]
+	for kit_path in [
+		"res://scenes/ui/chrome/glow_cta_button.tscn",
+		"res://scenes/ui/chrome/meta_screen_shell.tscn",
+	]:
+		if not ResourceLoader.exists(kit_path):
+			printerr("missing glow UI kit: %s" % kit_path)
+			return 1
 	for path in paths:
 		var text := FileAccess.get_file_as_string(path)
 		for bad in forbidden:
@@ -74,6 +84,7 @@ func _capture_screens() -> int:
 		["hangar", "user://review_hangar_1080x1920.png"],
 		["stage_map", "user://review_stage_map_1080x1920.png"],
 		["results", "user://review_results_1080x1920.png"],
+		["settings", "user://review_settings_1080x1920.png"],
 	]
 	for entry in screens:
 		router.call("go_to", entry[0])
@@ -114,16 +125,18 @@ func _smoke_portrait_sizes() -> int:
 
 
 func _smoke_portrait_sizes_with_router(router: Node) -> int:
-	# 9:16, 19.5:9, 20:9 logical portrait widths at 1080 base.
+	# 9:16 / tall phones / wider tablet portrait (canvas_items + expand).
 	var sizes: Array[Vector2i] = [
 		Vector2i(1080, 1920),
 		Vector2i(1080, 2340),
 		Vector2i(1080, 2400),
 		Vector2i(1080, 2478),
+		Vector2i(1600, 2560),
 	]
-	var screen_ids := ["main_menu", "hangar", "stage_map", "results"]
+	var screen_ids := ["main_menu", "hangar", "stage_map", "results", "settings"]
 	for size in sizes:
 		DisplayServer.window_set_size(size)
+		await process_frame
 		for screen_id in screen_ids:
 			router.call("go_to", screen_id)
 			await process_frame

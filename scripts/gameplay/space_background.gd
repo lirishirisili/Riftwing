@@ -31,6 +31,7 @@ func _ready() -> void:
 	_ensure_solid_textures()
 	_fit_viewport()
 	get_viewport().size_changed.connect(_fit_viewport)
+	call_deferred("_fit_viewport")
 
 
 func _process(delta: float) -> void:
@@ -62,13 +63,30 @@ func _place_pair(a: Sprite2D, b: Sprite2D, scroll: float) -> void:
 func _ensure_solid_textures() -> void:
 	if _base != null and _base.texture == null:
 		_base.texture = _make_solid(Color(0.02, 0.04, 0.1, 1.0))
-	if _dim != null and _dim.texture == null:
-		_dim.texture = _make_solid(Color(0.01, 0.015, 0.04, 0.4))
+	# Soft full-width readability veil (no hard 9:16 column seams on tablets).
+	if _dim != null:
+		_dim.texture = _make_soft_dim_texture()
 
 
 func _make_solid(color: Color) -> ImageTexture:
 	var img := Image.create(8, 8, false, Image.FORMAT_RGBA8)
 	img.fill(color)
+	return ImageTexture.create_from_image(img)
+
+
+## Horizontal gradient: gentle mid-lane darken that fades at the sides.
+func _make_soft_dim_texture() -> ImageTexture:
+	var w := 64
+	var h := 8
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	for x in w:
+		var t := float(x) / float(w - 1)
+		# Peak opacity in the center, near-zero at edges — no hard vertical cut.
+		var edge := absf(t - 0.5) * 2.0
+		var a := 0.28 * (1.0 - edge * edge)
+		var c := Color(0.01, 0.015, 0.04, a)
+		for y in h:
+			img.set_pixel(x, y, c)
 	return ImageTexture.create_from_image(img)
 
 
@@ -113,7 +131,9 @@ func _fit_viewport() -> void:
 		_dim.centered = true
 		_dim.position = Vector2(_view.x * 0.5, _view.y * 0.5)
 		var dw := maxf(1.0, _dim.texture.get_size().x)
-		_dim.scale = Vector2((_view.x * 0.68) / dw, _view.y / dw)
+		var dh := maxf(1.0, _dim.texture.get_size().y)
+		# Full bleed — soft gradient handles lane readability without side bands.
+		_dim.scale = Vector2(_view.x / dw, _view.y / dh)
 
 
 func _scale_tile(sprite: Sprite2D) -> void:

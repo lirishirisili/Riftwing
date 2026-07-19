@@ -31,6 +31,7 @@ func _ready() -> void:
 	GameFeel.register_camera(self)
 	_center_on_viewport()
 	get_viewport().size_changed.connect(_center_on_viewport)
+	call_deferred("_center_on_viewport")
 
 
 ## Rest position tracks the logical viewport center so tall 19.5:9 / 20:9

@@ -16,7 +16,7 @@ const _CARD_SCENE := preload("res://scenes/ui/upgrade_card.tscn")
 @onready var _title: Label = $Center/Layout/HeaderChip/HeaderCol/Title
 @onready var _subtitle: Label = $Center/Layout/HeaderChip/HeaderCol/Subtitle
 @onready var _card_row: HBoxContainer = $Center/Layout/Cards
-@onready var _reroll_button: Button = %RerollButton
+@onready var _reroll_button: GlowCtaButton = %RerollButton
 @onready var _divider: ColorRect = $Center/Layout/Divider
 
 var _manager: UpgradeManager
@@ -32,6 +32,9 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_apply_safe_area)
 	_apply_safe_area()
 	if _reroll_button != null:
+		_reroll_button.configure("REROLL · SOON", "", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.NONE, 96.0)
+		_reroll_button.chrome_modulate = Color(1.05, 0.9, 0.55, 1)
+		_reroll_button.set_enabled(false)
 		_reroll_button.pressed.connect(_on_reroll_pressed)
 	set_process(true)
 

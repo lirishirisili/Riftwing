@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/ui/upgrade_screen.gd" id="1"]
 [ext_resource type="Theme" path="res://resources/theme/riftwing_theme.tres" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/chrome/glow_cta_button.tscn" id="3"]
 
 [sub_resource type="StyleBoxFlat" id="header_chip"]
 bg_color = Color(0.03, 0.08, 0.16, 0.75)
@@ -18,24 +19,6 @@ content_margin_left = 20
 content_margin_top = 10
 content_margin_right = 20
 content_margin_bottom = 10
-
-[sub_resource type="StyleBoxFlat" id="reroll_disabled_gold"]
-bg_color = Color(0.28, 0.16, 0.03, 0.92)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(1, 0.69, 0, 0.72)
-corner_radius_top_left = 4
-corner_radius_top_right = 16
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 16
-content_margin_left = 20
-content_margin_top = 14
-content_margin_right = 20
-content_margin_bottom = 14
-shadow_color = Color(1, 0.69, 0, 0.4)
-shadow_size = 12
 
 [node name="UpgradeScreen" type="CanvasLayer"]
 theme = ExtResource("2")
@@ -120,15 +103,13 @@ size_flags_vertical = 3
 theme_override_constants/separation = 14
 alignment = 1
 
-[node name="RerollButton" type="Button" parent="Center/Layout"]
+[node name="RerollButton" parent="Center/Layout" instance=ExtResource("3")]
 unique_name_in_owner = true
 z_index = 4
-custom_minimum_size = Vector2(360, 72)
+custom_minimum_size = Vector2(360, 96)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_type_variation = &"ButtonReward"
-theme_override_colors/font_disabled_color = Color(1, 0.82, 0.35, 0.78)
-theme_override_font_sizes/font_size = 24
-theme_override_styles/disabled = SubResource("reroll_disabled_gold")
-disabled = true
-text = "REROLL · SOON"
+title = "REROLL · SOON"
+variant = 1
+min_height = 96.0
+chrome_modulate = Color(1.05, 0.9, 0.55, 1)

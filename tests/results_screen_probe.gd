@@ -33,6 +33,9 @@ func _check_resources() -> int:
 	if script_src.find("grant_run_rewards") < 0:
 		printerr("reward grant path missing")
 		return 1
+	if scene_src.find("glow_cta_button") < 0 or scene_src.find("meta_screen_shell") < 0:
+		printerr("results missing GlowCta / MetaScreenShell wiring")
+		return 1
 	print("resources_ok")
 	return 0
 
@@ -68,7 +71,9 @@ func _check_runtime() -> int:
 		return 1
 
 	var screen: Node = holder.get_child(0)
-	var brand := screen.find_child("Brand", true, false) as Label
+	var brand := screen.find_child("BrandLabel", true, false) as Label
+	if brand == null:
+		brand = screen.find_child("Brand", true, false) as Label
 	if brand == null or brand.text != "RIFTWING":
 		printerr("brand missing")
 		fails += 1
@@ -76,12 +81,18 @@ func _check_runtime() -> int:
 	if title == null or title.text.find("VICTORY") < 0:
 		printerr("victory headline missing: %s" % (title.text if title else "?"))
 		fails += 1
-	var next_btn := screen.find_child("NextSector", true, false) as Button
-	var upgrade_btn := screen.find_child("UpgradeShip", true, false) as Button
-	var home_btn := screen.find_child("Home", true, false) as Button
-	var replay_btn := screen.find_child("ReplayButton", true, false) as Button
+	var next_btn := screen.find_child("NextSector", true, false) as Control
+	var upgrade_btn := screen.find_child("UpgradeShip", true, false) as Control
+	var home_btn := screen.find_child("Home", true, false) as Control
+	var replay_btn := screen.find_child("ReplayButton", true, false) as Control
 	if next_btn == null or upgrade_btn == null or home_btn == null or replay_btn == null:
 		printerr("action buttons incomplete")
+		fails += 1
+	elif not (next_btn is GlowCtaButton) or not (home_btn is GlowCtaButton):
+		printerr("results CTAs are not GlowCtaButton")
+		fails += 1
+	if screen.find_child("Shell", true, false) == null and screen.get_node_or_null("%Shell") == null:
+		printerr("results MetaScreenShell missing")
 		fails += 1
 	if screen.find_child("Scroll", true, false) == null:
 		printerr("results scroll layout missing")

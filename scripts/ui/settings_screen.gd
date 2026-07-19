@@ -1,47 +1,93 @@
 class_name SettingsScreen
 extends Control
-## Settings screen reachable from the main menu's gear button.
-##
-## Master mute + Music/SFX volume steps (persisted via AudioManager prefs),
-## effects quality, haptics, and two-tap Reset Progress.
+## Settings — MetaScreenShell + glow CTAs matching main-menu chrome.
 
-const _BASE_PADDING := 56.0
+const _GLOW := preload("res://scenes/ui/chrome/glow_cta_button.tscn")
 const _VOL_STEP := 0.2
 
-@onready var _safe: MarginContainer = %Safe
-@onready var _audio_button: Button = %AudioButton
-@onready var _music_button: Button = %MusicButton
-@onready var _sfx_button: Button = %SfxButton
-@onready var _quality_button: Button = %QualityButton
-@onready var _haptics_button: Button = %HapticsButton
-@onready var _reset_button: Button = %ResetButton
-@onready var _reset_hint: Label = %ResetHint
-@onready var _back: Button = %BackButton
+@onready var _shell: MetaScreenShell = %Shell
 
+var _audio_btn: GlowCtaButton
+var _music_btn: GlowCtaButton
+var _sfx_btn: GlowCtaButton
+var _quality_btn: GlowCtaButton
+var _haptics_btn: GlowCtaButton
+var _reset_btn: GlowCtaButton
+var _back_btn: GlowCtaButton
+var _reset_hint: Label
 var _reset_armed := false
 
 
 func _ready() -> void:
-	_audio_button.pressed.connect(_on_audio)
-	_music_button.pressed.connect(_on_music)
-	_sfx_button.pressed.connect(_on_sfx)
-	_quality_button.pressed.connect(_on_quality)
-	_haptics_button.pressed.connect(_on_haptics)
-	_reset_button.pressed.connect(_on_reset)
-	_back.pressed.connect(_on_back)
-	get_viewport().size_changed.connect(_apply_safe_area)
-	_apply_safe_area()
+	var body := _shell.get_body()
+	var title := Label.new()
+	title.text = "SETTINGS"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 56)
+	body.add_child(title)
+
+	var subtitle := Label.new()
+	subtitle.text = "AUDIO · FEEL · PROGRESS"
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle.add_theme_font_size_override("font_size", 22)
+	subtitle.add_theme_color_override("font_color", Color(0.7, 0.55, 1, 1))
+	body.add_child(subtitle)
+
+	var panel := PanelContainer.new()
+	panel.theme_type_variation = &"NeonPanel"
+	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.add_child(panel)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 12)
+	panel.add_child(col)
+
+	_audio_btn = _make_row(col, "AUDIO", "", GlowCtaButton.Variant.NAV)
+	_music_btn = _make_row(col, "MUSIC", "", GlowCtaButton.Variant.NAV)
+	_sfx_btn = _make_row(col, "SFX", "", GlowCtaButton.Variant.NAV)
+	_quality_btn = _make_row(col, "EFFECTS", "", GlowCtaButton.Variant.NAV)
+	_haptics_btn = _make_row(col, "HAPTICS", "", GlowCtaButton.Variant.NAV)
+	_reset_btn = _make_row(col, "RESET PROGRESS", "", GlowCtaButton.Variant.SECONDARY)
+
+	_reset_hint = Label.new()
+	_reset_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_reset_hint.add_theme_font_size_override("font_size", 20)
+	_reset_hint.add_theme_color_override("font_color", Color(0.55, 0.7, 0.85, 1))
+	col.add_child(_reset_hint)
+
+	_back_btn = _GLOW.instantiate() as GlowCtaButton
+	body.add_child(_back_btn)
+	_back_btn.configure("BACK TO MENU", "", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN)
+
+	_audio_btn.pressed.connect(_on_audio)
+	_music_btn.pressed.connect(_on_music)
+	_sfx_btn.pressed.connect(_on_sfx)
+	_quality_btn.pressed.connect(_on_quality)
+	_haptics_btn.pressed.connect(_on_haptics)
+	_reset_btn.pressed.connect(_on_reset)
+	_back_btn.pressed.connect(_on_back)
+
 	AudioManager.play_music("menu")
 	_refresh()
 
 
+func _make_row(parent: Node, title: String, sub: String, variant: GlowCtaButton.Variant) -> GlowCtaButton:
+	var btn := _GLOW.instantiate() as GlowCtaButton
+	parent.add_child(btn)
+	btn.configure(title, sub, variant)
+	return btn
+
+
 func _refresh() -> void:
-	_audio_button.text = "AUDIO:  %s" % ("ON" if AudioManager.enabled else "OFF")
-	_music_button.text = "MUSIC:  %d%%" % int(round(AudioManager.music_linear * 100.0))
-	_sfx_button.text = "SFX:  %d%%" % int(round(AudioManager.sfx_linear * 100.0))
-	_quality_button.text = "EFFECTS:  %s" % GameFeel.quality_name()
-	_haptics_button.text = "HAPTICS:  %s" % ("ON" if GameFeel.haptics_enabled else "OFF")
-	_reset_button.text = "RESET PROGRESS?  TAP AGAIN" if _reset_armed else "RESET PROGRESS"
+	_audio_btn.configure("AUDIO:  %s" % ("ON" if AudioManager.enabled else "OFF"), "", GlowCtaButton.Variant.NAV)
+	_music_btn.configure("MUSIC:  %d%%" % int(round(AudioManager.music_linear * 100.0)), "", GlowCtaButton.Variant.NAV)
+	_sfx_btn.configure("SFX:  %d%%" % int(round(AudioManager.sfx_linear * 100.0)), "", GlowCtaButton.Variant.NAV)
+	_quality_btn.configure("EFFECTS:  %s" % GameFeel.quality_name(), "", GlowCtaButton.Variant.NAV)
+	_haptics_btn.configure("HAPTICS:  %s" % ("ON" if GameFeel.haptics_enabled else "OFF"), "", GlowCtaButton.Variant.NAV)
+	_reset_btn.configure(
+		"RESET PROGRESS?  TAP AGAIN" if _reset_armed else "RESET PROGRESS",
+		"",
+		GlowCtaButton.Variant.SECONDARY
+	)
 	_reset_hint.text = "Rift Energy %d · Rift Core %d · Best %d" % [
 		SaveManager.get_rift_energy(), SaveManager.get_rift_core(), SaveManager.get_best_score()]
 
@@ -96,6 +142,11 @@ func _on_reset() -> void:
 	_refresh()
 
 
+func handle_system_back() -> bool:
+	_on_back()
+	return true
+
+
 func _on_back() -> void:
 	AudioManager.play_sfx("ui_back", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
 	SceneRouter.go_to(SceneRouter.SCREEN_MAIN_MENU)
@@ -106,12 +157,3 @@ func _click() -> void:
 	var haptics: HapticsService = PlatformServices.haptics
 	if GameFeel.haptics_enabled and haptics != null:
 		haptics.light()
-
-
-func _apply_safe_area() -> void:
-	var safe := SafeArea.get_logical_rect(get_tree())
-	var full := get_viewport_rect().size
-	_safe.add_theme_constant_override("margin_left", int(_BASE_PADDING + safe.position.x))
-	_safe.add_theme_constant_override("margin_top", int(_BASE_PADDING + safe.position.y))
-	_safe.add_theme_constant_override("margin_right", int(_BASE_PADDING + (full.x - (safe.position.x + safe.size.x))))
-	_safe.add_theme_constant_override("margin_bottom", int(_BASE_PADDING + (full.y - (safe.position.y + safe.size.y))))

@@ -31,16 +31,13 @@ const _EVENT_TIMER_COPY := "2D 14H"
 @onready var _engine_glow: TextureRect = %EngineGlow
 @onready var _planet_accent: TextureRect = %PlanetAccent
 @onready var _holo_pad: TextureRect = %HoloPad
-@onready var _start_button: Button = %StartButton
-@onready var _daily_button: Button = %DailyButton
-@onready var _ships_button: Button = %ShipsButton
-@onready var _upgrades_button: Button = %UpgradesButton
+@onready var _start_button: GlowCtaButton = %StartButton
+@onready var _daily_button: GlowCtaButton = %DailyButton
+@onready var _ships_button: GlowCtaButton = %ShipsButton
+@onready var _upgrades_button: GlowCtaButton = %UpgradesButton
 @onready var _settings_button: Button = %SettingsButton
 @onready var _event_banner: PanelContainer = %EventBanner
 @onready var _event_timer: Label = %EventTimer
-@onready var _start_slot: Control = %StartSlot
-@onready var _start_chrome: TextureRect = %StartChrome
-@onready var _daily_chrome: TextureRect = %DailyChrome
 @onready var _atmos_a: TextureRect = %AtmosEnemyA
 @onready var _atmos_b: TextureRect = %AtmosEnemyB
 @onready var _title: Label = %Title
@@ -55,6 +52,16 @@ func _ready() -> void:
 	if _catalog == null:
 		_catalog = ShipCatalogData.new()
 
+	_start_button.configure("START RUN", "ENDLESS MODE", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN)
+	_daily_button.configure("DAILY CHALLENGE", "COMPLETE AND EARN REWARDS", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.MAGENTA)
+	_ships_button.configure("SHIPS", "COLLECTION", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 104.0)
+	_upgrades_button.configure("UPGRADES", "POWER UP", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 104.0)
+	_daily_button.set_icons(
+		load("res://assets/icons/icon_target.svg") as Texture2D,
+		load("res://assets/icons/icon_chevron.svg") as Texture2D)
+	_ships_button.set_icons(load("res://assets/icons/icon_nav_ship.svg") as Texture2D)
+	_upgrades_button.set_icons(load("res://assets/icons/icon_nav_upgrade.svg") as Texture2D)
+
 	_start_button.pressed.connect(_on_start_run)
 	_daily_button.pressed.connect(_on_daily_challenge)
 	_ships_button.pressed.connect(_on_ships)
@@ -62,7 +69,7 @@ func _ready() -> void:
 	_settings_button.pressed.connect(_on_settings)
 	_event_banner.gui_input.connect(_on_event_gui_input)
 
-	# Probe / hierarchy: primary taller than daily; slots own chrome size.
+	# Probe / hierarchy: primary taller than daily.
 	_start_button.custom_minimum_size = Vector2(0, 156)
 	_daily_button.custom_minimum_size = Vector2(0, 108)
 	_ships_button.custom_minimum_size = Vector2(0, 104)
@@ -101,14 +108,6 @@ func _process(delta: float) -> void:
 	_atmos_b.modulate.a = 0.22 + cos(_hero_time * 0.75) * 0.05
 	var banner_pulse := 0.92 + sin(_hero_time * 1.1) * 0.08
 	_event_banner.modulate = Color(banner_pulse, banner_pulse, 1.0, 1.0)
-	var cta_glow := 0.92 + absf(sin(_hero_time * 1.8)) * 0.08
-	if _start_chrome != null:
-		_start_chrome.modulate = Color(cta_glow, cta_glow, 1.0, 1.0)
-	if _daily_chrome != null:
-		var daily_glow := 0.94 + absf(sin(_hero_time * 1.35)) * 0.06
-		_daily_chrome.modulate = Color(1.0, daily_glow, 1.0, 1.0)
-	if _start_slot != null:
-		_start_slot.modulate = Color(1, 1, 1, 1)
 	var title_glow := 0.9 + sin(_hero_time * 0.85) * 0.1
 	if _brand_logo != null:
 		_brand_logo.modulate = Color(title_glow, title_glow, 1.0, 1.0)

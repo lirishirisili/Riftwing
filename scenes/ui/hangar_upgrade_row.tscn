@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://c0riftwhangarow"]
+[gd_scene load_steps=7 format=3 uid="uid://c0riftwhangarow"]
 
 [ext_resource type="Script" path="res://scripts/ui/hangar_upgrade_row.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/icons/icon_energy.svg" id="2"]
 [ext_resource type="Theme" path="res://resources/theme/riftwing_theme.tres" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/chrome/glow_cta_button.tscn" id="4"]
 
 [sub_resource type="StyleBoxFlat" id="row_panel"]
 bg_color = Color(0.03, 0.08, 0.16, 0.94)
@@ -106,11 +107,11 @@ max_value = 20.0
 value = 0.0
 show_percentage = false
 
-[node name="UpgradeButton" type="Button" parent="Row"]
+[node name="UpgradeButton" parent="Row" instance=ExtResource("4")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(220, 76)
 layout_mode = 2
 size_flags_vertical = 4
-theme_type_variation = &"ButtonSecondary"
-theme_override_font_sizes/font_size = 22
-text = "UPGRADE  200"
+title = "UPGRADE"
+variant = 2
+min_height = 76.0

@@ -3,10 +3,10 @@ extends RefCounted
 ## Computes the usable safe rectangle in logical (stretch) coordinates.
 ##
 ## Devices report a safe area in native window pixels. Because the project uses
-## the "canvas_items" stretch mode at a 1080x1920 base, we convert those pixels
-## into logical coordinates so UI margins line up with the game's coordinate
-## space. On desktop/headless there is no cutout, so the safe area equals the
-## full logical viewport.
+## canvas_items stretch with aspect=expand (1080×1920 base, viewport grows on
+## wider/taller screens), we convert those pixels into logical coordinates so
+## UI margins line up with the game's coordinate space. On desktop/headless
+## there is no cutout, so the safe area equals the full logical viewport.
 ##
 ## Windows often reports the monitor *work area* (excluding the taskbar) as the
 ## display safe area even for a normal game window. Those huge insets are not
@@ -50,7 +50,7 @@ static func get_logical_rect(tree: SceneTree) -> Rect2:
 	return safe.intersection(full)
 
 
-## Returns the logical viewport size (1080x1920 base under canvas_items stretch).
+## Returns the logical viewport size (grows from 1080×1920 under expand stretch).
 static func _get_logical_size(tree: SceneTree) -> Vector2:
 	var root := tree.root
 	var vp_size := Vector2(root.get_visible_rect().size)

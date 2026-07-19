@@ -46,12 +46,14 @@ func _ready() -> void:
 		combat_data = PlayerCombatData.new()
 	_health = combat_data.max_health
 	_adapt_play_rect()
+	_recenter_if_needed()
 	_target = _clamp_to_bounds(global_position)
 	_spawn_time = 0.35
 	_spawn_scale = 0.2
 	set_process(true)
 	set_process_unhandled_input(true)
-	get_viewport().size_changed.connect(_adapt_play_rect)
+	get_viewport().size_changed.connect(_on_viewport_changed)
+	call_deferred("_on_viewport_changed")
 	if not area_entered.is_connected(_on_area_entered):
 		area_entered.connect(_on_area_entered)
 	health_changed.emit(_health, combat_data.max_health)
@@ -214,19 +216,37 @@ func _clamp_to_bounds(pos: Vector2) -> Vector2:
 	)
 
 
-## Expands the authored 1080×1920 playfield when stretch/expand grows the
-## viewport (19.5:9 / 20:9), without mutating the shared Resource.
+func _on_viewport_changed() -> void:
+	_adapt_play_rect()
+	_recenter_if_needed()
+	_target = _clamp_to_bounds(_target)
+
+
+## Keep authored insets (≈90px sides / HUD top) relative to the design box, then
+## grow the playable area with the expanded viewport so tablet sides are not dead.
 func _adapt_play_rect() -> void:
 	if data == null:
 		return
 	var base := data.gameplay_rect
 	var vp := get_viewport().get_visible_rect().size
-	var extra_w := maxf(0.0, vp.x - 1080.0)
-	var extra_h := maxf(0.0, vp.y - 1920.0)
+	var margin_l := base.position.x
+	var margin_t := base.position.y
+	var margin_r := maxf(0.0, 1080.0 - (base.position.x + base.size.x))
+	var margin_b := maxf(0.0, 1920.0 - (base.position.y + base.size.y))
 	_play_rect = Rect2(
-		base.position.x - extra_w * 0.5,
-		base.position.y,
-		base.size.x + extra_w,
-		base.size.y + extra_h
+		margin_l,
+		margin_t,
+		maxf(base.size.x, vp.x - margin_l - margin_r),
+		maxf(base.size.y, vp.y - margin_t - margin_b)
 	)
-	_target = _clamp_to_bounds(_target)
+
+
+## Scene default spawn is 540×1500 (9:16 center). On wider viewports, slide to mid.
+func _recenter_if_needed() -> void:
+	var vp := get_viewport().get_visible_rect().size
+	if vp.x <= 1080.0:
+		return
+	# Only nudge X when still sitting on the authored 9:16 spawn column.
+	if absf(global_position.x - 540.0) < 8.0:
+		global_position.x = vp.x * 0.5
+		_target.x = global_position.x

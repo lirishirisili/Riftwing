@@ -1,0 +1,125 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/chrome/glow_cta_button.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/chrome/cta_start_hex.svg" id="2"]
+
+[sub_resource type="StyleBoxEmpty" id="chrome_btn"]
+
+[node name="GlowCtaButton" type="Control"]
+clip_contents = false
+custom_minimum_size = Vector2(0, 156)
+layout_mode = 3
+anchors_preset = 0
+size_flags_horizontal = 3
+script = ExtResource("1")
+
+[node name="Chrome" type="TextureRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="Button" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"ButtonChrome"
+theme_override_styles/normal = SubResource("chrome_btn")
+theme_override_styles/hover = SubResource("chrome_btn")
+theme_override_styles/pressed = SubResource("chrome_btn")
+theme_override_styles/disabled = SubResource("chrome_btn")
+theme_override_styles/focus = SubResource("chrome_btn")
+flat = true
+text = ""
+
+[node name="Center" type="CenterContainer" parent="Button"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 48.0
+offset_top = 16.0
+offset_right = -48.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ContentRow" type="HBoxContainer" parent="Button/Center"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="LeftIcon" type="TextureRect" parent="Button/Center/ContentRow"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Labels" type="VBoxContainer" parent="Button/Center/ContentRow"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="Title" type="Label" parent="Button/Center/ContentRow/Labels"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.1, 0.55, 1, 0.5)
+theme_override_constants/shadow_outline_size = 6
+theme_override_font_sizes/font_size = 44
+text = "ACTION"
+horizontal_alignment = 1
+
+[node name="SubRow" type="HBoxContainer" parent="Button/Center/ContentRow/Labels"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="SubLineL" type="ColorRect" parent="Button/Center/ContentRow/Labels/SubRow"]
+custom_minimum_size = Vector2(40, 2)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.75, 0.92, 1, 0.55)
+
+[node name="Subtitle" type="Label" parent="Button/Center/ContentRow/Labels/SubRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = ""
+horizontal_alignment = 1
+
+[node name="SubLineR" type="ColorRect" parent="Button/Center/ContentRow/Labels/SubRow"]
+custom_minimum_size = Vector2(40, 2)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.75, 0.92, 1, 0.55)
+
+[node name="RightIcon" type="TextureRect" parent="Button/Center/ContentRow"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5

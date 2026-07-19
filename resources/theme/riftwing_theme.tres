@@ -1,4 +1,6 @@
-[gd_resource type="Theme" load_steps=16 format=3]
+[gd_resource type="Theme" load_steps=17 format=3]
+
+[sub_resource type="StyleBoxEmpty" id="button_chrome_empty"]
 
 [sub_resource type="StyleBoxFlat" id="panel_dark"]
 bg_color = Color(0.02, 0.07, 0.14, 0.92)
@@ -299,6 +301,12 @@ ButtonReward/styles/hover = SubResource("button_reward_hover")
 ButtonReward/styles/pressed = SubResource("button_reward")
 ButtonReward/styles/disabled = SubResource("button_disabled")
 ButtonReward/styles/focus = SubResource("button_reward_hover")
+ButtonChrome/base_type = &"Button"
+ButtonChrome/styles/normal = SubResource("button_chrome_empty")
+ButtonChrome/styles/hover = SubResource("button_chrome_empty")
+ButtonChrome/styles/pressed = SubResource("button_chrome_empty")
+ButtonChrome/styles/disabled = SubResource("button_chrome_empty")
+ButtonChrome/styles/focus = SubResource("button_chrome_empty")
 ChipPanel/base_type = &"PanelContainer"
 ChipPanel/styles/panel = SubResource("chip_panel")
 NeonPanel/base_type = &"PanelContainer"

@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://c0riftwresult00"]
+[gd_scene load_steps=14 format=3 uid="uid://c0riftwresult00"]
 
 [ext_resource type="Script" path="res://scripts/ui/results_screen.gd" id="1"]
 [ext_resource type="Theme" path="res://resources/theme/riftwing_theme.tres" id="2"]
@@ -7,6 +7,8 @@
 [ext_resource type="Texture2D" path="res://assets/art/ships/vanguard_mk2.svg" id="5"]
 [ext_resource type="Texture2D" path="res://assets/effects/engine_glow.svg" id="6"]
 [ext_resource type="Texture2D" path="res://assets/icons/icon_boss.svg" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/ui/chrome/glow_cta_button.tscn" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/ui/chrome/meta_screen_shell.tscn" id="9"]
 
 [sub_resource type="StyleBoxFlat" id="brand_frame"]
 bg_color = Color(0.02, 0.06, 0.14, 0.75)
@@ -112,6 +114,13 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 theme = ExtResource("2")
 script = ExtResource("1")
+
+[node name="Shell" parent="." instance=ExtResource("9")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 
 [node name="Base" type="ColorRect" parent="."]
 layout_mode = 1
@@ -477,42 +486,44 @@ theme_override_constants/separation = 12
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="UpgradeShip" type="Button" parent="Safe/Root/Buttons/PrimaryRow"]
+[node name="UpgradeShip" parent="Safe/Root/Buttons/PrimaryRow" instance=ExtResource("8")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 96)
+custom_minimum_size = Vector2(0, 108)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"ButtonPrimary"
-theme_override_font_sizes/font_size = 28
-text = "UPGRADE SHIP"
+title = "UPGRADE SHIP"
+variant = 0
+min_height = 108.0
 
-[node name="NextSector" type="Button" parent="Safe/Root/Buttons/PrimaryRow"]
+[node name="NextSector" parent="Safe/Root/Buttons/PrimaryRow" instance=ExtResource("8")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 96)
+custom_minimum_size = Vector2(0, 108)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"ButtonReward"
-theme_override_font_sizes/font_size = 30
-text = "NEXT SECTOR  >>"
+title = "NEXT SECTOR  >>"
+variant = 0
+min_height = 108.0
+pulse = 1
+chrome_modulate = Color(1.05, 0.95, 0.75, 1)
 
 [node name="SecondaryRow" type="HBoxContainer" parent="Safe/Root/Buttons"]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="ReplayButton" type="Button" parent="Safe/Root/Buttons/SecondaryRow"]
+[node name="ReplayButton" parent="Safe/Root/Buttons/SecondaryRow" instance=ExtResource("8")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 72)
+custom_minimum_size = Vector2(0, 88)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"ButtonTertiary"
-theme_override_font_sizes/font_size = 26
-text = "REPLAY"
+title = "REPLAY"
+variant = 2
+min_height = 88.0
 
-[node name="Home" type="Button" parent="Safe/Root/Buttons/SecondaryRow"]
+[node name="Home" parent="Safe/Root/Buttons/SecondaryRow" instance=ExtResource("8")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 72)
+custom_minimum_size = Vector2(0, 88)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"ButtonTertiary"
-theme_override_font_sizes/font_size = 26
-text = "HOME"
+title = "HOME"
+variant = 2
+min_height = 88.0

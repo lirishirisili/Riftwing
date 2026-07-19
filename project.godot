@@ -15,6 +15,7 @@ config/description="RIFTWING - portrait mobile arcade shooter (prototype)."
 config/version="0.1.0"
 run/main_scene="res://scenes/app/app_root.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
+config/quit_on_go_back=false
 boot_splash/bg_color=Color(0.011765, 0.027451, 0.070588, 1)
 config/icon="res://assets/branding/icon_main_192.png"
 
@@ -38,7 +39,7 @@ window/size/viewport_height=1920
 window/size/window_width_override=540
 window/size/window_height_override=960
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep_width"
+window/stretch/aspect="expand"
 window/handheld/orientation=1
 
 [gui]

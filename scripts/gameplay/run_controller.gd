@@ -178,6 +178,25 @@ func _begin_run() -> void:
 	_show_banner("ENTER THE RIFT", 1.4)
 
 
+## Android system Back / AppRoot routing: pause the run instead of quitting.
+## Returns true when the event is consumed. Uses request_pause (not toggle) so a
+## same-frame KEY_BACK cannot immediately undo the pause overlay.
+func handle_system_back() -> bool:
+	if _run_over or _phase == Phase.ENDING:
+		# Absorb during end sequence so Back cannot kill the process mid-results.
+		return true
+	if _upgrade_screen != null and _upgrade_screen.visible:
+		# Keep the level-up choice open; never exit the app from here.
+		return true
+	if _hud == null:
+		return true
+	if _hud.is_hud_paused():
+		_hud.force_resume()
+	else:
+		_hud.request_pause()
+	return true
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:

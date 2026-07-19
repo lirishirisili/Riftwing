@@ -56,6 +56,11 @@ func get_current_screen_id() -> String:
 	return _current_id
 
 
+## Returns the live screen node, or null if none is mounted.
+func get_current_screen() -> Node:
+	return _current if is_instance_valid(_current) else null
+
+
 ## Replaces the active screen with the screen for the given identifier.
 ##
 ## An optional `payload` dictionary is handed to the new screen: if the

@@ -10,16 +10,12 @@ extends Control
 const _MAP_PATH := "res://resources/stages/nova_sector_map.tres"
 const _TEX_NODE_ACTIVE: Texture2D = preload("res://assets/ui/chrome/map_node_active.svg")
 const _TEX_NODE_LOCKED: Texture2D = preload("res://assets/ui/chrome/map_node_locked.svg")
-const _BASE_PADDING := 32.0
 const _NODE_RADIUS := 46.0
 const _MAP_HEIGHT := 1180.0
-const _SCROLL_SPEED := 12.0
 const _ICON_SIZE := 72
 
-@onready var _parallax: ParallaxBackground = $Background
-@onready var _safe: MarginContainer = %Safe
-@onready var _energy_value: Label = %EnergyValue
-@onready var _core_value: Label = %CoreValue
+@onready var _shell: MetaScreenShell = %Shell
+@onready var _legacy_safe: MarginContainer = %Safe
 @onready var _sector_label: Label = %SectorLabel
 @onready var _progress_label: Label = %ProgressLabel
 @onready var _map_canvas: Control = %MapCanvas
@@ -32,11 +28,11 @@ const _ICON_SIZE := 72
 @onready var _first_clear_label: Label = %FirstClearLabel
 @onready var _stars_label: Label = %StarsLabel
 @onready var _lock_label: Label = %LockLabel
-@onready var _launch_button: Button = %LaunchButton
-@onready var _normal_button: Button = %NormalButton
-@onready var _hard_button: Button = %HardButton
-@onready var _back_button: Button = %BackButton
-@onready var _hangar_button: Button = %HangarButton
+@onready var _launch_button: GlowCtaButton = %LaunchButton
+@onready var _normal_button: GlowCtaButton = %NormalButton
+@onready var _hard_button: GlowCtaButton = %HardButton
+@onready var _back_button: GlowCtaButton = %BackButton
+@onready var _hangar_button: GlowCtaButton = %HangarButton
 @onready var _feedback_label: Label = %FeedbackLabel
 
 var _map: StageMapData
@@ -61,16 +57,14 @@ func _ready() -> void:
 	if _map.find_by_id(_selected_id) == null:
 		_selected_id = _map.default_stage_id()
 
+	_mount_meta_shell()
 	_back_button.pressed.connect(_on_back)
 	_hangar_button.pressed.connect(_on_hangar)
 	_launch_button.pressed.connect(_on_launch)
 	_normal_button.pressed.connect(_on_normal)
 	_hard_button.pressed.connect(_on_hard)
-	SaveManager.currencies_changed.connect(_on_currencies_changed)
 	SaveManager.campaign_changed.connect(_on_campaign_changed)
-	get_viewport().size_changed.connect(_apply_safe_area)
 	_map_canvas.draw.connect(_on_map_draw)
-	_apply_safe_area()
 
 	_sector_label.text = "%s  %s" % [_map.sector_code, _map.sector_name]
 	_build_nodes()
@@ -80,16 +74,55 @@ func _ready() -> void:
 	set_process(true)
 
 
+func _mount_meta_shell() -> void:
+	# Prefer shared MetaScreenShell chrome; keep map body under %Body.
+	for path in ["Base", "Background", "VignetteTop", "VignetteBottom"]:
+		var n := get_node_or_null(path)
+		if n != null:
+			n.visible = false
+	var root := _legacy_safe.get_node_or_null("Root") as VBoxContainer
+	if root == null or _shell == null:
+		return
+	var body := _shell.get_body()
+	var to_move: Array[Node] = []
+	for child in root.get_children():
+		if child.name != "TopBar":
+			to_move.append(child)
+	for child in to_move:
+		root.remove_child(child)
+		body.add_child(child)
+		_adopt_owner(child)
+	_legacy_safe.visible = false
+	if _back_button.get_parent() != null:
+		_back_button.get_parent().remove_child(_back_button)
+	_back_button.configure("BACK", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 68.0)
+	_shell.set_trailing(_back_button)
+	_adopt_owner(_back_button)
+	_hangar_button.configure("HANGAR", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 96.0)
+	_launch_button.configure("LAUNCH", "", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN)
+
+
+func _adopt_owner(node: Node) -> void:
+	## Keep screen % unique names on self; GlowCta internals stay owned by the instance.
+	if node is GlowCtaButton:
+		node.owner = self
+		for child in node.get_children():
+			_set_subtree_owner(child, node)
+		return
+	node.owner = self
+	for child in node.get_children():
+		_adopt_owner(child)
+
+
+func _set_subtree_owner(node: Node, new_owner: Node) -> void:
+	node.owner = new_owner
+	for child in node.get_children():
+		_set_subtree_owner(child, new_owner)
+
+
 func _process(delta: float) -> void:
-	_parallax.scroll_offset.y += delta * _SCROLL_SPEED
 	_pulse_time += delta
 	_map_canvas.queue_redraw()
-	# Stronger CTA pulse when launch is available.
-	if _launch_button != null and not _launch_button.disabled:
-		var g := 0.88 + absf(sin(_pulse_time * 2.1)) * 0.12
-		_launch_button.modulate = Color(g, g, 1.0, 1.0)
-	elif _launch_button != null:
-		_launch_button.modulate = Color.WHITE
 
 
 # --- Build ------------------------------------------------------------------
@@ -120,17 +153,13 @@ func _build_nodes() -> void:
 # --- Refresh ----------------------------------------------------------------
 
 func _refresh_all() -> void:
-	_refresh_currencies()
+	if _shell != null:
+		_shell.refresh_currencies()
 	_refresh_progress()
 	_refresh_nodes()
 	_refresh_detail()
 	_refresh_difficulty()
 	_map_canvas.queue_redraw()
-
-
-func _refresh_currencies() -> void:
-	_energy_value.text = _format_int(SaveManager.get_rift_energy())
-	_core_value.text = _format_int(SaveManager.get_rift_core())
 
 
 func _refresh_progress() -> void:
@@ -216,33 +245,39 @@ func _refresh_detail() -> void:
 	_stars_label.text = "STARS  %s\n%s" % [_star_text(earned), "\n".join(obj)]
 
 	var can_launch := SaveManager.can_launch_stage(_map, stage.id)
-	_launch_button.disabled = not can_launch
+	_launch_button.set_enabled(can_launch)
 	if not unlocked:
 		_lock_label.visible = true
 		_lock_label.text = "LOCKED  ·  Clear the previous stage"
-		_launch_button.text = "LOCKED"
-		_launch_button.theme_type_variation = &"ButtonTertiary"
+		_launch_button.configure("LOCKED", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE)
+		_launch_button.set_enabled(false)
 	elif SaveManager.get_campaign_difficulty() != SaveManager.DIFFICULTY_NORMAL:
 		_lock_label.visible = true
 		_lock_label.text = "HARD difficulty is locked in this prototype"
-		_launch_button.text = "LOCKED"
-		_launch_button.theme_type_variation = &"ButtonTertiary"
+		_launch_button.configure("LOCKED", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE)
+		_launch_button.set_enabled(false)
 	else:
 		_lock_label.visible = false
-		_launch_button.text = "LAUNCH"
-		_launch_button.theme_type_variation = &"ButtonPrimary"
+		_launch_button.configure(
+			"LAUNCH",
+			"",
+			GlowCtaButton.Variant.PRIMARY,
+			GlowCtaButton.Pulse.CYAN if can_launch else GlowCtaButton.Pulse.NONE)
+		_launch_button.set_enabled(can_launch)
 
 
 func _refresh_difficulty() -> void:
 	var normal := SaveManager.get_campaign_difficulty() == SaveManager.DIFFICULTY_NORMAL
-	_normal_button.disabled = false
-	_hard_button.disabled = false
-	_normal_button.theme_type_variation = &"ButtonPrimary" if normal else &"ButtonTertiary"
-	_hard_button.theme_type_variation = &"ButtonTertiary"
-	_hard_button.modulate = Color(0.55, 0.45, 0.7, 1)
-	_hard_button.text = "HARD  🔒"
-	_normal_button.text = "NORMAL"
-	_normal_button.modulate = Color.WHITE
+	_normal_button.set_enabled(true)
+	_hard_button.set_enabled(true)
+	if normal:
+		_normal_button.configure("NORMAL", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.CYAN, 72.0)
+		_normal_button.chrome_modulate = Color(1, 1, 1, 1)
+	else:
+		_normal_button.configure("NORMAL", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 72.0)
+		_normal_button.chrome_modulate = Color(0.7, 0.75, 0.85, 1)
+	_hard_button.configure("HARD  🔒", "", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.NONE, 72.0)
+	_hard_button.chrome_modulate = Color(0.55, 0.45, 0.7, 1)
 
 
 # --- Map draw ---------------------------------------------------------------
@@ -411,6 +446,11 @@ func _on_hard() -> void:
 	_refresh_all()
 
 
+func handle_system_back() -> bool:
+	_on_back()
+	return true
+
+
 func _on_back() -> void:
 	AudioManager.play_sfx("ui_back", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
 	SceneRouter.go_to(SceneRouter.SCREEN_MAIN_MENU)
@@ -419,10 +459,6 @@ func _on_back() -> void:
 func _on_hangar() -> void:
 	_click()
 	SceneRouter.go_to(SceneRouter.SCREEN_HANGAR)
-
-
-func _on_currencies_changed(_e: int, _c: int) -> void:
-	_refresh_currencies()
 
 
 func _on_campaign_changed(stage_id: String) -> void:
@@ -479,11 +515,3 @@ func _format_int(value: int) -> String:
 			out = "," + out
 	return ("-" if value < 0 else "") + out
 
-
-func _apply_safe_area() -> void:
-	var safe := SafeArea.get_logical_rect(get_tree())
-	var full := get_viewport_rect().size
-	_safe.add_theme_constant_override("margin_left", int(_BASE_PADDING + safe.position.x))
-	_safe.add_theme_constant_override("margin_top", int(_BASE_PADDING + safe.position.y))
-	_safe.add_theme_constant_override("margin_right", int(_BASE_PADDING + (full.x - (safe.position.x + safe.size.x))))
-	_safe.add_theme_constant_override("margin_bottom", int(_BASE_PADDING + (full.y - (safe.position.y + safe.size.y))))

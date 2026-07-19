@@ -1,5 +1,29 @@
 # Changelog
 
+## Tablet Full-Bleed Stretch
+- Restored `window/stretch/aspect=expand` (was `keep_width`) so wider/taller screens fill without black pillarbox bars.
+- `MetaScreenShell` resizes keyart/parallax plates on viewport change to cover expanded logical size.
+- Playfield insets preserved; playable width grows with viewport (no dead side lanes on tablets).
+- Space backdrop: replaced hard 68%-width CenterDim column with a soft full-bleed gradient (no bright side bands / moon seams).
+- Probes smoke `1600×2560` tablet portrait; SafeArea docs note expand stretch.
+
+## Universal Glow UI Pass
+- Shared kit: `GlowCtaButton` (hex/bar chrome + empty `ButtonChrome`) and `MetaScreenShell` (cinematic keyart, tech header, currency chips, `%Body`).
+- Meta screens (stage map, hangar, results, settings, placeholder) use MetaShell + glow CTAs; pause RESUME/QUIT and upgrade REROLL use GlowCta (combat HUD vitals unchanged).
+- Main menu CTA stack migrated to `GlowCtaButton` instances (START / DAILY / SHIPS / UPGRADES).
+- Theme adds `ButtonChrome` empty styles. Probes: `glow_ui_kit_probe`, updated main_menu / stage_map / hangar / results probes.
+- Brand remains **RIFTWING** only. Navigation and balance unchanged.
+
+## Modern Audio Bank Refresh
+- Regenerated all SFX + music OGGs via upgraded `tools/generate_audio_banks.gd` (modern sci-fi, not chiptune).
+- Soft UI ticks, layered combat hits/explosions, deeper `fire_loop`, atmospheric menu/run/boss pads.
+- Menu music retuned: deep ambient pad only (removed gliding mid leads that sounded like a whine).
+- Cue IDs and `AudioManager` wiring unchanged. Python helper marked legacy; GD script is canonical.
+
+## Android Back → Pause (In-Run)
+- Disabled `application/config/quit_on_go_back` — default Godot was quitting right after pause opened.
+- System Back owned by AppRoot: run → HUD pause (second Back resumes); upgrade/end absorbed; meta → home; main menu → quit.
+
 ## Main Menu Visual Fidelity
 - Regenerated metallic `logo_riftwing.png` (true alpha) + cinematic `hero_vanguard_menu.png` matching the high-fi mockup ship.
 - CTA chrome: full-bleed glow hex SVGs (`cta_start_hex` / `cta_daily_bar` / `cta_nav_hex`) stretched to slot; START RUN + `ENDLESS MODE` perfectly centered.

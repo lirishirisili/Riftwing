@@ -151,13 +151,23 @@ func _check_hangar_screen() -> int:
 	if screen == null:
 		printerr("HangarScreen instance missing")
 		return 1
-	var name_label := screen.get_node("%ShipName") as Label
+	var name_label := screen.get_node_or_null("%ShipName") as Label
+	if name_label == null:
+		name_label = screen.find_child("ShipName", true, false) as Label
 	if name_label == null or name_label.text.find("VANGUARD") < 0:
 		printerr("ship name missing/wrong: %s" % (name_label.text if name_label else "null"))
 		return 1
-	var brand := screen.find_child("Brand", true, false) as Label
+	var brand := screen.find_child("BrandLabel", true, false) as Label
+	if brand == null:
+		brand = screen.find_child("Brand", true, false) as Label
 	if brand == null or brand.text != "RIFTWING":
 		printerr("branding missing")
+		return 1
+	if screen.find_child("Shell", true, false) == null:
+		printerr("MetaScreenShell missing on hangar")
+		return 1
+	if screen.find_child("EquipButton", true, false) == null or not (screen.find_child("EquipButton", true, false) is GlowCtaButton):
+		printerr("hangar EQUIP not GlowCtaButton")
 		return 1
 	var track := (load("res://resources/ships/vanguard_mk2.tres") as ShipData).weapons_track
 	var before_level := int(sm.call("get_upgrade_level", "vanguard_mk2", "weapons"))

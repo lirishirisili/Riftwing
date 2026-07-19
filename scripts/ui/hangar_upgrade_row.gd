@@ -6,7 +6,7 @@ extends PanelContainer
 ## The row never spends currency itself — it emits `upgrade_requested` and the
 ## hangar screen calls SaveManager.try_purchase_upgrade.
 ## Track chrome is color-coded: weapons purple, shield/engine cyan, drones green,
-## ultimate orange.
+## ultimate orange. UPGRADE uses compact nav GlowCta.
 
 signal upgrade_requested(track_id: String)
 signal confirm_armed(track_id: String)
@@ -26,7 +26,7 @@ var _armed: bool = false
 @onready var _level_label: Label = %LevelLabel
 @onready var _benefit: Label = %Benefit
 @onready var _bar: ProgressBar = %Bar
-@onready var _button: Button = %UpgradeButton
+@onready var _button: GlowCtaButton = %UpgradeButton
 
 
 func _ready() -> void:
@@ -46,7 +46,6 @@ func setup(track_data: HangarUpgradeTrackData) -> void:
 func _track_accent() -> Color:
 	if track == null:
 		return Palette.get_color("cyan", Color(0, 0.84, 1))
-	# Explicit category roles match references/03_hangar.png (accent_token is fallback).
 	match track.category:
 		HangarUpgradeTrackData.Category.WEAPONS:
 			return Palette.get_color("purple", Color(0.55, 0.26, 1))
@@ -70,7 +69,6 @@ func _apply_track_chrome() -> void:
 	_title.add_theme_color_override("font_color", accent)
 	_benefit.add_theme_color_override("font_color", accent.lightened(0.15))
 	_bar.modulate = accent
-	# Soft row tint + stronger accent rim so tracks read at a glance.
 	modulate = Color(
 		lerpf(1.0, accent.r, 0.12),
 		lerpf(1.0, accent.g, 0.12),
@@ -112,30 +110,40 @@ func refresh(level: int, cost: int, can_afford: bool, ship_locked: bool) -> void
 
 	if _locked_ship:
 		_armed = false
-		_button.disabled = true
-		_button.text = "LOCKED"
+		_button.configure("LOCKED", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 76.0)
+		_button.set_enabled(false)
 		return
 
 	if _maxed:
 		_armed = false
-		_button.disabled = true
-		_button.text = "MAX"
+		_button.configure("MAX", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 76.0)
+		_button.set_enabled(false)
 		return
 
-	_button.disabled = false
+	_button.set_enabled(true)
 	if _armed:
-		_button.text = "BUY  %s" % _format_int(cost)
-		_button.theme_type_variation = &"ButtonPrimary"
-		_button.modulate = Palette.get_color("gold", Color(1, 0.69, 0)) if can_afford else Palette.get_color("danger", Color(1, 0.23, 0.31))
+		_button.configure(
+			"BUY  %s" % _format_int(cost),
+			"",
+			GlowCtaButton.Variant.PRIMARY,
+			GlowCtaButton.Pulse.NONE,
+			76.0)
+		_button.chrome_modulate = (
+			Palette.get_color("gold", Color(1, 0.69, 0))
+			if can_afford
+			else Palette.get_color("danger", Color(1, 0.23, 0.31)))
 	else:
-		_button.text = "UP  %s" % _format_int(cost)
-		_button.theme_type_variation = &"ButtonSecondary"
+		_button.configure(
+			"UP  %s" % _format_int(cost),
+			"",
+			GlowCtaButton.Variant.NAV,
+			GlowCtaButton.Pulse.NONE,
+			76.0)
 		var accent := _track_accent()
-		_button.modulate = Color(
-			lerpf(1.0, accent.r, 0.35),
-			lerpf(1.0, accent.g, 0.35),
-			lerpf(1.0, accent.b, 0.35),
-			1.0) if can_afford else Color(0.55, 0.55, 0.6, 1)
+		_button.chrome_modulate = (
+			Color(lerpf(1.0, accent.r, 0.35), lerpf(1.0, accent.g, 0.35), lerpf(1.0, accent.b, 0.35), 1.0)
+			if can_afford
+			else Color(0.55, 0.55, 0.6, 1))
 
 
 func clear_arm() -> void:
@@ -154,7 +162,6 @@ func _on_button_pressed() -> void:
 		confirm_armed.emit(track.id)
 		AudioManager.play_sfx("ui_confirm", Vector2.ZERO, AudioManager.PRIORITY_LOW)
 		return
-	# Second tap: request the purchase. Hangar clears arm after SaveManager answers.
 	upgrade_requested.emit(track.id)
 
 

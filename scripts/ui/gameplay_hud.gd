@@ -32,8 +32,8 @@ const _ICON_LASER := "res://assets/icons/icon_laser.svg"
 @onready var _ability_left: AbilityButton = $Safe/Root/Bottom/AbilityLeft
 @onready var _ability_right: AbilityButton = $Safe/Root/Bottom/AbilityRight
 @onready var _pause_overlay: Control = $PauseOverlay
-@onready var _resume_btn: Button = $PauseOverlay/Center/Panel/VBox/ResumeButton
-@onready var _quit_btn: Button = $PauseOverlay/Center/Panel/VBox/QuitButton
+@onready var _resume_btn: GlowCtaButton = %ResumeButton
+@onready var _quit_btn: GlowCtaButton = %QuitButton
 
 var _player: PlayerShip
 var _xp: ExperienceTracker
@@ -134,6 +134,19 @@ func set_combo(combo: int) -> void:
 
 func is_hud_paused() -> bool:
 	return _paused_by_hud
+
+
+## Opens the pause overlay (no-op if already paused). Used by system Back.
+func request_pause() -> void:
+	_on_pause_pressed()
+
+
+## Toggle pause/resume — Escape / pause action / Android Back while paused.
+func toggle_pause() -> void:
+	if _paused_by_hud:
+		_on_resume_pressed()
+	else:
+		_on_pause_pressed()
 
 
 func force_resume() -> void:
@@ -242,9 +255,8 @@ func _on_quit_pressed() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Escape / mapped pause only. Android system Back is handled in AppRoot via
+	# NOTIFICATION_WM_GO_BACK_REQUEST so we never double-toggle with KEY_BACK.
 	if event.is_action_pressed("pause"):
-		if _paused_by_hud:
-			_on_resume_pressed()
-		else:
-			_on_pause_pressed()
+		toggle_pause()
 		get_viewport().set_input_as_handled()

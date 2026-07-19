@@ -8,13 +8,13 @@ extends Control
 
 const _RULES_PATH := "res://resources/progression/reward_rules_default.tres"
 const _CATALOG_PATH := "res://resources/ships/ship_catalog_default.tres"
-const _BASE_PADDING := 36.0
 const _SCROLL_SPEED := 10.0
 const _ICON_ENERGY := "res://assets/icons/icon_energy.svg"
 const _ICON_CORE := "res://assets/icons/icon_crystal.svg"
 const _ICON_BOSS := "res://assets/icons/icon_boss.svg"
 const _ICON_MISSILE := "res://assets/icons/icon_missile.svg"
 
+@onready var _shell: MetaScreenShell = %Shell
 @onready var _parallax: ParallaxBackground = $Background
 @onready var _nebula: Sprite2D = %NebulaSprite
 @onready var _safe: MarginContainer = $Safe
@@ -32,10 +32,10 @@ const _ICON_MISSILE := "res://assets/icons/icon_missile.svg"
 @onready var _stats_box: VBoxContainer = %StatsBox
 @onready var _reward_box: HBoxContainer = %RewardBox
 @onready var _progress_label: Label = $Safe/Root/ProgressPanel/ProgressLabel
-@onready var _next_button: Button = %NextSector
-@onready var _upgrade_button: Button = %UpgradeShip
-@onready var _replay_button: Button = %ReplayButton
-@onready var _home_button: Button = %Home
+@onready var _next_button: GlowCtaButton = %NextSector
+@onready var _upgrade_button: GlowCtaButton = %UpgradeShip
+@onready var _replay_button: GlowCtaButton = %ReplayButton
+@onready var _home_button: GlowCtaButton = %Home
 @onready var _confetti: CPUParticles2D = %Confetti
 
 var _stats: RunStats
@@ -68,14 +68,49 @@ func _ready() -> void:
 	_granted_now = SaveManager.grant_run_rewards(_stats.run_id, _rewards, _stats)
 
 	_ensure_scroll_layout()
-	get_viewport().size_changed.connect(_apply_safe_area)
-	_apply_safe_area()
+	_mount_meta_shell()
+	get_viewport().size_changed.connect(_on_viewport_changed)
+	_on_viewport_changed()
 	_populate()
 	_wire_buttons()
 	_play_intro()
 	GameFeel.debug_markers_enabled = false
 	AudioManager.stop_music()
 	set_process(true)
+
+
+func _mount_meta_shell() -> void:
+	for path in ["Base", "Background", "VignetteTop", "VignetteBottom"]:
+		var n := get_node_or_null(path)
+		if n != null:
+			n.visible = false
+	if _shell == null or _safe == null:
+		return
+	var column := _safe.get_node_or_null("Column") as VBoxContainer
+	if column == null:
+		return
+	_safe.remove_child(column)
+	_shell.get_body().add_child(column)
+	_adopt_owner(column)
+	_safe.visible = false
+	_shell.refresh_currencies()
+
+
+func _adopt_owner(node: Node) -> void:
+	if node is GlowCtaButton:
+		node.owner = self
+		for child in node.get_children():
+			_set_subtree_owner(child, node)
+		return
+	node.owner = self
+	for child in node.get_children():
+		_adopt_owner(child)
+
+
+func _set_subtree_owner(node: Node, new_owner: Node) -> void:
+	node.owner = new_owner
+	for child in node.get_children():
+		_set_subtree_owner(child, new_owner)
 
 
 ## Sticky CTAs + scrollable summary so safe-area phones never clip buttons.
@@ -112,7 +147,8 @@ func _ensure_scroll_layout() -> void:
 
 
 func _process(delta: float) -> void:
-	_parallax.scroll_offset.y += delta * _SCROLL_SPEED
+	if _parallax != null and _parallax.visible:
+		_parallax.scroll_offset.y += delta * _SCROLL_SPEED
 	_hero_time += delta
 	if _hero_ship != null:
 		var pulse := 1.0 + sin(_hero_time * 1.4) * 0.02
@@ -127,21 +163,9 @@ func _process(delta: float) -> void:
 	if _best_badge != null and _best_badge.visible:
 		var glow := 0.9 + absf(sin(_hero_time * 2.0)) * 0.1
 		_best_badge.modulate = Color(glow, glow * 0.95, 0.85, 1.0)
-	if _stats != null and _stats.victory and _next_button != null:
-		var g := 0.92 + absf(sin(_hero_time * 1.6)) * 0.08
-		_next_button.modulate = Color(g, g * 0.95, 0.85, 1.0)
-	elif _replay_button != null and _stats != null and not _stats.victory:
-		var g2 := 0.92 + absf(sin(_hero_time * 1.6)) * 0.08
-		_replay_button.modulate = Color(g2, g2, 1.0, 1.0)
 
 
-func _apply_safe_area() -> void:
-	var safe := SafeArea.get_logical_rect(get_tree())
-	var full := get_viewport_rect().size
-	_safe.add_theme_constant_override("margin_left", int(_BASE_PADDING + safe.position.x))
-	_safe.add_theme_constant_override("margin_top", int(_BASE_PADDING + safe.position.y))
-	_safe.add_theme_constant_override("margin_right", int(_BASE_PADDING + (full.x - (safe.position.x + safe.size.x))))
-	_safe.add_theme_constant_override("margin_bottom", int(_BASE_PADDING + (full.y - (safe.position.y + safe.size.y))))
+func _on_viewport_changed() -> void:
 	call_deferred("_recenter_hero")
 	call_deferred("_recenter_confetti")
 
@@ -172,10 +196,10 @@ func _populate() -> void:
 		_set_wing_tint(Palette.get_color("cyan", Color(0, 0.84, 1)))
 		if _nebula != null:
 			_nebula.modulate = Color(0.55, 0.45, 1.0, 0.55)
-		_next_button.theme_type_variation = &"ButtonReward"
-		_next_button.text = "NEXT SECTOR  >>"
-		_upgrade_button.theme_type_variation = &"ButtonPrimary"
-		_replay_button.theme_type_variation = &"ButtonTertiary"
+		_next_button.configure("NEXT SECTOR  >>", "", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN, 108.0)
+		_next_button.chrome_modulate = Color(1.05, 0.95, 0.75, 1)
+		_upgrade_button.configure("UPGRADE SHIP", "", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.NONE, 108.0)
+		_replay_button.configure("REPLAY", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 88.0)
 	else:
 		_title.text = "DEFEAT"
 		_title.add_theme_color_override("font_color", Palette.get_color("danger", Color(1, 0.23, 0.31)))
@@ -185,10 +209,11 @@ func _populate() -> void:
 		_set_wing_tint(Palette.get_color("danger", Color(1, 0.23, 0.31)))
 		if _nebula != null:
 			_nebula.modulate = Color(0.55, 0.2, 0.35, 0.45)
-		_next_button.theme_type_variation = &"ButtonTertiary"
-		_next_button.text = "SECTOR MAP"
-		_upgrade_button.theme_type_variation = &"ButtonSecondary"
-		_replay_button.theme_type_variation = &"ButtonPrimary"
+		_next_button.configure("SECTOR MAP", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 108.0)
+		_next_button.chrome_modulate = Color.WHITE
+		_upgrade_button.configure("UPGRADE SHIP", "", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.NONE, 108.0)
+		_replay_button.configure("REPLAY", "", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN, 88.0)
+	_home_button.configure("HOME", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 88.0)
 
 	_score_value.text = _format_int(_stats.score)
 	_best_badge.visible = _was_new_best or (_stats.score > 0 and _stats.score >= SaveManager.get_best_score())
@@ -396,6 +421,11 @@ func _on_replay() -> void:
 		"stage_id": _stats.stage_id,
 	}
 	SceneRouter.go_to(SceneRouter.SCREEN_RUN, payload)
+
+
+func handle_system_back() -> bool:
+	_on_home()
+	return true
 
 
 func _on_home() -> void:

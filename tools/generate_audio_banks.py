@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Synthesize neon arcade SFX + music loops for RIFTWING (stdlib + ffmpeg)."""
+"""Legacy helper — canonical banks come from generate_audio_banks.gd (modern sci-fi).
+
+Prefer:
+  godot --headless --path . --script res://tools/generate_audio_banks.gd
+"""
 from __future__ import annotations
 
 import math

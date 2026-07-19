@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3 uid="uid://c0riftwmainmenu"]
+[gd_scene load_steps=35 format=3 uid="uid://c0riftwmainmenu"]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1"]
 [ext_resource type="Theme" path="res://resources/theme/riftwing_theme.tres" id="2"]
@@ -28,6 +28,7 @@
 [ext_resource type="Texture2D" path="res://assets/icons/icon_nav_ship.svg" id="26"]
 [ext_resource type="Texture2D" path="res://assets/icons/icon_nav_upgrade.svg" id="27"]
 [ext_resource type="Texture2D" path="res://assets/branding/logo_riftwing.png" id="28"]
+[ext_resource type="PackedScene" path="res://scenes/ui/chrome/glow_cta_button.tscn" id="29"]
 
 [sub_resource type="StyleBoxFlat" id="event_panel"]
 bg_color = Color(0.08, 0.04, 0.18, 0.94)
@@ -584,351 +585,46 @@ size_flags_vertical = 0
 size_flags_horizontal = 3
 theme_override_constants/separation = 16
 
-[node name="StartSlot" type="Control" parent="Safe/Root/CtaStack"]
+[node name="StartButton" parent="Safe/Root/CtaStack" instance=ExtResource("29")]
 unique_name_in_owner = true
-clip_contents = false
 custom_minimum_size = Vector2(0, 156)
 layout_mode = 2
-size_flags_vertical = 0
+title = "START RUN"
+subtitle = "ENDLESS MODE"
+variant = 0
+pulse = 1
 
-[node name="StartChrome" type="TextureRect" parent="Safe/Root/CtaStack/StartSlot"]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("16")
-expand_mode = 1
-stretch_mode = 0
-
-[node name="StartButton" type="Button" parent="Safe/Root/CtaStack/StartSlot"]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_type_variation = &"ButtonPrimary"
-theme_override_styles/normal = SubResource("chrome_btn")
-theme_override_styles/hover = SubResource("chrome_btn")
-theme_override_styles/pressed = SubResource("chrome_btn")
-theme_override_styles/disabled = SubResource("chrome_btn")
-theme_override_styles/focus = SubResource("chrome_btn")
-flat = true
-text = ""
-
-[node name="StartCenter" type="CenterContainer" parent="Safe/Root/CtaStack/StartSlot/StartButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 72.0
-offset_top = 28.0
-offset_right = -72.0
-offset_bottom = -28.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="StartLabels" type="VBoxContainer" parent="Safe/Root/CtaStack/StartSlot/StartButton/StartCenter"]
-layout_mode = 2
-theme_override_constants/separation = 4
-alignment = 1
-
-[node name="StartTitle" type="Label" parent="Safe/Root/CtaStack/StartSlot/StartButton/StartCenter/StartLabels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_shadow_color = Color(0.1, 0.55, 1, 0.55)
-theme_override_constants/shadow_outline_size = 8
-theme_override_font_sizes/font_size = 48
-text = "START RUN"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="StartSubRow" type="HBoxContainer" parent="Safe/Root/CtaStack/StartSlot/StartButton/StartCenter/StartLabels"]
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 14
-
-[node name="SubLineL" type="ColorRect" parent="Safe/Root/CtaStack/StartSlot/StartButton/StartCenter/StartLabels/StartSubRow"]
-custom_minimum_size = Vector2(64, 2)
-layout_mode = 2
-size_flags_vertical = 4
-color = Color(0.75, 0.92, 1, 0.65)
-
-[node name="StartSub" type="Label" parent="Safe/Root/CtaStack/StartSlot/StartButton/StartCenter/StartLabels/StartSubRow"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.82, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "ENDLESS MODE"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="SubLineR" type="ColorRect" parent="Safe/Root/CtaStack/StartSlot/StartButton/StartCenter/StartLabels/StartSubRow"]
-custom_minimum_size = Vector2(64, 2)
-layout_mode = 2
-size_flags_vertical = 4
-color = Color(0.75, 0.92, 1, 0.65)
-
-[node name="DailySlot" type="Control" parent="Safe/Root/CtaStack"]
+[node name="DailyButton" parent="Safe/Root/CtaStack" instance=ExtResource("29")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 108)
 layout_mode = 2
-size_flags_vertical = 0
-
-[node name="DailyChrome" type="TextureRect" parent="Safe/Root/CtaStack/DailySlot"]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("17")
-expand_mode = 1
-stretch_mode = 0
-
-[node name="DailyButton" type="Button" parent="Safe/Root/CtaStack/DailySlot"]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_type_variation = &"ButtonSecondary"
-theme_override_styles/normal = SubResource("chrome_btn")
-theme_override_styles/hover = SubResource("chrome_btn")
-theme_override_styles/pressed = SubResource("chrome_btn")
-theme_override_styles/disabled = SubResource("chrome_btn")
-theme_override_styles/focus = SubResource("chrome_btn")
-flat = true
-text = ""
-
-[node name="DailyCenter" type="CenterContainer" parent="Safe/Root/CtaStack/DailySlot/DailyButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 56.0
-offset_top = 16.0
-offset_right = -56.0
-offset_bottom = -16.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="DailyContent" type="HBoxContainer" parent="Safe/Root/CtaStack/DailySlot/DailyButton/DailyCenter"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 16
-alignment = 1
-
-[node name="TargetIcon" type="TextureRect" parent="Safe/Root/CtaStack/DailySlot/DailyButton/DailyCenter/DailyContent"]
-custom_minimum_size = Vector2(40, 40)
-layout_mode = 2
-size_flags_vertical = 4
-mouse_filter = 2
-texture = ExtResource("21")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="DailyLabels" type="VBoxContainer" parent="Safe/Root/CtaStack/DailySlot/DailyButton/DailyCenter/DailyContent"]
-layout_mode = 2
-size_flags_vertical = 4
-theme_override_constants/separation = 2
-
-[node name="DailyTitle" type="Label" parent="Safe/Root/CtaStack/DailySlot/DailyButton/DailyCenter/DailyContent/DailyLabels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.98, 0.98, 1, 1)
-theme_override_font_sizes/font_size = 28
-text = "DAILY CHALLENGE"
-horizontal_alignment = 0
-
-[node name="DailySub" type="Label" parent="Safe/Root/CtaStack/DailySlot/DailyButton/DailyCenter/DailyContent/DailyLabels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.65, 1, 1)
-theme_override_font_sizes/font_size = 16
-text = "COMPLETE AND EARN REWARDS"
-horizontal_alignment = 0
-
-[node name="DailyChevron" type="TextureRect" parent="Safe/Root/CtaStack/DailySlot/DailyButton/DailyCenter/DailyContent"]
-custom_minimum_size = Vector2(28, 28)
-layout_mode = 2
-size_flags_vertical = 4
-mouse_filter = 2
-texture = ExtResource("22")
-expand_mode = 1
-stretch_mode = 5
+title = "DAILY CHALLENGE"
+subtitle = "COMPLETE AND EARN REWARDS"
+variant = 1
+pulse = 2
 
 [node name="Shortcuts" type="HBoxContainer" parent="Safe/Root/CtaStack"]
 clip_contents = false
 custom_minimum_size = Vector2(0, 104)
 layout_mode = 2
-size_flags_vertical = 0
 theme_override_constants/separation = 16
 
-[node name="ShipsSlot" type="Control" parent="Safe/Root/CtaStack/Shortcuts"]
-clip_contents = false
+[node name="ShipsButton" parent="Safe/Root/CtaStack/Shortcuts" instance=ExtResource("29")]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 104)
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 0
+title = "SHIPS"
+subtitle = "COLLECTION"
+variant = 2
+min_height = 104.0
 
-[node name="ShipsChrome" type="TextureRect" parent="Safe/Root/CtaStack/Shortcuts/ShipsSlot"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("18")
-expand_mode = 1
-stretch_mode = 0
-
-[node name="ShipsButton" type="Button" parent="Safe/Root/CtaStack/Shortcuts/ShipsSlot"]
+[node name="UpgradesButton" parent="Safe/Root/CtaStack/Shortcuts" instance=ExtResource("29")]
 unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_type_variation = &"ButtonTertiary"
-theme_override_styles/normal = SubResource("chrome_btn")
-theme_override_styles/hover = SubResource("chrome_btn")
-theme_override_styles/pressed = SubResource("chrome_btn")
-theme_override_styles/focus = SubResource("chrome_btn")
-flat = true
-text = ""
-
-[node name="ShipsCenter" type="CenterContainer" parent="Safe/Root/CtaStack/Shortcuts/ShipsSlot/ShipsButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 36.0
-offset_top = 14.0
-offset_right = -36.0
-offset_bottom = -14.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="ShipsContent" type="HBoxContainer" parent="Safe/Root/CtaStack/Shortcuts/ShipsSlot/ShipsButton/ShipsCenter"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 12
-alignment = 1
-
-[node name="ShipsIcon" type="TextureRect" parent="Safe/Root/CtaStack/Shortcuts/ShipsSlot/ShipsButton/ShipsCenter/ShipsContent"]
-custom_minimum_size = Vector2(36, 36)
-layout_mode = 2
-size_flags_vertical = 4
-mouse_filter = 2
-texture = ExtResource("26")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="ShipsLabels" type="VBoxContainer" parent="Safe/Root/CtaStack/Shortcuts/ShipsSlot/ShipsButton/ShipsCenter/ShipsContent"]
-layout_mode = 2
-size_flags_vertical = 4
-theme_override_constants/separation = 0
-
-[node name="ShipsLabel" type="Label" parent="Safe/Root/CtaStack/Shortcuts/ShipsSlot/ShipsButton/ShipsCenter/ShipsContent/ShipsLabels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
-theme_override_font_sizes/font_size = 26
-text = "SHIPS"
-
-[node name="ShipsSub" type="Label" parent="Safe/Root/CtaStack/Shortcuts/ShipsSlot/ShipsButton/ShipsCenter/ShipsContent/ShipsLabels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 0.82, 1, 1)
-theme_override_font_sizes/font_size = 14
-text = "COLLECTION"
-
-[node name="UpgradesSlot" type="Control" parent="Safe/Root/CtaStack/Shortcuts"]
-clip_contents = false
 custom_minimum_size = Vector2(0, 104)
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 0
-
-[node name="UpgradesChrome" type="TextureRect" parent="Safe/Root/CtaStack/Shortcuts/UpgradesSlot"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("19")
-expand_mode = 1
-stretch_mode = 0
-
-[node name="UpgradesButton" type="Button" parent="Safe/Root/CtaStack/Shortcuts/UpgradesSlot"]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_type_variation = &"ButtonTertiary"
-theme_override_styles/normal = SubResource("chrome_btn")
-theme_override_styles/hover = SubResource("chrome_btn")
-theme_override_styles/pressed = SubResource("chrome_btn")
-theme_override_styles/focus = SubResource("chrome_btn")
-flat = true
-text = ""
-
-[node name="UpgradesCenter" type="CenterContainer" parent="Safe/Root/CtaStack/Shortcuts/UpgradesSlot/UpgradesButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 36.0
-offset_top = 14.0
-offset_right = -36.0
-offset_bottom = -14.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="UpgradesContent" type="HBoxContainer" parent="Safe/Root/CtaStack/Shortcuts/UpgradesSlot/UpgradesButton/UpgradesCenter"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 12
-alignment = 1
-
-[node name="UpgradesIcon" type="TextureRect" parent="Safe/Root/CtaStack/Shortcuts/UpgradesSlot/UpgradesButton/UpgradesCenter/UpgradesContent"]
-custom_minimum_size = Vector2(36, 36)
-layout_mode = 2
-size_flags_vertical = 4
-mouse_filter = 2
-texture = ExtResource("27")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="UpgradesLabels" type="VBoxContainer" parent="Safe/Root/CtaStack/Shortcuts/UpgradesSlot/UpgradesButton/UpgradesCenter/UpgradesContent"]
-layout_mode = 2
-size_flags_vertical = 4
-theme_override_constants/separation = 0
-
-[node name="UpgradesLabel" type="Label" parent="Safe/Root/CtaStack/Shortcuts/UpgradesSlot/UpgradesButton/UpgradesCenter/UpgradesContent/UpgradesLabels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
-theme_override_font_sizes/font_size = 26
-text = "UPGRADES"
-
-[node name="UpgradesSub" type="Label" parent="Safe/Root/CtaStack/Shortcuts/UpgradesSlot/UpgradesButton/UpgradesCenter/UpgradesContent/UpgradesLabels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 0.82, 1, 1)
-theme_override_font_sizes/font_size = 14
-text = "POWER UP"
+title = "UPGRADES"
+subtitle = "POWER UP"
+variant = 2
+min_height = 104.0

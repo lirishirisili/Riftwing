@@ -1,9 +1,10 @@
-[gd_scene load_steps=11 format=3 uid="uid://c0riftwgameplayhud"]
+[gd_scene load_steps=12 format=3 uid="uid://c0riftwgameplayhud"]
 
 [ext_resource type="Script" path="res://scripts/ui/gameplay_hud.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/hud_segmented_bar.gd" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ability_button.tscn" id="3"]
 [ext_resource type="Texture2D" path="res://assets/icons/icon_coin.svg" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/ui/chrome/glow_cta_button.tscn" id="4b"]
 [ext_resource type="Texture2D" path="res://assets/ui/panel_dark_9slice.svg" id="5"]
 [ext_resource type="Texture2D" path="res://assets/ui/chrome/bottom_hud_frame.svg" id="6"]
 [ext_resource type="Texture2D" path="res://assets/ui/chrome/hex_frame.svg" id="7"]
@@ -409,18 +410,19 @@ theme_override_font_sizes/font_size = 20
 text = "RIFTWING"
 horizontal_alignment = 1
 
-[node name="ResumeButton" type="Button" parent="PauseOverlay/Center/Panel/VBox"]
-custom_minimum_size = Vector2(0, 72)
+[node name="ResumeButton" parent="PauseOverlay/Center/Panel/VBox" instance=ExtResource("4b")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 104)
 layout_mode = 2
-focus_mode = 0
-theme_type_variation = &"ButtonPrimary"
-theme_override_font_sizes/font_size = 28
-text = "RESUME"
+title = "RESUME"
+variant = 2
+min_height = 104.0
+pulse = 1
 
-[node name="QuitButton" type="Button" parent="PauseOverlay/Center/Panel/VBox"]
-custom_minimum_size = Vector2(0, 64)
+[node name="QuitButton" parent="PauseOverlay/Center/Panel/VBox" instance=ExtResource("4b")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
-focus_mode = 0
-theme_type_variation = &"ButtonTertiary"
-theme_override_font_sizes/font_size = 24
-text = "QUIT TO MENU"
+title = "QUIT TO MENU"
+variant = 1
+min_height = 96.0

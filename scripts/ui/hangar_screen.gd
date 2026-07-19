@@ -9,15 +9,13 @@ extends Control
 
 const _CATALOG_PATH := "res://resources/ships/ship_catalog_default.tres"
 const _ROW_SCENE := preload("res://scenes/ui/hangar_upgrade_row.tscn")
-const _BASE_PADDING := 32.0
 const _SCROLL_SPEED := 14.0
 const _CAPTURE_SIZE := Vector2i(1080, 1920)
 const _CAPTURE_PATH := "user://riftwing_hangar_1080x1920.png"
 
+@onready var _shell: MetaScreenShell = %Shell
+@onready var _legacy_safe: MarginContainer = %Safe
 @onready var _parallax: ParallaxBackground = $Background
-@onready var _safe: MarginContainer = %Safe
-@onready var _energy_value: Label = %EnergyValue
-@onready var _core_value: Label = %CoreValue
 @onready var _ship_list: VBoxContainer = %ShipList
 @onready var _hero_ship: TextureRect = %HeroShip
 @onready var _engine_glow: TextureRect = %EngineGlow
@@ -33,9 +31,9 @@ const _CAPTURE_PATH := "user://riftwing_hangar_1080x1920.png"
 @onready var _preview_label: Label = %PreviewLabel
 @onready var _feedback_label: Label = %FeedbackLabel
 @onready var _upgrade_box: VBoxContainer = %UpgradeBox
-@onready var _upgrade_all_button: Button = %UpgradeAllButton
-@onready var _back_button: Button = %BackButton
-@onready var _equip_button: Button = %EquipButton
+@onready var _upgrade_all_button: GlowCtaButton = %UpgradeAllButton
+@onready var _back_button: GlowCtaButton = %BackButton
+@onready var _equip_button: GlowCtaButton = %EquipButton
 
 var _catalog: ShipCatalogData
 var _viewed_ship_id: String = ""
@@ -50,15 +48,16 @@ func _ready() -> void:
 	if _catalog == null:
 		_catalog = ShipCatalogData.new()
 
+	_mount_meta_shell()
 	_back_button.pressed.connect(_on_back)
 	_equip_button.pressed.connect(_on_equip)
 	# Placeholder CTA — no Upgrade All economy yet.
-	_upgrade_all_button.disabled = true
-	_upgrade_all_button.text = "UPGRADE ALL · SOON"
+	_upgrade_all_button.configure("UPGRADE ALL · SOON", "", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.NONE, 88.0)
+	_upgrade_all_button.set_enabled(false)
 	SaveManager.currencies_changed.connect(_on_currencies_changed)
 	SaveManager.hangar_changed.connect(_on_hangar_changed)
-	get_viewport().size_changed.connect(_apply_safe_area)
-	_apply_safe_area()
+	get_viewport().size_changed.connect(_on_viewport_changed)
+	_on_viewport_changed()
 
 	_viewed_ship_id = SaveManager.get_selected_ship_id()
 	_build_ship_list()
@@ -68,8 +67,51 @@ func _ready() -> void:
 	AudioManager.play_music("menu")
 
 
+func _mount_meta_shell() -> void:
+	for path in ["Base", "Background", "VignetteTop", "VignetteBottom"]:
+		var n := get_node_or_null(path)
+		if n != null:
+			n.visible = false
+	var root := _legacy_safe.get_node_or_null("Root") as VBoxContainer
+	if root == null or _shell == null:
+		return
+	var body := _shell.get_body()
+	var to_move: Array[Node] = []
+	for child in root.get_children():
+		if child.name != "TopBar":
+			to_move.append(child)
+	for child in to_move:
+		root.remove_child(child)
+		body.add_child(child)
+		_adopt_owner(child)
+	_legacy_safe.visible = false
+	if _back_button.get_parent() != null:
+		_back_button.get_parent().remove_child(_back_button)
+	_back_button.configure("BACK", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 68.0)
+	_shell.set_trailing(_back_button)
+	_adopt_owner(_back_button)
+
+
+func _adopt_owner(node: Node) -> void:
+	if node is GlowCtaButton:
+		node.owner = self
+		for child in node.get_children():
+			_set_subtree_owner(child, node)
+		return
+	node.owner = self
+	for child in node.get_children():
+		_adopt_owner(child)
+
+
+func _set_subtree_owner(node: Node, new_owner: Node) -> void:
+	node.owner = new_owner
+	for child in node.get_children():
+		_set_subtree_owner(child, new_owner)
+
+
 func _process(delta: float) -> void:
-	_parallax.scroll_offset.y += delta * _SCROLL_SPEED
+	if _parallax != null and _parallax.visible:
+		_parallax.scroll_offset.y += delta * _SCROLL_SPEED
 	_hero_time += delta
 	var pulse := 1.0 + sin(_hero_time * 1.45) * 0.02
 	_hero_ship.scale = Vector2(pulse, pulse)
@@ -79,6 +121,11 @@ func _process(delta: float) -> void:
 	var holo := 0.72 + absf(sin(_hero_time * 1.6)) * 0.22
 	_hangar_pad.modulate = Color(0.55, 0.95, 1.0, holo)
 	_hangar_pad.scale = Vector2(1.0 + sin(_hero_time * 1.2) * 0.035, 1.0 + sin(_hero_time * 1.2) * 0.02)
+
+
+func handle_system_back() -> bool:
+	_on_back()
+	return true
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -138,15 +185,11 @@ func _build_upgrade_rows() -> void:
 # --- Refresh ----------------------------------------------------------------
 
 func _refresh_all() -> void:
-	_refresh_currencies()
+	if _shell != null:
+		_shell.refresh_currencies()
 	_refresh_ship_list()
 	_refresh_ship_panel()
 	_refresh_upgrade_rows()
-
-
-func _refresh_currencies() -> void:
-	_energy_value.text = _format_int(SaveManager.get_rift_energy())
-	_core_value.text = _format_int(SaveManager.get_rift_core())
 
 
 func _refresh_ship_list() -> void:
@@ -184,7 +227,7 @@ func _refresh_ship_panel() -> void:
 		_power_label.text = "POWER  —"
 		_lock_banner.visible = true
 		_lock_banner.text = "No ship data"
-		_equip_button.disabled = true
+		_equip_button.set_enabled(false)
 		return
 
 	var unlocked := SaveManager.is_ship_unlocked(ship.id)
@@ -209,15 +252,17 @@ func _refresh_ship_panel() -> void:
 	if unlocked:
 		_lock_banner.visible = false
 		var is_selected := SaveManager.get_selected_ship_id() == ship.id
-		_equip_button.disabled = is_selected
-		_equip_button.text = "EQUIPPED" if is_selected else "EQUIP SHIP"
-		_equip_button.theme_type_variation = &"ButtonSecondary" if is_selected else &"ButtonPrimary"
+		if is_selected:
+			_equip_button.configure("EQUIPPED", "", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.NONE, 96.0)
+			_equip_button.set_enabled(false)
+		else:
+			_equip_button.configure("EQUIP SHIP", "", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN, 96.0)
+			_equip_button.set_enabled(true)
 	else:
 		_lock_banner.visible = true
 		_lock_banner.text = "LOCKED  ·  %s" % ship.unlock_hint
-		_equip_button.disabled = true
-		_equip_button.text = "LOCKED"
-		_equip_button.theme_type_variation = &"ButtonTertiary"
+		_equip_button.configure("LOCKED", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 96.0)
+		_equip_button.set_enabled(false)
 
 
 func _refresh_upgrade_rows() -> void:
@@ -326,7 +371,8 @@ func _on_back() -> void:
 
 
 func _on_currencies_changed(_energy: int, _core: int) -> void:
-	_refresh_currencies()
+	if _shell != null:
+		_shell.refresh_currencies()
 	_refresh_upgrade_rows()
 
 
@@ -366,13 +412,7 @@ func _format_int(value: int) -> String:
 	return ("-" if value < 0 else "") + out
 
 
-func _apply_safe_area() -> void:
-	var safe := SafeArea.get_logical_rect(get_tree())
-	var full := get_viewport_rect().size
-	_safe.add_theme_constant_override("margin_left", int(_BASE_PADDING + safe.position.x))
-	_safe.add_theme_constant_override("margin_top", int(_BASE_PADDING + safe.position.y))
-	_safe.add_theme_constant_override("margin_right", int(_BASE_PADDING + (full.x - (safe.position.x + safe.size.x))))
-	_safe.add_theme_constant_override("margin_bottom", int(_BASE_PADDING + (full.y - (safe.position.y + safe.size.y))))
+func _on_viewport_changed() -> void:
 	call_deferred("_recenter_hero_pivot")
 
 

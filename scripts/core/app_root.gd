@@ -16,6 +16,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	# Mobile default: locked 60 FPS. Do not leave the frame rate uncapped.
 	Engine.max_fps = 60
+	# Android Back must not auto-quit after we open pause / navigate — AppRoot owns it.
+	get_tree().quit_on_go_back = false
 	SceneRouter.configure(_current_screen)
 	SceneRouter.screen_changed.connect(_on_screen_changed)
 	SceneRouter.go_to(SceneRouter.SCREEN_MAIN_MENU)
@@ -25,7 +27,11 @@ func _notification(what: int) -> void:
 	# APPLICATION_PAUSED/RESUMED are the reliable mobile background signals.
 	# Focus-out alone is too noisy on desktop (alt-tab) so it only ducks audio
 	# on mobile/web exports, never flushes the save.
+	# WM_GO_BACK_REQUEST is the Android system Back button — must be handled or
+	# the OS quits the app immediately.
 	match what:
+		NOTIFICATION_WM_GO_BACK_REQUEST:
+			_handle_system_back()
 		NOTIFICATION_APPLICATION_PAUSED:
 			_enter_background(true)
 		NOTIFICATION_APPLICATION_RESUMED:
@@ -36,6 +42,20 @@ func _notification(what: int) -> void:
 		NOTIFICATION_APPLICATION_FOCUS_IN, NOTIFICATION_WM_WINDOW_FOCUS_IN:
 			if _is_mobile_runtime():
 				_enter_foreground()
+
+
+## Android / system Back. Screens may implement handle_system_back() -> bool.
+## Mid-run must pause (never quit). Meta screens navigate back. Main menu quits.
+func _handle_system_back() -> void:
+	var screen := SceneRouter.get_current_screen()
+	if screen != null and screen.has_method("handle_system_back"):
+		if bool(screen.call("handle_system_back")):
+			return
+	var id := SceneRouter.get_current_screen_id()
+	if id == SceneRouter.SCREEN_MAIN_MENU or id == "":
+		get_tree().quit()
+		return
+	SceneRouter.go_to(SceneRouter.SCREEN_MAIN_MENU)
 
 
 func _enter_background(flush_save: bool) -> void:
