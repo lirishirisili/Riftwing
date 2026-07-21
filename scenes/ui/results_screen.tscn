@@ -506,6 +506,21 @@ min_height = 108.0
 pulse = 1
 chrome_modulate = Color(1.05, 0.95, 0.75, 1)
 
+[node name="RewardAdRow" type="HBoxContainer" parent="Safe/Root/Buttons"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="DoubleRewards" parent="Safe/Root/Buttons/RewardAdRow" instance=ExtResource("8")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+title = "WATCH FOR x2 ENERGY"
+subtitle = "REWARDED AD"
+variant = 1
+min_height = 96.0
+pulse = 2
+
 [node name="SecondaryRow" type="HBoxContainer" parent="Safe/Root/Buttons"]
 layout_mode = 2
 theme_override_constants/separation = 14

@@ -1,0 +1,108 @@
+# iOS — Godot 4.7 TestFlight (manual: export → sign → App Store Connect)
+name: iOS — Godot TestFlight
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_probes:
+        description: 'Run export_validation + ads_service probes before export (slower)'
+        type: boolean
+        default: false
+      upload_ipa_artifact:
+        description: 'Upload IPA to GitHub Artifacts (uses storage quota; TestFlight does not need this)'
+        type: boolean
+        default: false
+
+concurrency:
+  group: ios-testflight-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TOOLCHAINS: com.apple.dt.toolchain.XcodeDefault
+  BUNDLE_ID: com.lishistudio.riftwing
+  APPLE_DEVELOPMENT_TEAM: 7BLH4NFZDD
+  GODOT_VERSION: 4.7-stable
+  IOS_EXPORT_PRESET: iOS
+  IOS_EXPORT_PATH: build/ios/riftwing.ipa
+  XCODE_PROJECT: build/ios/riftwing.xcodeproj
+  BUILD_DIR: ${{ github.workspace }}/build
+  BUILD_NUMBER_OFFSET: 1
+
+jobs:
+  build-and-publish:
+    name: Build & publish TestFlight IPA
+    runs-on: macos-26
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set build number
+        run: echo "BUILD_NUMBER=$(( ${{ github.run_number }} + ${{ env.BUILD_NUMBER_OFFSET }} ))" >> "$GITHUB_ENV"
+
+      - name: Require App Store Connect secrets
+        env:
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.APP_STORE_CONNECT_KEY_IDENTIFIER }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+        run: |
+          missing=0
+          for name in APP_STORE_CONNECT_ISSUER_ID APP_STORE_CONNECT_KEY_IDENTIFIER APP_STORE_CONNECT_PRIVATE_KEY; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::Missing GitHub secret: $name (see .github/GITHUB_ACTIONS_SETUP.md)"
+              missing=1
+            fi
+          done
+          [ "$missing" -eq 0 ]
+
+      - name: Cache Godot + export templates
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/.ci-godot
+            ~/Library/Application Support/Godot/export_templates/4.7.stable
+          key: godot-${{ env.GODOT_VERSION }}-templates-v1
+          restore-keys: |
+            godot-${{ env.GODOT_VERSION }}-
+
+      - name: Cache Xcode DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BUILD_DIR }}/DerivedData
+          key: derived-riftwing-${{ runner.os }}-${{ hashFiles('export_presets.cfg', 'project.godot', 'ios/plugins/*.gdip') }}
+          restore-keys: |
+            derived-riftwing-${{ runner.os }}-
+
+      - name: Cache Codemagic CLI venv
+        uses: actions/cache@v4
+        with:
+          path: .ci-venv
+          key: ci-venv-${{ runner.os }}-${{ hashFiles('.github/scripts/ci-env.sh') }}
+          restore-keys: |
+            ci-venv-${{ runner.os }}-
+
+      - name: Run iOS TestFlight pipeline
+        env:
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.APP_STORE_CONNECT_KEY_IDENTIFIER }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          RUN_PROBES: ${{ inputs.run_probes }}
+        run: bash .github/scripts/godot-ios-testflight-run.sh
+
+      - name: Publish to TestFlight
+        env:
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.APP_STORE_CONNECT_KEY_IDENTIFIER }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+        run: bash .github/scripts/ios-publish-testflight.sh
+
+      - name: Upload IPA artifact (optional)
+        if: ${{ inputs.upload_ipa_artifact }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-testflight-${{ github.run_number }}
+          path: build/ios/ipa/*.ipa
+          if-no-files-found: warn
+          retention-days: 3

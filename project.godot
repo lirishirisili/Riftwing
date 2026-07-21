@@ -74,6 +74,10 @@ debug_toggle_safe_area={
 
 pointing/emulate_touch_from_mouse=true
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/admob/plugin.cfg")
+
 [rendering]
 
 renderer/rendering_method="mobile"

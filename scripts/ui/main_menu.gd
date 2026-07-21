@@ -9,7 +9,6 @@ extends Control
 ##   Event banner    -> same placeholder route
 ##   Ships / Upgrades-> hangar
 ##   Settings        -> settings
-## No monetization or online systems.
 
 const _BASE_PADDING := 36.0
 const _BASE_PADDING_BOTTOM := 88.0

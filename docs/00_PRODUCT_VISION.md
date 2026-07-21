@@ -29,7 +29,9 @@ Move -> auto-fire -> destroy enemies -> collect Rift Energy -> choose one of thr
 ## Version 1 scope
 Included: campaign stages, endless mode, daily challenge shell, ships, permanent upgrades, run upgrades, bosses, missions, local save, and platform export foundations.
 
-Deferred until retention is proven: PvP, clans, chat, real-time co-op, complex backend, battle pass, more than two currencies, forced interstitial ads, and cloud save.
+Deferred until retention is proven: PvP, clans, chat, real-time co-op, complex backend, battle pass, more than two currencies, and cloud save.
+
+Monetization (live): AdMob interstitial every 3 runs on Results, opt-in rewarded ×2 on Results — all behind `AdsService`.
 
 ## Prototype success criteria
 - A new player understands movement without instructional text.

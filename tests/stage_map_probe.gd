@@ -172,6 +172,16 @@ func _check_screen_and_launch() -> int:
 	if screen.find_child("Shell", true, false) == null:
 		printerr("MetaScreenShell missing on stage map")
 		return 1
+	# Every stage node must have a real hit target (plain Control parents do not
+	# auto-size from custom_minimum_size — regression caused invisible stages).
+	var visible_nodes := 0
+	for child in screen.find_children("Node_*", "Button", true, false):
+		var btn := child as Button
+		if btn != null and btn.size.x >= 100.0 and btn.size.y >= 100.0:
+			visible_nodes += 1
+	if visible_nodes < 8:
+		printerr("stage nodes undersized/missing: visible=%d" % visible_nodes)
+		return 1
 	# Default selection is unlocked 1-1 on NORMAL — Launch enabled.
 	var launch_btn := launch.get_button()
 	if launch_btn == null or launch_btn.disabled:

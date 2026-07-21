@@ -17,11 +17,18 @@ func _ready() -> void:
 	# Default prototype (no-op) implementations. Real adapters replace these
 	# by assignment during platform bring-up, keeping gameplay code unchanged.
 	store = StoreService.new()
-	ads = AdsService.new()
+	ads = _make_ads_service()
 	analytics = AnalyticsService.new()
 	haptics = HapticsService.new()
 	cloud_save = CloudSaveService.new()
 	achievements = AchievementService.new()
+	ads.initialize()
+
+
+func _make_ads_service() -> AdsService:
+	if AdMobIds.is_mobile_platform():
+		return AdMobAdsService.new()
+	return AdsService.new()
 
 
 ## Human-readable platform label for debug/telemetry surfaces.

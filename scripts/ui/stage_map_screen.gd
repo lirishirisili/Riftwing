@@ -11,7 +11,9 @@ const _MAP_PATH := "res://resources/stages/nova_sector_map.tres"
 const _TEX_NODE_ACTIVE: Texture2D = preload("res://assets/ui/chrome/map_node_active.svg")
 const _TEX_NODE_LOCKED: Texture2D = preload("res://assets/ui/chrome/map_node_locked.svg")
 const _NODE_RADIUS := 46.0
+const _NODE_HIT := 112.0
 const _MAP_HEIGHT := 1180.0
+const _MAP_DESIGN_WIDTH := 1000.0
 const _ICON_SIZE := 72
 
 @onready var _shell: MetaScreenShell = %Shell
@@ -67,11 +69,30 @@ func _ready() -> void:
 	_map_canvas.draw.connect(_on_map_draw)
 
 	_sector_label.text = "%s  %s" % [_map.sector_code, _map.sector_name]
+	_ensure_map_scroll_space()
 	_build_nodes()
 	_refresh_all()
 	GameFeel.debug_markers_enabled = false
 	AudioManager.play_music("menu")
 	set_process(true)
+	get_viewport().size_changed.connect(_on_viewport_changed)
+	call_deferred("_on_viewport_changed")
+
+
+func _on_viewport_changed() -> void:
+	_ensure_map_scroll_space()
+	_layout_nodes()
+	_map_canvas.queue_redraw()
+
+
+func _ensure_map_scroll_space() -> void:
+	var scroll := _map_canvas.get_parent() as ScrollContainer
+	if scroll != null:
+		scroll.custom_minimum_size = Vector2(0, 520)
+		scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var width := maxf(_MAP_DESIGN_WIDTH, get_viewport_rect().size.x - 80.0)
+	_map_canvas.custom_minimum_size = Vector2(width, _MAP_HEIGHT)
+	_map_canvas.size = Vector2(width, _MAP_HEIGHT)
 
 
 func _mount_meta_shell() -> void:
@@ -131,23 +152,51 @@ func _build_nodes() -> void:
 	for child in _map_canvas.get_children():
 		child.queue_free()
 	_node_buttons.clear()
-	_map_canvas.custom_minimum_size = Vector2(0, _MAP_HEIGHT)
+	_ensure_map_scroll_space()
 
 	for stage in _map.stages:
 		if stage == null:
 			continue
 		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(_NODE_RADIUS * 2.3, _NODE_RADIUS * 2.3)
+		btn.name = "Node_%s" % stage.id
 		btn.focus_mode = Control.FOCUS_NONE
-		btn.theme_type_variation = &"ButtonTertiary"
-		btn.add_theme_font_size_override("font_size", 20)
-		btn.add_theme_constant_override("icon_max_width", _ICON_SIZE)
+		btn.flat = true
+		btn.clip_text = false
 		btn.expand_icon = true
-		btn.clip_text = true
-		btn.position = stage.map_position - btn.custom_minimum_size * 0.5
+		btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
+		btn.add_theme_font_size_override("font_size", 22)
+		btn.add_theme_constant_override("icon_max_width", _ICON_SIZE)
+		btn.add_theme_color_override("font_color", Color(0.96, 0.98, 1, 1))
+		btn.add_theme_color_override("font_outline_color", Color(0.02, 0.06, 0.12, 0.95))
+		btn.add_theme_constant_override("outline_size", 8)
+		# Plain Control parents do not size children from custom_minimum_size alone.
+		btn.custom_minimum_size = Vector2(_NODE_HIT, _NODE_HIT)
+		btn.size = Vector2(_NODE_HIT, _NODE_HIT)
 		btn.pressed.connect(_on_node_pressed.bind(stage.id))
 		_map_canvas.add_child(btn)
 		_node_buttons[stage.id] = btn
+	_layout_nodes()
+
+
+func _layout_nodes() -> void:
+	if _map == null or _map_canvas == null:
+		return
+	var canvas_w := maxf(_map_canvas.size.x, _map_canvas.custom_minimum_size.x)
+	var scale_x := canvas_w / _MAP_DESIGN_WIDTH if _MAP_DESIGN_WIDTH > 0.0 else 1.0
+	for stage in _map.stages:
+		if stage == null or not _node_buttons.has(stage.id):
+			continue
+		var btn: Button = _node_buttons[stage.id]
+		var pos := Vector2(stage.map_position.x * scale_x, stage.map_position.y)
+		btn.size = Vector2(_NODE_HIT, _NODE_HIT)
+		btn.position = pos - btn.size * 0.5
+
+
+func _node_world_pos(stage: StageNodeData) -> Vector2:
+	var canvas_w := maxf(_map_canvas.size.x, _map_canvas.custom_minimum_size.x)
+	var scale_x := canvas_w / _MAP_DESIGN_WIDTH if _MAP_DESIGN_WIDTH > 0.0 else 1.0
+	return Vector2(stage.map_position.x * scale_x, stage.map_position.y)
 
 
 # --- Refresh ----------------------------------------------------------------
@@ -180,34 +229,38 @@ func _refresh_nodes() -> void:
 		if stage == null or not _node_buttons.has(stage.id):
 			continue
 		var btn: Button = _node_buttons[stage.id]
+		# Keep hit target sized even after theme/layout passes.
+		btn.size = Vector2(_NODE_HIT, _NODE_HIT)
 		var unlocked := StageProgress.is_unlocked(_map, stage, cleared_ids)
 		var cleared := SaveManager.is_stage_cleared(stage.id)
 		var selected := stage.id == _selected_id
 		var is_current := stage.id == current_id
 		var stars := SaveManager.get_stage_stars(stage.id)
 
+		# Always show a plate icon — text-only nodes disappear on the nebula.
 		if not unlocked:
 			btn.icon = _TEX_NODE_LOCKED
 			btn.text = stage.label
-			btn.modulate = Color(0.55, 0.58, 0.65, 1)
-			btn.self_modulate = Color(0.85, 0.88, 0.95, 1)
+			btn.modulate = Color(0.75, 0.78, 0.88, 1)
+			btn.self_modulate = Color(1, 1, 1, 1)
 		elif cleared:
-			btn.icon = null
+			btn.icon = _TEX_NODE_ACTIVE
 			btn.text = "%s\n%s" % [_star_text(stars), stage.label]
-			btn.modulate = stage.planet_modulate
-			btn.self_modulate = Palette.get_color("gold", Color(1, 0.85, 0.35)) if not selected else Palette.get_color("cyan", Color(0, 0.84, 1))
+			btn.modulate = stage.planet_modulate.lightened(0.15)
+			btn.self_modulate = (
+				Palette.get_color("cyan", Color(0, 0.84, 1))
+				if selected
+				else Palette.get_color("gold", Color(1, 0.85, 0.35)))
 		else:
-			var focus := selected or is_current
-			btn.icon = _TEX_NODE_ACTIVE if focus else null
-			# Keep label short when the active chrome icon is shown.
-			btn.text = stage.label if focus else "%s\n%s" % [_star_text(stars), stage.label]
-			btn.modulate = stage.planet_modulate
+			btn.icon = _TEX_NODE_ACTIVE
+			btn.text = stage.label if (selected or is_current) else "%s\n%s" % [_star_text(stars), stage.label]
+			btn.modulate = stage.planet_modulate.lightened(0.08)
 			if selected:
 				btn.self_modulate = Palette.get_color("cyan", Color(0, 0.84, 1))
 			elif is_current:
-				btn.self_modulate = Color(0.85, 0.95, 1, 1)
+				btn.self_modulate = Color(1.05, 1.1, 1.2, 1)
 			else:
-				btn.self_modulate = Color.WHITE
+				btn.self_modulate = Color(0.95, 0.98, 1.0, 1)
 
 
 func _refresh_detail() -> void:
@@ -295,60 +348,92 @@ func _on_map_draw() -> void:
 		var b: StageNodeData = stages[i + 1]
 		if a == null or b == null:
 			continue
+		var pa := _node_world_pos(a)
+		var pb := _node_world_pos(b)
 		var a_cleared := SaveManager.is_stage_cleared(a.id)
 		var unlocked_b := StageProgress.is_unlocked(_map, b, cleared_ids)
 		if a_cleared and unlocked_b:
 			var glow_c := Palette.get_color("cyan", Color(0, 0.84, 1))
-			glow_c.a = 0.28
-			_map_canvas.draw_line(a.map_position, b.map_position, glow_c, 16.0)
+			glow_c.a = 0.4
+			_map_canvas.draw_line(pa, pb, glow_c, 18.0)
 			var glow_p := Palette.get_color("purple", Color(0.55, 0.26, 1))
-			glow_p.a = 0.16
-			_map_canvas.draw_line(a.map_position, b.map_position, glow_p, 10.0)
+			glow_p.a = 0.28
+			_map_canvas.draw_line(pa, pb, glow_p, 12.0)
 		elif unlocked_b:
 			var glow_u := Palette.get_color("purple", Color(0.55, 0.26, 1))
-			glow_u.a = 0.22
-			_map_canvas.draw_line(a.map_position, b.map_position, glow_u, 13.0)
+			glow_u.a = 0.45
+			_map_canvas.draw_line(pa, pb, glow_u, 15.0)
 
-	# Solid purple/cyan for cleared+unlocked; dashed muted for locked.
+	# Solid purple/cyan for unlocked; brighter dashed for locked.
 	for i in range(stages.size() - 1):
 		var a2: StageNodeData = stages[i]
 		var b2: StageNodeData = stages[i + 1]
 		if a2 == null or b2 == null:
 			continue
+		var pa2 := _node_world_pos(a2)
+		var pb2 := _node_world_pos(b2)
 		var unlocked_b2 := StageProgress.is_unlocked(_map, b2, cleared_ids)
 		var a_cleared2 := SaveManager.is_stage_cleared(a2.id)
 		if unlocked_b2:
 			if a_cleared2:
 				var purple := Palette.get_color("purple", Color(0.55, 0.26, 1))
-				purple.a = 0.95
+				purple.a = 1.0
 				var cyan := Palette.get_color("cyan", Color(0, 0.84, 1))
-				cyan.a = 0.95
-				_draw_gradient_path(a2.map_position, b2.map_position, purple, cyan, 5.5)
+				cyan.a = 1.0
+				_draw_gradient_path(pa2, pb2, purple, cyan, 6.5)
 			else:
-				var color := Palette.get_color("purple", Color(0.55, 0.26, 1))
-				color.a = 0.88
-				_map_canvas.draw_line(a2.map_position, b2.map_position, color, 5.0)
+				var color := Palette.get_color("purple", Color(0.72, 0.45, 1))
+				color.a = 1.0
+				_map_canvas.draw_line(pa2, pb2, color, 6.0)
 		else:
-			var muted := Palette.get_color("muted", Color(0.46, 0.57, 0.71))
-			muted.a = 0.4
-			_draw_dashed_path(a2.map_position, b2.map_position, muted, 3.0, 14.0, 18.0)
+			var muted := Color(0.72, 0.82, 0.95, 0.85)
+			_draw_dashed_path(pa2, pb2, muted, 4.5, 16.0, 12.0)
 
-	# Per-node rings: completed / current / selected (stronger multi-ring pulse).
+	# Planet discs under every node so stages read even if button chrome fails.
 	for stage in stages:
 		if stage == null:
 			continue
+		var center := _node_world_pos(stage)
 		var unlocked := StageProgress.is_unlocked(_map, stage, cleared_ids)
 		var cleared := SaveManager.is_stage_cleared(stage.id)
 		var selected := stage.id == _selected_id
 		var is_current := stage.id == current_id
+		_draw_planet_disc(center, stage, unlocked, cleared, selected)
 		if cleared:
 			var done := Palette.get_color("gold", Color(1, 0.69, 0))
-			done.a = 0.6
-			_map_canvas.draw_arc(stage.map_position, _NODE_RADIUS + 8.0, 0.0, TAU, 40, done, 3.0)
+			done.a = 0.75
+			_map_canvas.draw_arc(center, _NODE_RADIUS + 10.0, 0.0, TAU, 48, done, 4.0)
 		if selected:
-			_draw_pulse_rings(stage.map_position, Palette.get_color("cyan", Color(0, 0.84, 1)), 1.9, true)
+			_draw_pulse_rings(center, Palette.get_color("cyan", Color(0, 0.84, 1)), 1.9, true)
 		elif is_current and unlocked and not cleared:
-			_draw_pulse_rings(stage.map_position, Palette.get_color("cyan", Color(0, 0.84, 1)), 2.4, false)
+			_draw_pulse_rings(center, Palette.get_color("cyan", Color(0, 0.84, 1)), 2.4, false)
+
+
+func _draw_planet_disc(
+	center: Vector2,
+	stage: StageNodeData,
+	unlocked: bool,
+	cleared: bool,
+	selected: bool
+) -> void:
+	var fill := stage.planet_modulate
+	if not unlocked:
+		fill = Color(0.18, 0.22, 0.3, 1)
+	elif cleared:
+		fill = fill.lerp(Palette.get_color("gold", Color(1, 0.85, 0.35)), 0.35)
+	var rim := Palette.get_color("cyan", Color(0, 0.84, 1)) if selected else fill.lightened(0.35)
+	if not unlocked:
+		rim = Color(0.55, 0.62, 0.75, 1)
+	# Shadow for contrast on bright nebula patches.
+	_map_canvas.draw_circle(center + Vector2(0, 3), _NODE_RADIUS + 6.0, Color(0.01, 0.02, 0.06, 0.55))
+	_map_canvas.draw_circle(center, _NODE_RADIUS + 4.0, Color(0.02, 0.06, 0.12, 0.9))
+	_map_canvas.draw_circle(center, _NODE_RADIUS, fill)
+	_map_canvas.draw_arc(center, _NODE_RADIUS + 2.0, 0.0, TAU, 48, rim, 4.0)
+	if not unlocked:
+		# Simple lock bar so locked stages stay readable without relying on SVG alone.
+		var lock_c := Color(0.85, 0.9, 1.0, 0.95)
+		_map_canvas.draw_rect(Rect2(center + Vector2(-12, -4), Vector2(24, 16)), lock_c, false, 2.5)
+		_map_canvas.draw_arc(center + Vector2(0, -4), 10.0, PI, TAU, 16, lock_c, 2.5)
 
 
 func _draw_pulse_rings(center: Vector2, base: Color, speed: float, selected: bool) -> void:

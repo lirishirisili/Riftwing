@@ -45,9 +45,20 @@ any store submission. See also `docs/EXPORT_VALIDATION.md` and
 7. Increment `version/code` in the preset (and `version_code` in
    `manifests/product_identity.json`) for every Play upload.
 
-## iOS (macOS only)
+## iOS (macOS or GitHub Actions)
 
-Windows cannot produce a signed iOS build. On a Mac:
+Windows cannot produce a signed iOS build locally. Options:
+
+### A) GitHub Actions (recommended)
+
+1. Configure secrets per [`.github/GITHUB_ACTIONS_SETUP.md`](../.github/GITHUB_ACTIONS_SETUP.md).
+2. Ensure App Store Connect has an app for `com.lishistudio.riftwing`.
+3. Bump `manifests/product_identity.json` + sync `export_presets.cfg` versions.
+4. **Actions → iOS — Godot TestFlight → Run workflow.**
+
+Signing uses `ios/exportOptions.plist` (`teamID` + bundle id) and Codemagic CLI on the runner — **not** `application/app_store_team_id` in committed `export_presets.cfg`.
+
+### B) Local Mac
 
 1. Install Godot 4.7-stable + iOS export templates.
 2. Export preset **iOS** with **Export Project Only** (preset default) into
@@ -58,12 +69,13 @@ Windows cannot produce a signed iOS build. On a Mac:
    - Provisioning profiles for devices / App Store
 4. Open the Xcode project. Select Team / signing. Keep portrait orientation.
 5. Archive and upload with Organizer / Transporter / TestFlight.
-6. Leave Team ID and provisioning fields empty in git; set them only on the Mac.
+6. Leave Team ID and provisioning fields empty in git; set them only on the Mac or via CI.
 
 ## What is intentionally missing
 
-- No Firebase / Ads / Analytics / IAP / Play Games / Game Center SDKs
-- No committed secrets
+- No Firebase / Analytics / IAP / Play Games / Game Center SDKs
+- No committed keystores, provisioning passwords, or App Store Connect `.p8` in the repo
+- AdMob is integrated behind `AdsService` (see `docs/04_ARCHITECTURE.md`)
 - No claim of App Store or Play Console acceptance from CI/Windows alone
 
 See: `docs/09_BRAND_AND_NAMING.md`, `prompts/14_export_validation.md`.

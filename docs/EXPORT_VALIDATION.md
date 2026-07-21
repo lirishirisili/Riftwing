@@ -1,6 +1,6 @@
 # Export Validation — Milestone 14
 
-Shared Godot 4.7 project for Android and iOS. No ads, IAP, analytics, Firebase, or store SDKs.
+Shared Godot 4.7 project for Android and iOS. AdMob (Poing plugin) is wired behind `AdsService` with UMP consent (GDPR + iOS ATT/IDFA) before SDK init. Still no IAP, analytics, Firebase, or store SDKs.
 
 Provisional identity (change before submission): `manifests/product_identity.json`
 
@@ -92,7 +92,7 @@ Provisional identity (change before submission): `manifests/product_identity.jso
 - [ ] Export **Android Release** → `.aab`
 - [ ] Play App Signing enrolled in Play Console
 - [ ] Store listing, content rating, target audience, Data safety form
-- [ ] Still no ads/IAP/analytics SDKs unless a later milestone adds them
+- [ ] AdMob present behind AdsService; still no IAP/analytics/Firebase unless a later milestone adds them
 
 ---
 
@@ -130,13 +130,24 @@ Provisional identity (change before submission): `manifests/product_identity.jso
 
 **Do not invent certificates, profiles, or a successful App Store validation from Windows.**
 
+### CI (GitHub Actions)
+
+Manual iOS builds on GitHub (`workflow_dispatch`): see [`.github/GITHUB_ACTIONS_SETUP.md`](../.github/GITHUB_ACTIONS_SETUP.md).
+
+- Workflow: **iOS — Godot TestFlight**
+- Requires repository secrets: `APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_KEY_IDENTIFIER`, `APP_STORE_CONNECT_PRIVATE_KEY` (same team as GG if shared)
+- Does **not** replace App Store Connect metadata, screenshots, or privacy labels
+- First-time scheme name: if archive fails on scheme, check CI log for `Discovered Xcode scheme:` and set `XCODE_SCHEME` in `.github/scripts/ci-env.sh` if needed
+
 ### App Store / TestFlight checklist (preparation only)
 - [ ] Final bundle id registered in Apple Developer
 - [ ] Distribution certificate + App Store / Ad Hoc profiles
 - [ ] Xcode archive succeeds on macOS
 - [ ] TestFlight internal build installed on a physical iPhone
 - [ ] Portrait + safe area + background/resume verified on device
-- [ ] No Game Center / push / tracking SDKs unless explicitly added later
+- [ ] AdMob UMP: GDPR + IDFA messages published in AdMob Privacy & messaging; ATT dialog appears once on a fresh install when IDFA status is NotDetermined
+- [ ] `NSUserTrackingUsageDescription` present in exported Info.plist
+- [ ] No Game Center / push / extra tracking SDKs beyond AdMob ATT/UMP
 
 ---
 

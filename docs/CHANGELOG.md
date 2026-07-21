@@ -1,5 +1,31 @@
 # Changelog
 
+## GitHub Actions — iOS TestFlight (Godot)
+- Added manual `workflow_dispatch` workflow `.github/workflows/ios-testflight.yml` on `macos-26`: Godot 4.7 export → Codemagic signing → archive → TestFlight (same App Store Connect API secrets pattern as GG).
+- Scripts under `.github/scripts/` (`godot-ios-testflight-run.sh`, `install-godot-macos.sh`, `ci-env.sh`, etc.) and [`ios/exportOptions.plist`](ios/exportOptions.plist) for `com.lishistudio.riftwing`.
+- Setup guide: [`.github/GITHUB_ACTIONS_SETUP.md`](../.github/GITHUB_ACTIONS_SETUP.md). Team ID stays out of `export_presets.cfg`; CI uses `APPLE_DEVELOPMENT_TEAM` + export options plist.
+
+## iOS ATT / UMP Consent Before Ads
+- `AdMobAdsService` gathers Google UMP consent (GDPR + IDFA explainer → ATT) before `MobileAds.initialize`.
+- iOS `NSUserTrackingUsageDescription` added to `poing-godot-admob-ads.gdip` and the iOS export preset plist extras.
+- Consent/form failures still proceed to SDK init so non-personalized ads remain available.
+- Requires GDPR + IDFA messages published under AdMob → Privacy & messaging for the live App IDs.
+
+## Planet Accent Transparency
+- Fixed `planet_rift_accent.png`: baked checkerboard/black plate replaced with true circular alpha (main menu + run backdrop).
+
+## AdMob Monetization (Interstitial / Rewarded)
+- Integrated Poing Studios AdMob plugin (`addons/admob`, Android AARs + iOS plugins) behind `AdsService` / `AdMobAdsService` (no SDK calls from gameplay).
+- Interstitial every 3 completed runs on Results; rewarded opt-in ×2 rewards on Results. Banner disabled (not shown).
+- Save schema v4 adds `monetization.completed_run_count` + `doubled_reward_run_ids`.
+- Debug builds use Google test ad units; production App IDs + unit IDs authored in `admob_ids.gd` / platform configs.
+- Android Debug preset: Gradle build, minSdk 24, INTERNET + ACCESS_NETWORK_STATE. Probe: `tests/ads_service_probe.gd`.
+- Local `android/` Gradle template is gitignored (install via Godot `--install-android-build-template` before export).
+
+## Stage Map Node Visibility
+- Fixed invisible stage nodes: buttons under a plain `Control` canvas now set explicit `size` (not only `custom_minimum_size`).
+- Always draw planet discs + path chrome; every stage keeps an active/locked icon; brighter locked dashes; taller map scroll.
+
 ## Tablet Full-Bleed Stretch
 - Restored `window/stretch/aspect=expand` (was `keep_width`) so wider/taller screens fill without black pillarbox bars.
 - `MetaScreenShell` resizes keyart/parallax plates on viewport change to cover expanded logical size.

@@ -10,10 +10,11 @@ signal currencies_changed(rift_energy: int, rift_core: int)
 signal hangar_changed(selected_ship_id: String)
 signal campaign_changed(selected_stage_id: String)
 
-const SCHEMA_VERSION := 3
+const SCHEMA_VERSION := 4
 const SAVE_PATH := "user://riftwing_save.json"
 const _TEMP_PATH := "user://riftwing_save.json.tmp"
 const _MAX_GRANTED_IDS := 256
+const _MAX_DOUBLED_IDS := 64
 const _DEFAULT_SHIP_ID := "vanguard_mk2"
 const _DEFAULT_STAGE_ID := "1-1"
 const _TRACK_IDS := ["weapons", "shield", "engine", "drones", "ultimate"]
@@ -47,6 +48,10 @@ func _default_data() -> Dictionary:
 			"difficulty": DIFFICULTY_NORMAL,
 			"cleared_stage_ids": [],
 			"stage_stars": {},
+		},
+		"monetization": {
+			"completed_run_count": 0,
+			"doubled_reward_run_ids": [],
 		},
 	}
 
@@ -173,6 +178,62 @@ func grant_run_rewards(run_id: String, rewards: RunRewards, stats: RunStats) -> 
 	currencies_changed.emit(get_rift_energy(), get_rift_core())
 	campaign_changed.emit(get_selected_stage_id())
 	return true
+
+
+## Counts a finished run for interstitial pacing (every N runs).
+func note_run_completed() -> int:
+	var monetization := _monetization()
+	var count := int(monetization.get("completed_run_count", 0)) + 1
+	monetization["completed_run_count"] = count
+	_data["monetization"] = monetization
+	save_game()
+	return count
+
+
+func get_completed_run_count() -> int:
+	return int(_monetization().get("completed_run_count", 0))
+
+
+## True when this completed-run count should show an interstitial.
+func should_show_interstitial_for_latest_run() -> bool:
+	var count := get_completed_run_count()
+	if count <= 0:
+		return false
+	return count % AdMobIds.INTERSTITIAL_EVERY_N_RUNS == 0
+
+
+func has_doubled_run_rewards(run_id: String) -> bool:
+	if run_id == "":
+		return true
+	return (_monetization().get("doubled_reward_run_ids", []) as Array).has(run_id)
+
+
+## Grants a second copy of run rewards after a completed rewarded ad (once per run).
+func grant_doubled_run_rewards(run_id: String, rewards: RunRewards) -> bool:
+	if run_id == "" or rewards == null:
+		return false
+	if not has_granted_run(run_id):
+		return false
+	if has_doubled_run_rewards(run_id):
+		return false
+	var monetization := _monetization()
+	var doubled: Array = monetization.get("doubled_reward_run_ids", []) as Array
+	doubled.append(run_id)
+	while doubled.size() > _MAX_DOUBLED_IDS:
+		doubled.pop_front()
+	monetization["doubled_reward_run_ids"] = doubled
+	_data["monetization"] = monetization
+	_data["currencies"]["rift_energy"] = get_rift_energy() + maxi(0, rewards.rift_energy)
+	_data["currencies"]["rift_core"] = get_rift_core() + maxi(0, rewards.rift_core)
+	save_game()
+	currencies_changed.emit(get_rift_energy(), get_rift_core())
+	return true
+
+
+func _monetization() -> Dictionary:
+	if typeof(_data.get("monetization")) != TYPE_DICTIONARY:
+		_data["monetization"] = _default_data()["monetization"]
+	return _data["monetization"] as Dictionary
 
 
 func select_ship(ship_id: String) -> bool:
@@ -351,6 +412,12 @@ func _merge_defaults(loaded: Dictionary) -> Dictionary:
 		for k in camp_loaded:
 			camp_base[k] = camp_loaded[k]
 		base["campaign"] = camp_base
+	if typeof(loaded.get("monetization")) == TYPE_DICTIONARY:
+		var mon_base: Dictionary = base["monetization"]
+		var mon_loaded: Dictionary = loaded["monetization"]
+		for k in mon_loaded:
+			mon_base[k] = mon_loaded[k]
+		base["monetization"] = mon_base
 	return base
 
 
@@ -388,6 +455,18 @@ func _migrate(data: Dictionary) -> Dictionary:
 			data["campaign"] = camp
 		data["schema_version"] = 3
 		version = 3
+	if version < 4:
+		if typeof(data.get("monetization")) != TYPE_DICTIONARY:
+			data["monetization"] = _default_data()["monetization"]
+		else:
+			var mon: Dictionary = data["monetization"]
+			if not mon.has("completed_run_count"):
+				mon["completed_run_count"] = 0
+			if typeof(mon.get("doubled_reward_run_ids")) != TYPE_ARRAY:
+				mon["doubled_reward_run_ids"] = []
+			data["monetization"] = mon
+		data["schema_version"] = 4
+		version = 4
 	if version < SCHEMA_VERSION:
 		data["schema_version"] = SCHEMA_VERSION
 	_ensure_upgrade_entry(String(data["ships"]["selected_ship_id"]))

@@ -63,7 +63,7 @@ func _check_identity_and_presets() -> int:
 		'version/name="0.1.0"',
 		"version/code=1",
 		"permissions/vibrate=true",
-		"permissions/internet=false",
+		"permissions/internet=true",
 		'gradle_build/export_format=1',
 		'gradle_build/use_gradle_build=true',
 		"application/export_project_only=true",
@@ -167,6 +167,18 @@ func _check_ios_environment_honesty() -> int:
 		return 1
 	if not FileAccess.file_exists("res://docs/EXPORT_SIGNING.md"):
 		printerr("EXPORT_SIGNING.md missing")
+		return 1
+	for ci_path in [
+		"res://.github/workflows/ios-testflight.yml",
+		"res://.github/scripts/godot-ios-testflight-run.sh",
+		"res://ios/exportOptions.plist",
+	]:
+		if not FileAccess.file_exists(ci_path):
+			printerr("missing CI file: %s" % ci_path)
+			return 1
+	var export_opts := FileAccess.get_file_as_string("res://ios/exportOptions.plist")
+	if export_opts.find("com.lishistudio.riftwing") < 0:
+		printerr("ios/exportOptions.plist missing bundle id")
 		return 1
 	var validation := FileAccess.get_file_as_string("res://docs/EXPORT_VALIDATION.md")
 	if validation.find("does not claim an iOS binary") < 0 and validation.find("does not claim an iOS") < 0:
