@@ -47,7 +47,7 @@ ci_patch_export_presets_team_id() {
     echo "ERROR: export_presets.cfg app_store_team_id is not empty and not $team; refusing to patch." >&2
     exit 1
   fi
-  sed -i.bak "s/application/app_store_team_id=\"\"/application/app_store_team_id=\"$team\"/" "$cfg"
+  sed -i.bak "s#application/app_store_team_id=\"\"#application/app_store_team_id=\"$team\"#" "$cfg"
   rm -f "$cfg.bak"
   echo "Patched export_presets.cfg app_store_team_id for CI Godot export."
 }
