@@ -35,6 +35,23 @@ ci_abs_path() {
 export XCODE_PROJECT_ABS="$(ci_abs_path "$XCODE_PROJECT")"
 export IOS_EXPORT_ABS="$(ci_abs_path "$IOS_EXPORT_PATH")"
 
+# Godot refuses iOS export when app_store_team_id is empty; git keeps "" for local honesty.
+ci_patch_export_presets_team_id() {
+  local team="${APPLE_DEVELOPMENT_TEAM:?APPLE_DEVELOPMENT_TEAM is required for Godot iOS export}"
+  local cfg="$REPO_ROOT/export_presets.cfg"
+  if grep -q "application/app_store_team_id=\"$team\"" "$cfg"; then
+    echo "export_presets.cfg already has app_store_team_id=$team"
+    return 0
+  fi
+  if ! grep -q 'application/app_store_team_id=""' "$cfg"; then
+    echo "ERROR: export_presets.cfg app_store_team_id is not empty and not $team; refusing to patch." >&2
+    exit 1
+  fi
+  sed -i.bak "s/application/app_store_team_id=\"\"/application/app_store_team_id=\"$team\"/" "$cfg"
+  rm -f "$cfg.bak"
+  echo "Patched export_presets.cfg app_store_team_id for CI Godot export."
+}
+
 ci_write_asc_key_file() {
   : "${APP_STORE_CONNECT_PRIVATE_KEY:?APP_STORE_CONNECT_PRIVATE_KEY is required}"
   printf '%s\n' "$APP_STORE_CONNECT_PRIVATE_KEY" > "$ASC_KEY_FILE"

@@ -50,7 +50,7 @@ Copy from your GG repo if you use the same Apple team:
 | iOS export preset name | `iOS` |
 | `ios/exportOptions.plist` | App Store manual signing seed |
 
-`export_presets.cfg` keeps `application/app_store_team_id=""` in git; CI applies signing via Codemagic CLI.
+`export_presets.cfg` keeps `application/app_store_team_id=""` in git; CI patches it from `APPLE_DEVELOPMENT_TEAM` immediately before Godot export, then applies signing via Codemagic CLI + `ios/exportOptions.plist`.
 
 ## Caching
 

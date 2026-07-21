@@ -43,6 +43,7 @@ wait "$GODOT_IMPORT_PID" 2>/dev/null || true
 set -e
 
 echo "=== Godot iOS export (Xcode project) ==="
+ci_patch_export_presets_team_id
 mkdir -p "$(dirname "$IOS_EXPORT_ABS")"
 "$GODOT_BIN" --headless --path "$REPO_ROOT" --export-release "$IOS_EXPORT_PRESET" "$IOS_EXPORT_ABS"
 
