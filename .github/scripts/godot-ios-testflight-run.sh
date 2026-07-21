@@ -15,8 +15,15 @@ export APP_STORE_CONNECT_ISSUER_ID APP_STORE_CONNECT_KEY_IDENTIFIER APP_STORE_CO
 
 mkdir -p "$BUILD_DIR"
 
-bash "$SCRIPT_DIR/install-godot-macos.sh"
-: "${GODOT_BIN:?GODOT_BIN must be set by install-godot-macos.sh}"
+# Must source (not bash) so GODOT_BIN export survives; GITHUB_ENV only applies between steps.
+# shellcheck source=install-godot-macos.sh
+source "$SCRIPT_DIR/install-godot-macos.sh"
+GODOT_BIN="${GODOT_BIN:-$CI_GODOT_DIR/Godot.app/Contents/MacOS/Godot}"
+export GODOT_BIN
+if [ ! -x "$GODOT_BIN" ]; then
+  echo "::error::Godot binary missing at $GODOT_BIN after install-godot-macos.sh" >&2
+  exit 1
+fi
 
 if [ "$RUN_PROBES" = "true" ]; then
   echo "=== Run config probes ==="

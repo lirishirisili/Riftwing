@@ -1,6 +1,7 @@
 # Changelog
 
 ## GitHub Actions — iOS TestFlight (Godot)
+- Fix CI: `source install-godot-macos.sh` so `GODOT_BIN` is visible in the same pipeline step (subshell `bash` + `GITHUB_ENV` did not export back to `godot-ios-testflight-run.sh`).
 - Added manual `workflow_dispatch` workflow `.github/workflows/ios-testflight.yml` on `macos-26`: Godot 4.7 export → Codemagic signing → archive → TestFlight (same App Store Connect API secrets pattern as GG).
 - Scripts under `.github/scripts/` (`godot-ios-testflight-run.sh`, `install-godot-macos.sh`, `ci-env.sh`, etc.) and [`ios/exportOptions.plist`](ios/exportOptions.plist) for `com.lishistudio.riftwing`.
 - Setup guide: [`.github/GITHUB_ACTIONS_SETUP.md`](../.github/GITHUB_ACTIONS_SETUP.md). Team ID stays out of `export_presets.cfg`; CI uses `APPLE_DEVELOPMENT_TEAM` + export options plist.

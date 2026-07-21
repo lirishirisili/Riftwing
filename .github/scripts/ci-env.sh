@@ -20,6 +20,7 @@ export ASC_KEY_FILE="${ASC_KEY_FILE:-/tmp/AuthKey.p8}"
 
 export CI_VENV="${CI_VENV:-$REPO_ROOT/.ci-venv}"
 export CI_GODOT_DIR="${CI_GODOT_DIR:-$REPO_ROOT/.ci-godot}"
+export GODOT_BIN="${GODOT_BIN:-$CI_GODOT_DIR/Godot.app/Contents/MacOS/Godot}"
 export PATH="$CI_VENV/bin:$PATH"
 
 ci_abs_path() {
