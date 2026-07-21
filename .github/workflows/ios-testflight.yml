@@ -12,6 +12,10 @@ on:
         description: 'Upload IPA to GitHub Artifacts (uses storage quota; TestFlight does not need this)'
         type: boolean
         default: false
+      submit_testflight_beta_review:
+        description: 'Submit to external TestFlight beta review (requires Beta App Information in App Store Connect)'
+        type: boolean
+        default: false
 
 concurrency:
   group: ios-testflight-${{ github.ref }}
@@ -95,6 +99,7 @@ jobs:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.APP_STORE_CONNECT_KEY_IDENTIFIER }}
           APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          SUBMIT_TESTFLIGHT_BETA_REVIEW: ${{ inputs.submit_testflight_beta_review }}
         run: bash .github/scripts/ios-publish-testflight.sh
 
       - name: Upload IPA artifact (optional)

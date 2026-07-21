@@ -19,7 +19,9 @@ Script: `.github/scripts/godot-ios-testflight-run.sh`
 5. Patch marketing/build version from `manifests/product_identity.json` + `BUILD_NUMBER`
 6. Fetch signing files → `xcode-project use-profiles` → resolve SPM (AdMob)
 7. `xcodebuild archive` → export IPA
-8. `ios-publish-testflight.sh` → TestFlight
+8. `ios-publish-testflight.sh` → App Store Connect upload (build shows in TestFlight after processing)
+
+By default the publish step **does not** pass `--testflight` (external beta review). That avoids CI failures when Beta App Information is empty in App Store Connect. After you fill [TestFlight test information](https://appstoreconnect.apple.com/) (feedback email + beta review contact), set repository variable `SUBMIT_TESTFLIGHT_BETA_REVIEW=true` or workflow input **Submit external TestFlight beta review** to `true`.
 
 **Skipped by default (saves macOS minutes):**
 

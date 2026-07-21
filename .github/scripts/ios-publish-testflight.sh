@@ -11,12 +11,22 @@ ci_verify_asc_secrets
 IPA=$(find "$BUILD_DIR/ios/ipa" -name '*.ipa' -print -quit)
 test -n "$IPA"
 
-echo "Publishing $IPA to TestFlight..."
-app-store-connect publish \
-  --path "$IPA" \
-  --testflight \
+# Upload to App Store Connect (build appears in TestFlight after processing).
+# --testflight submits for *external* beta review and requires Beta App Information
+# (feedback email + contact) in App Store Connect. Enable only when that is filled in.
+SUBMIT_TESTFLIGHT_BETA_REVIEW="${SUBMIT_TESTFLIGHT_BETA_REVIEW:-false}"
+
+PUBLISH_ARGS=(publish --path "$IPA")
+if [ "$SUBMIT_TESTFLIGHT_BETA_REVIEW" = "true" ]; then
+  PUBLISH_ARGS+=(--testflight)
+  echo "Submitting $IPA to TestFlight external beta review..."
+else
+  echo "Uploading $IPA to App Store Connect (no external beta review submission)..."
+fi
+
+app-store-connect "${PUBLISH_ARGS[@]}" \
   --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
   --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
   --private-key "@file:${ASC_KEY_FILE}"
 
-echo "TestFlight upload submitted."
+echo "App Store Connect upload finished."
