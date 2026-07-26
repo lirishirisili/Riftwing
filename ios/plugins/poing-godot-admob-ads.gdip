@@ -24,7 +24,7 @@ admob_packages=[
 GADApplicationIdentifier:string_input="ca-app-pub-1194823418071986~3724188783"
 
 ; Required for UMP IDFA / App Tracking Transparency dialog on iOS 14.5+.
-NSUserTrackingUsageDescription:string_input="This identifier will be used to deliver personalized ads to you."
+NSUserTrackingUsageDescription:string_input="Your advertising identifier is used only to show personalized ads in RIFTWING, for example recommending similar mobile games instead of unrelated products."
 
 ;Warning: Select third-party buyer Mediators: https://developers.google.com/admob/ios/3p-skadnetworks
 SKAdNetworkItems:raw="

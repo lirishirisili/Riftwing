@@ -1,5 +1,9 @@
 # Changelog
 
+## iOS App Review — ATT Purpose String (0.1.1)
+- Clarified `NSUserTrackingUsageDescription` in `export_presets.cfg` and `poing-godot-admob-ads.gdip` with a specific personalized-ads example for App Review.
+- Bumped store version to `0.1.1` (iOS build `2`, Android versionCode `2`).
+
 ## GitHub Actions — iOS TestFlight (Godot)
 - Fix CI: patch `export_presets.cfg` `app_store_team_id` from `APPLE_DEVELOPMENT_TEAM` before Godot export (empty team id is required in git but Godot blocks export); macOS `sed` uses `#` delimiters for paths with slashes.
 - Fix CI: TestFlight publish uploads IPA without `--testflight` by default (external beta review needs Beta App Information in App Store Connect).

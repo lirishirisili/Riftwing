@@ -9,8 +9,8 @@ Provisional identity (change before submission): `manifests/product_identity.jso
 | Brand | RIFTWING |
 | Android application id | `com.lishistudio.riftwing` |
 | iOS bundle id | `com.lishistudio.riftwing` |
-| Version name | `0.1.0` |
-| Version code / build | `1` (Android `version/code`) |
+| Version name | `0.1.1` |
+| Version code / build | `2` (Android `version/code`; iOS `application/version`) |
 | Orientation | Portrait (`project.godot` → `window/handheld/orientation=1`) |
 | Android minSdk | 24 |
 | Android targetSdk | 36 (Release/Gradle override; Debug APK verified same via template default) |
@@ -44,7 +44,7 @@ Provisional identity (change before submission): `manifests/product_identity.jso
 - Output: `build/android/riftwing-debug.apk`
 - Format: APK (`gradle_build/export_format=0`), classic template export (`use_gradle_build=false`)
 - Package: `com.lishistudio.riftwing` / display name `RIFTWING`
-- Version: name `0.1.0`, code `1`
+- Version: name `0.1.1`, code `2`
 - Arch: `arm64-v8a` only
 - SDK: min/target left empty (Godot forbids overrides without Gradle); template default applies for local debug
 - Icons / splash: `assets/branding/*`
@@ -101,7 +101,7 @@ Provisional identity (change before submission): `manifests/product_identity.jso
 ### Preset: iOS
 - Bundle id: `com.lishistudio.riftwing`
 - Name: `RIFTWING`
-- `application/short_version` + `application/version`: `0.1.0`
+- `application/short_version`: `0.1.1`; `application/version` (build): `2`
 - `application/min_ios_version`: `15.0`
 - `application/targeted_device_family`: `1` (iPhone)
 - `application/export_project_only=true` → export an Xcode project for Mac signing (no fake IPA success)
@@ -146,7 +146,7 @@ Manual iOS builds on GitHub (`workflow_dispatch`): see [`.github/GITHUB_ACTIONS_
 - [ ] TestFlight internal build installed on a physical iPhone
 - [ ] Portrait + safe area + background/resume verified on device
 - [ ] AdMob UMP: GDPR + IDFA messages published in AdMob Privacy & messaging; ATT dialog appears once on a fresh install when IDFA status is NotDetermined
-- [ ] `NSUserTrackingUsageDescription` present in exported Info.plist
+- [ ] `NSUserTrackingUsageDescription` present in exported Info.plist (specific personalized-ads example, not a generic placeholder)
 - [ ] No Game Center / push / extra tracking SDKs beyond AdMob ATT/UMP
 
 ---
