@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Shared CI environment for Riftwing GitHub Actions (Godot iOS → TestFlight).
+# Shared CI environment for Riftwing (Godot iOS → TestFlight).
+# Used by GitHub Actions and Codemagic (codemagic.yaml → ios-testflight).
 set -euo pipefail
 
 REPO_ROOT="${GITHUB_WORKSPACE:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
@@ -13,8 +14,19 @@ export IOS_EXPORT_PATH="${IOS_EXPORT_PATH:-build/ios/riftwing.ipa}"
 export XCODE_PROJECT="${XCODE_PROJECT:-build/ios/riftwing.xcodeproj}"
 # Default scheme matches Godot export basename; overridden after xcodebuild -list if needed.
 export XCODE_SCHEME="${XCODE_SCHEME:-riftwing}"
+# Codemagic: BUILD_DIR=$CM_BUILD_DIR so artifact globs resolve at clone root.
+export BUILD_DIR="${BUILD_DIR:-${CM_BUILD_DIR:+$CM_BUILD_DIR}}"
 export BUILD_DIR="${BUILD_DIR:-$REPO_ROOT/build}"
-export BUILD_NUMBER="${BUILD_NUMBER:-${GITHUB_RUN_NUMBER:-1}}"
+# Codemagic sets BUILD_NUMBER from PROJECT_BUILD_NUMBER in codemagic.yaml.
+if [ -n "${CM_BUILD_ID:-}" ]; then
+  if [ -z "${BUILD_NUMBER:-}" ] || [ "${BUILD_NUMBER}" = "\$PROJECT_BUILD_NUMBER" ]; then
+    BUILD_NUMBER="${PROJECT_BUILD_NUMBER:?PROJECT_BUILD_NUMBER or BUILD_NUMBER must be set on Codemagic}"
+  fi
+  export BUILD_NUMBER
+  echo "Codemagic BUILD_NUMBER=$BUILD_NUMBER"
+else
+  export BUILD_NUMBER="${BUILD_NUMBER:-${GITHUB_RUN_NUMBER:-1}}"
+fi
 export PRODUCT_IDENTITY="${PRODUCT_IDENTITY:-$REPO_ROOT/manifests/product_identity.json}"
 export ASC_KEY_FILE="${ASC_KEY_FILE:-/tmp/AuthKey.p8}"
 

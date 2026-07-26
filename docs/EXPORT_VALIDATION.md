@@ -130,12 +130,13 @@ Provisional identity (change before submission): `manifests/product_identity.jso
 
 **Do not invent certificates, profiles, or a successful App Store validation from Windows.**
 
-### CI (GitHub Actions)
+### CI (Codemagic + GitHub Actions)
 
-Manual iOS builds on GitHub (`workflow_dispatch`): see [`.github/GITHUB_ACTIONS_SETUP.md`](../.github/GITHUB_ACTIONS_SETUP.md).
+Shared scripts under `.github/scripts/`; see [`.github/GITHUB_ACTIONS_SETUP.md`](../.github/GITHUB_ACTIONS_SETUP.md).
 
-- Workflow: **iOS — Godot TestFlight**
-- Requires repository secrets: `APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_KEY_IDENTIFIER`, `APP_STORE_CONNECT_PRIVATE_KEY` (same team as GG if shared)
+- **Codemagic:** root `codemagic.yaml` → workflow **iOS — Godot TestFlight** (env group `basic` with the three ASC API vars)
+- **GitHub Actions:** manual `workflow_dispatch` → same pipeline scripts + `ios-publish-testflight.sh`
+- Requires: `APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_KEY_IDENTIFIER`, `APP_STORE_CONNECT_PRIVATE_KEY` (same team as GG/Salino if shared)
 - Does **not** replace App Store Connect metadata, screenshots, or privacy labels
 - First-time scheme name: if archive fails on scheme, check CI log for `Discovered Xcode scheme:` and set `XCODE_SCHEME` in `.github/scripts/ci-env.sh` if needed
 

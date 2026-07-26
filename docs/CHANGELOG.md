@@ -1,5 +1,11 @@
 # Changelog
 
+## Codemagic iOS TestFlight (Godot)
+- Added root `codemagic.yaml` workflow `ios-testflight` (Salino-style thin YAML): Codemagic CLI setup → `godot-ios-testflight-run.sh` → App Store Connect upload.
+- Shared scripts hardened for dual host: `CM_BUILD_ID` skips manual Xcode select; `BUILD_DIR` / `BUILD_NUMBER` honor `CM_BUILD_DIR` + `PROJECT_BUILD_NUMBER`.
+- Publishing uses `submit_to_testflight: false` (upload only; same ASC Beta App Information constraint as GHA).
+- Setup: [`.github/GITHUB_ACTIONS_SETUP.md`](../.github/GITHUB_ACTIONS_SETUP.md). GitHub Actions workflow kept in parallel.
+
 ## iOS App Review — ATT Purpose String (0.1.1)
 - Clarified `NSUserTrackingUsageDescription` in `export_presets.cfg` and `poing-godot-admob-ads.gdip` with a specific personalized-ads example for App Review.
 - Bumped store version to `0.1.1` (iOS build `2`, Android versionCode `2`).

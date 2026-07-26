@@ -169,6 +169,7 @@ func _check_ios_environment_honesty() -> int:
 		printerr("EXPORT_SIGNING.md missing")
 		return 1
 	for ci_path in [
+		"res://codemagic.yaml",
 		"res://.github/workflows/ios-testflight.yml",
 		"res://.github/scripts/godot-ios-testflight-run.sh",
 		"res://ios/exportOptions.plist",

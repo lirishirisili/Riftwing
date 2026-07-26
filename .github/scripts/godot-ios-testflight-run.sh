@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 # Godot 4.7 iOS: export Xcode project → sign → archive → IPA (TestFlight-ready).
+# Used by GitHub Actions and Codemagic. Publish is host-specific:
+#   Codemagic → codemagic.yaml publishing.app_store_connect
+#   GHA → ios-publish-testflight.sh
 set -euxo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
