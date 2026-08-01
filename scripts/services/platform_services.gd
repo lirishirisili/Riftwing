@@ -14,21 +14,16 @@ var achievements: AchievementService
 
 
 func _ready() -> void:
-	# Default prototype (no-op) implementations. Real adapters replace these
-	# by assignment during platform bring-up, keeping gameplay code unchanged.
+	# Default no-op implementations. Real adapters replace these by assignment
+	# during platform bring-up, keeping gameplay code unchanged.
+	# Ads stay no-op on all platforms (AdMob removed for App Store privacy).
 	store = StoreService.new()
-	ads = _make_ads_service()
+	ads = AdsService.new()
 	analytics = AnalyticsService.new()
 	haptics = HapticsService.new()
 	cloud_save = CloudSaveService.new()
 	achievements = AchievementService.new()
 	ads.initialize()
-
-
-func _make_ads_service() -> AdsService:
-	if AdMobIds.is_mobile_platform():
-		return AdMobAdsService.new()
-	return AdsService.new()
 
 
 ## Human-readable platform label for debug/telemetry surfaces.

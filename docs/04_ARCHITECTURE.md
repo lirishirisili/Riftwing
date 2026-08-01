@@ -106,15 +106,13 @@ Define interfaces for:
 - CloudSaveService
 - AchievementService
 
-Prototype implementations are no-op or local on desktop. On Android/iOS, `PlatformServices` swaps in `AdMobAdsService` (Poing Studios AdMob plugin) while gameplay/UI still talk only to `AdsService`.
+Prototype implementations are no-op or local on all platforms. `AdsService` remains as a typed interface but has no AdMob (or other ad) adapter wired — the game ships without ads or tracking SDKs.
 
-### Ads placement (AdMob)
-- **Interstitial**: every 3 completed runs, shortly after Results opens (paced via `SaveManager.note_run_completed`).
-- **Rewarded**: opt-in ×2 run rewards on Results (`grant_doubled_run_rewards`, once per `run_id`).
-- Banner units exist in AdMob but are not shown in-game.
-- Unit IDs live in `scripts/services/admob_ids.gd`. Debug builds use Google test units; release builds use production units. App IDs are wired in `addons/admob/android/config.gd` and `ios/plugins/poing-godot-admob-ads.gdip`.
-- Android export requires Gradle build + `INTERNET` / `ACCESS_NETWORK_STATE`.
-- **Privacy / consent**: `AdMobAdsService.initialize()` runs Google UMP (`UserMessagingPlatform`) before `MobileAds.initialize`. That covers GDPR messaging and iOS IDFA/ATT (when an IDFA message is published in AdMob Privacy & messaging). iOS ships `NSUserTrackingUsageDescription` + `AppTrackingTransparency.framework` via the AdMob plugin / export plist. Ads still initialize if the user declines (non-personalized).
+### Ads (disabled)
+- No interstitial, rewarded, or banner placement.
+- Poing AdMob editor plugin is disabled in `project.godot`; iOS `.gdip` plugins are renamed to `.gdip.disabled`.
+- No `NSUserTrackingUsageDescription` / ATT purpose string in the iOS export preset.
+- Save schema may still contain legacy `monetization` fields for migration; they are unused at runtime.
 
 ## Performance strategy
 - Object pooling is mandatory.

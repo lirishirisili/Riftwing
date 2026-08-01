@@ -1,5 +1,11 @@
 # Changelog
 
+## Ads removed (App Store 5.1.2)
+- Disabled AdMob end-to-end: no interstitial/rewarded/banner, no ATT purpose string, no iOS AdMob `.gdip` plugins in export.
+- `PlatformServices` always uses no-op `AdsService`; Results no longer shows “Watch for x2” or auto interstitial.
+- Removed `admob_ids.gd` / `admob_ads_service.gd`; editor plugin disabled in `project.godot`.
+- Bumped store version to `0.1.2` (iOS/Android build `3`) for resubmission after privacy-label update.
+
 ## Codemagic iOS TestFlight (Godot)
 - Added root `codemagic.yaml` workflow `ios-testflight` (Salino-style thin YAML): Codemagic CLI setup → `godot-ios-testflight-run.sh` → App Store Connect upload.
 - Shared scripts hardened for dual host: `CM_BUILD_ID` skips manual Xcode select; `BUILD_DIR` / `BUILD_NUMBER` honor `CM_BUILD_DIR` + `PROJECT_BUILD_NUMBER`.

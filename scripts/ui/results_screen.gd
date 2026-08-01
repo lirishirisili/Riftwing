@@ -3,9 +3,8 @@ extends Control
 ## Production victory / defeat results (prompts/21_results_screen_production.md).
 ##
 ## Celebrates the outcome, shows run stats + rewards, and offers Next Sector /
-## Upgrade / Replay / Home + opt-in rewarded ×2. Interstitial every 3 runs.
-## Rewards go through RewardCalculator + SaveManager.grant_run_rewards
-## (deduped by run id). Branding: RIFTWING only.
+## Upgrade / Replay / Home. Rewards go through RewardCalculator +
+## SaveManager.grant_run_rewards (deduped by run id). Branding: RIFTWING only.
 
 const _RULES_PATH := "res://resources/progression/reward_rules_default.tres"
 const _CATALOG_PATH := "res://resources/ships/ship_catalog_default.tres"
@@ -35,7 +34,6 @@ const _ICON_MISSILE := "res://assets/icons/icon_missile.svg"
 @onready var _progress_label: Label = $Safe/Root/ProgressPanel/ProgressLabel
 @onready var _next_button: GlowCtaButton = %NextSector
 @onready var _upgrade_button: GlowCtaButton = %UpgradeShip
-@onready var _double_button: GlowCtaButton = %DoubleRewards
 @onready var _replay_button: GlowCtaButton = %ReplayButton
 @onready var _home_button: GlowCtaButton = %Home
 @onready var _confetti: CPUParticles2D = %Confetti
@@ -46,8 +44,6 @@ var _rewards: RunRewards
 var _granted_now: bool = false
 var _hero_time := 0.0
 var _was_new_best := false
-var _awaiting_rewarded: bool = false
-var _ads_connected: bool = false
 
 
 func receive_payload(payload: Dictionary) -> void:
@@ -70,8 +66,6 @@ func _ready() -> void:
 
 	# Grant exactly once: SaveManager dedupes by run id.
 	_granted_now = SaveManager.grant_run_rewards(_stats.run_id, _rewards, _stats)
-	if _granted_now:
-		SaveManager.note_run_completed()
 
 	_ensure_scroll_layout()
 	_mount_meta_shell()
@@ -79,7 +73,6 @@ func _ready() -> void:
 	_on_viewport_changed()
 	_populate()
 	_wire_buttons()
-	_setup_ads()
 	_play_intro()
 	GameFeel.debug_markers_enabled = false
 	AudioManager.stop_music()
@@ -401,137 +394,6 @@ func _wire_buttons() -> void:
 	_upgrade_button.pressed.connect(_on_upgrade_ship)
 	_replay_button.pressed.connect(_on_replay)
 	_home_button.pressed.connect(_on_home)
-	if _double_button != null:
-		_double_button.pressed.connect(_on_double_rewards)
-
-
-func _exit_tree() -> void:
-	_disconnect_ads()
-
-
-func _setup_ads() -> void:
-	var ads: AdsService = PlatformServices.ads
-	if ads == null:
-		_refresh_double_button()
-		return
-	if not _ads_connected:
-		_ads_connected = true
-		ads.rewarded_earned.connect(_on_rewarded_earned)
-		ads.rewarded_failed.connect(_on_rewarded_failed)
-		ads.interstitial_closed.connect(_on_interstitial_finished)
-		ads.interstitial_failed.connect(_on_interstitial_failed_msg)
-	ads.load_rewarded()
-	ads.load_interstitial()
-	_refresh_double_button()
-	if _granted_now and SaveManager.should_show_interstitial_for_latest_run():
-		# Natural break after the results beat settles.
-		get_tree().create_timer(1.1).timeout.connect(_try_show_interstitial, CONNECT_ONE_SHOT)
-
-
-func _disconnect_ads() -> void:
-	if not _ads_connected:
-		return
-	var ads: AdsService = PlatformServices.ads
-	if ads == null:
-		_ads_connected = false
-		return
-	if ads.rewarded_earned.is_connected(_on_rewarded_earned):
-		ads.rewarded_earned.disconnect(_on_rewarded_earned)
-	if ads.rewarded_failed.is_connected(_on_rewarded_failed):
-		ads.rewarded_failed.disconnect(_on_rewarded_failed)
-	if ads.interstitial_closed.is_connected(_on_interstitial_finished):
-		ads.interstitial_closed.disconnect(_on_interstitial_finished)
-	if ads.interstitial_failed.is_connected(_on_interstitial_failed_msg):
-		ads.interstitial_failed.disconnect(_on_interstitial_failed_msg)
-	_ads_connected = false
-
-
-func _refresh_double_button() -> void:
-	if _double_button == null:
-		return
-	var ads: AdsService = PlatformServices.ads
-	var can_double := (
-		ads != null
-		and ads.is_available()
-		and _rewards != null
-		and (_rewards.rift_energy > 0 or _rewards.rift_core > 0)
-		and SaveManager.has_granted_run(_stats.run_id)
-		and not SaveManager.has_doubled_run_rewards(_stats.run_id)
-	)
-	_double_button.visible = can_double or _awaiting_rewarded
-	if SaveManager.has_doubled_run_rewards(_stats.run_id):
-		_double_button.configure("x2 CLAIMED", "BONUS APPLIED", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.NONE, 96.0)
-		_double_button.modulate = Color(0.65, 0.7, 0.75, 1)
-	elif _awaiting_rewarded:
-		_double_button.configure("LOADING AD...", "PLEASE WAIT", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.MAGENTA, 96.0)
-	else:
-		_double_button.configure(
-			"WATCH FOR x2 ENERGY",
-			"REWARDED AD",
-			GlowCtaButton.Variant.SECONDARY,
-			GlowCtaButton.Pulse.MAGENTA,
-			96.0)
-		_double_button.modulate = Color.WHITE
-
-
-func _on_double_rewards() -> void:
-	if SaveManager.has_doubled_run_rewards(_stats.run_id) or _awaiting_rewarded:
-		return
-	_click_feedback()
-	var ads: AdsService = PlatformServices.ads
-	if ads == null or not ads.is_available():
-		return
-	_awaiting_rewarded = true
-	_refresh_double_button()
-	if not ads.show_rewarded():
-		_awaiting_rewarded = false
-		_refresh_double_button()
-
-
-func _on_rewarded_earned() -> void:
-	if not _awaiting_rewarded:
-		return
-	_awaiting_rewarded = false
-	if SaveManager.grant_doubled_run_rewards(_stats.run_id, _rewards):
-		_set_reward_chips()
-		if _shell != null:
-			_shell.refresh_currencies()
-		AudioManager.play_sfx("ui_confirm", Vector2.ZERO, AudioManager.PRIORITY_HIGH)
-	_refresh_double_button()
-
-
-func _on_rewarded_failed(_message: String) -> void:
-	_awaiting_rewarded = false
-	_refresh_double_button()
-
-
-func _try_show_interstitial() -> void:
-	if not is_inside_tree():
-		return
-	var ads: AdsService = PlatformServices.ads
-	if ads == null or not ads.is_available():
-		return
-	if not ads.is_interstitial_ready():
-		ads.load_interstitial()
-		get_tree().create_timer(0.75).timeout.connect(_try_show_interstitial_once, CONNECT_ONE_SHOT)
-		return
-	ads.show_interstitial()
-
-
-func _try_show_interstitial_once() -> void:
-	if not is_inside_tree():
-		return
-	var ads: AdsService = PlatformServices.ads
-	if ads != null and ads.is_interstitial_ready():
-		ads.show_interstitial()
-
-
-func _on_interstitial_finished() -> void:
-	pass
-
-
-func _on_interstitial_failed_msg(_message: String) -> void:
-	pass
 
 
 func _on_next_sector() -> void:

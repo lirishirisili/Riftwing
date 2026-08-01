@@ -124,11 +124,11 @@ fi
 
 ci_discover_xcode_scheme
 
-echo "=== Resolve Swift Package dependencies (AdMob) ==="
+echo "=== Resolve Swift Package dependencies (if any) ==="
 xcodebuild -resolvePackageDependencies \
   -project "$XCODE_PROJECT_ABS" \
   -scheme "$XCODE_SCHEME" \
-  -derivedDataPath "$BUILD_DIR/DerivedData"
+  -derivedDataPath "$BUILD_DIR/DerivedData" || true
 
 echo "=== Archive ==="
 DERIVED_DATA_PATH="${DERIVED_DATA_PATH:-$BUILD_DIR/DerivedData}"

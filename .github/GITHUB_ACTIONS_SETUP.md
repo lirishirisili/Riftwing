@@ -31,7 +31,7 @@ Script: `.github/scripts/godot-ios-testflight-run.sh`
 3. Optional probes (`run_probes`, GHA only): `export_validation_probe.gd`, `ads_service_probe.gd`
 4. Godot headless import (bounded) → `--export-release` iOS preset → `build/ios/riftwing.xcodeproj`
 5. Patch marketing/build version from `manifests/product_identity.json` + `BUILD_NUMBER`
-6. Fetch signing files → `xcode-project use-profiles` → resolve SPM (AdMob)
+6. Fetch signing files → `xcode-project use-profiles` → resolve SPM (if any)
 7. `xcodebuild archive` → export IPA
 8. **Publish:** Codemagic YAML `publishing` · GHA `ios-publish-testflight.sh`
 
@@ -93,9 +93,9 @@ Copy from your GG / Salino project if you use the same Apple team.
 5. **Actions** → **iOS — Godot TestFlight** → **Run workflow**.
 6. On first failure with scheme errors: check the log for `Discovered Xcode scheme:` — if wrong, set `XCODE_SCHEME` in `.github/scripts/ci-env.sh` to match `xcodebuild -list`.
 
-## AdMob / privacy (not CI-blocking)
+## Privacy (App Store Connect)
 
-Publish GDPR + IDFA messages in AdMob **Privacy & messaging** for production ad behavior and ATT on device.
+With ads removed: App Privacy must **not** claim tracking, Device ID for tracking, or Advertising Data. No ATT / AdMob Privacy & messaging required.
 
 ## Local Android
 

@@ -31,7 +31,7 @@ Included: campaign stages, endless mode, daily challenge shell, ships, permanent
 
 Deferred until retention is proven: PvP, clans, chat, real-time co-op, complex backend, battle pass, more than two currencies, and cloud save.
 
-Monetization (live): AdMob interstitial every 3 runs on Results, opt-in rewarded ×2 on Results — all behind `AdsService`.
+Monetization: none for now (ads removed). IAP reserved behind `StoreService` for a later milestone.
 
 ## Prototype success criteria
 - A new player understands movement without instructional text.

@@ -73,9 +73,9 @@ Signing uses `ios/exportOptions.plist` (`teamID` + bundle id) and Codemagic CLI 
 
 ## What is intentionally missing
 
-- No Firebase / Analytics / IAP / Play Games / Game Center SDKs
+- No Firebase / Analytics / IAP / Play Games / Game Center / AdMob SDKs
 - No committed keystores, provisioning passwords, or App Store Connect `.p8` in the repo
-- AdMob is integrated behind `AdsService` (see `docs/04_ARCHITECTURE.md`)
+- `AdsService` interface remains no-op (see `docs/04_ARCHITECTURE.md`)
 - No claim of App Store or Play Console acceptance from CI/Windows alone
 
 See: `docs/09_BRAND_AND_NAMING.md`, `prompts/14_export_validation.md`.

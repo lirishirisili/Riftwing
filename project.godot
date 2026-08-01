@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Riftwing"
 config/description="RIFTWING - portrait mobile arcade shooter (prototype)."
-config/version="0.1.1"
+config/version="0.1.2"
 run/main_scene="res://scenes/app/app_root.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/quit_on_go_back=false
@@ -73,10 +73,6 @@ debug_toggle_safe_area={
 [input_devices]
 
 pointing/emulate_touch_from_mouse=true
-
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/admob/plugin.cfg")
 
 [rendering]
 

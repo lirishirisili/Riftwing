@@ -1,7 +1,7 @@
 class_name AdsService
 extends RefCounted
 ## Advertising interface. Gameplay/UI talk only to this contract.
-## Prototype: no-op. Mobile builds swap in AdMobAdsService via PlatformServices.
+## Currently no-op on all platforms (no AdMob / no tracking SDKs).
 
 signal initialization_finished(success: bool)
 signal rewarded_earned
