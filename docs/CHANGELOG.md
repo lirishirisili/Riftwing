@@ -1,5 +1,11 @@
 # Changelog
 
+## iOS device family fix (iPhone + iPad)
+- Corrected `application/targeted_device_family` from `1` (iPad-only in Godot’s enum) to `2` (iPhone & iPad).
+- Previous value caused App Store to list the app as “Designed for iPad” with no iPhone availability.
+- Docs in `EXPORT_VALIDATION.md` previously mislabeled `1` as iPhone; clarified Godot enum mapping (`0`/`1`/`2`).
+- Bumped store version to `0.1.3` (iOS/Android build `4`) for App Store resubmission.
+
 ## Ads removed (App Store 5.1.2)
 - Disabled AdMob end-to-end: no interstitial/rewarded/banner, no ATT purpose string, no iOS AdMob `.gdip` plugins in export.
 - `PlatformServices` always uses no-op `AdsService`; Results no longer shows “Watch for x2” or auto interstitial.
