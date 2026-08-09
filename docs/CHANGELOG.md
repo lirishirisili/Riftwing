@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.4 (build 5)
+- Bumped store version to `0.1.4` (iOS/Android build `5`).
+- Fixed combat continuing under Pause and the level-up upgrade overlay: `CurrentScreen` is now `PROCESS_MODE_PAUSABLE` so it no longer inherits `AppRoot`’s `PROCESS_MODE_ALWAYS`.
+- HUD pause chrome and `UpgradeScreen` still run while paused (`ALWAYS` / `WHEN_PAUSED`); enemies, projectiles, waves, and player simulation stop until resume / choice.
+
 ## iOS device family fix (iPhone + iPad)
 - Corrected `application/targeted_device_family` from `1` (iPad-only in Godot’s enum) to `2` (iPhone & iPad).
 - Previous value caused App Store to list the app as “Designed for iPad” with no iPhone availability.

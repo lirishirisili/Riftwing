@@ -3,14 +3,16 @@
 ## Top-level scene structure
 
 ```text
-AppRoot
+AppRoot (PROCESS_MODE_ALWAYS — lifecycle / Back)
 |- PlatformServices
 |- AudioManager
 |- SaveManager
 |- SceneRouter
 |- UIOverlay
-`- CurrentScreen
+`- CurrentScreen (PROCESS_MODE_PAUSABLE — run freezes when tree.paused)
 ```
+
+`get_tree().paused` is set by GameplayHUD (pause overlay) and UpgradeScreen (level-up choice). Those overlays use `ALWAYS` / `WHEN_PAUSED` so their UI stays live; combat under CurrentScreen must stay PAUSABLE (not inherit AppRoot’s ALWAYS) or enemies/projectiles keep simulating in the background.
 
 Gameplay scene:
 

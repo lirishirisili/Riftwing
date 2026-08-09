@@ -13,7 +13,11 @@ var _backgrounded: bool = false
 
 
 func _ready() -> void:
+	# AppRoot stays ALWAYS so background/focus/Back keep working while a run is
+	# paused. CurrentScreen must NOT inherit that — otherwise INHERIT children
+	# (the whole run) keep processing and combat continues under Pause / upgrades.
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_current_screen.process_mode = Node.PROCESS_MODE_PAUSABLE
 	# Mobile default: locked 60 FPS. Do not leave the frame rate uncapped.
 	Engine.max_fps = 60
 	# Android Back must not auto-quit after we open pause / navigate — AppRoot owns it.

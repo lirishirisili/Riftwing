@@ -12,6 +12,7 @@ script = ExtResource("1")
 script = ExtResource("4")
 
 [node name="CurrentScreen" type="Node" parent="."]
+process_mode = 1
 
 [node name="UIOverlay" type="CanvasLayer" parent="."]
 script = ExtResource("3")

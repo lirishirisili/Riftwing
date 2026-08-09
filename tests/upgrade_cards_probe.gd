@@ -86,6 +86,10 @@ func _check_runtime() -> int:
 	if not paused:
 		printerr("tree should be paused during upgrade choice")
 		fails += 1
+	var player: Node = run.get_node_or_null("Player")
+	if player != null and player.can_process():
+		printerr("player still can_process during upgrade choice")
+		fails += 1
 
 	var brand := upgrade_screen.find_child("Brand", true, false) as Label
 	if brand == null or brand.text != "RIFTWING":

@@ -111,6 +111,12 @@ func _check_runtime() -> int:
 		if not paused:
 			printerr("pause did not pause tree")
 			fails += 1
+		# Combat lives under the run host; it must not keep can_process while paused
+		# (regression: AppRoot ALWAYS + INHERIT left the whole run simulating).
+		var player: Node = screen.get_node_or_null("Player")
+		if player != null and player.can_process():
+			printerr("player still can_process while paused")
+			fails += 1
 		hud.call("force_resume")
 		await process_frame
 		if paused:
