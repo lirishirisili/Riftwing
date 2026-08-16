@@ -18,12 +18,19 @@ var fire_rate_mult: float = 1.0
 var bonus_projectiles: int = 0
 var bonus_spread_degrees: float = 0.0
 var damage_mult: float = 1.0
+## Per-volley critical chance (0..1) and multiplier, supplied by the run's
+## CombatProfile (hangar CRIT stat). A crit volley fires boosted bolts.
+var crit_chance: float = 0.0
+var crit_multiplier: float = 1.75
 
 var _cooldown: float = 0.0
 ## A private duplicate of the weapon's projectile so a damage multiplier scales
 ## this run's bolts without mutating the shared .tres. Rebuilt only when the
 ## multiplier changes, so firing itself allocates nothing.
 var _effective_projectile: ProjectileData = null
+## Cached crit-damage duplicate (base effective damage * crit_multiplier).
+var _crit_projectile: ProjectileData = null
+var _rng := RandomNumberGenerator.new()
 var _fire_loop_held: bool = false
 
 
@@ -62,7 +69,8 @@ func _exit_tree() -> void:
 func _fire() -> void:
 	if data.projectile == null:
 		return
-	var projectile := _current_projectile()
+	var is_crit := crit_chance > 0.0 and _rng.randf() < crit_chance
+	var projectile := _crit_projectile_for() if is_crit else _current_projectile()
 	var origin := to_global(data.muzzle_offset)
 	var count := data.projectiles_per_shot + bonus_projectiles
 	var spread := data.spread_degrees + bonus_spread_degrees
@@ -97,6 +105,20 @@ func add_spread_degrees(degrees: float) -> void:
 func add_damage_mult(mult: float) -> void:
 	damage_mult *= mult
 	_effective_projectile = null  # rebuilt lazily on next fire
+	_crit_projectile = null
+
+
+## Sets per-volley crit from the run's CombatProfile (hangar CRIT stat).
+func set_crit(chance: float, multiplier: float) -> void:
+	crit_chance = clampf(chance, 0.0, 1.0)
+	crit_multiplier = maxf(1.0, multiplier)
+	_crit_projectile = null
+
+
+## Adds crit chance from a run upgrade, stacking on the hangar baseline.
+func add_crit_chance(amount: float) -> void:
+	crit_chance = clampf(crit_chance + amount, 0.0, 0.95)
+	_crit_projectile = null
 
 
 ## The projectile to fire this shot: the shared resource when damage is
@@ -108,3 +130,13 @@ func _current_projectile() -> ProjectileData:
 		_effective_projectile = data.projectile.duplicate() as ProjectileData
 		_effective_projectile.damage = data.projectile.damage * damage_mult
 	return _effective_projectile
+
+
+## A cached duplicate carrying crit-boosted damage, so crit volleys allocate
+## nothing after the first crit and never mutate the shared .tres.
+func _crit_projectile_for() -> ProjectileData:
+	if _crit_projectile == null:
+		var base := _current_projectile()
+		_crit_projectile = base.duplicate() as ProjectileData
+		_crit_projectile.damage = base.damage * crit_multiplier
+	return _crit_projectile

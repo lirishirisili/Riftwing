@@ -43,6 +43,10 @@ var _boss_bar_visible: bool = false
 var _currency_flash: float = 0.0
 var _last_energy: int = -1
 var _paused_by_hud: bool = false
+## Quit requires a confirming second tap so an in-progress run is never lost by
+## a single mis-tap. Reset whenever the overlay opens/closes.
+var _quit_armed: bool = false
+var _quit_title_default: String = "QUIT"
 
 
 func _ready() -> void:
@@ -59,6 +63,8 @@ func _ready() -> void:
 	_pause_btn.pressed.connect(_on_pause_pressed)
 	_resume_btn.pressed.connect(_on_resume_pressed)
 	_quit_btn.pressed.connect(_on_quit_pressed)
+	if _quit_btn.title != "":
+		_quit_title_default = _quit_btn.title
 	_ability_left.configure(3, 7.0, load(_ICON_MISSILE) as Texture2D, Palette.get_color("cyan"))
 	_ability_right.configure(2, 9.0, load(_ICON_LASER) as Texture2D, Palette.get_color("purple"))
 	_ability_left.activated.connect(func() -> void: ability_left_activated.emit())
@@ -174,18 +180,9 @@ func _process(delta: float) -> void:
 func _refresh_score() -> void:
 	if _stats == null or _rules == null or _score_value == null:
 		return
-	var live := RunStats.score_for(
-		_stats.enemies_destroyed,
-		_stats.best_combo,
-		_stats.survival_seconds,
-		_stats.rift_energy_collected if _player == null else _player.get_energy(),
-		false,
-		_rules.score_per_kill,
-		_rules.score_per_combo,
-		_rules.score_per_second,
-		_rules.score_per_energy,
-		_rules.score_victory_bonus)
-	_score_value.text = _format_score(live)
+	# `_stats.rift_energy_collected` is kept in sync by `_on_energy_changed`, so the
+	# HUD and the results screen read one shared score value.
+	_score_value.text = _format_score(_stats.live_score(_rules))
 
 
 func _format_score(value: int) -> String:
@@ -226,6 +223,7 @@ func _on_pause_pressed() -> void:
 	if _paused_by_hud:
 		return
 	_paused_by_hud = true
+	_reset_quit_arm()
 	_pause_overlay.visible = true
 	get_tree().paused = true
 	AudioManager.set_fire_loop_suppressed(true)
@@ -237,6 +235,7 @@ func _on_resume_pressed() -> void:
 	if not _paused_by_hud:
 		return
 	_paused_by_hud = false
+	_reset_quit_arm()
 	_pause_overlay.visible = false
 	get_tree().paused = false
 	AudioManager.set_fire_loop_suppressed(false)
@@ -245,6 +244,15 @@ func _on_resume_pressed() -> void:
 
 
 func _on_quit_pressed() -> void:
+	# First tap arms the confirmation; the run keeps running (still paused) so an
+	# accidental tap never discards progress. Second tap actually quits.
+	if not _quit_armed:
+		_quit_armed = true
+		_quit_btn.title = "CONFIRM QUIT"
+		_quit_btn.subtitle = "Run progress is lost"
+		AudioManager.play_sfx("ui_click", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
+		return
+	_reset_quit_arm()
 	_paused_by_hud = false
 	_pause_overlay.visible = false
 	get_tree().paused = false
@@ -252,6 +260,13 @@ func _on_quit_pressed() -> void:
 	AudioManager.stop_fire_loop()
 	AudioManager.play_sfx("ui_back", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
 	quit_to_menu_requested.emit()
+
+
+func _reset_quit_arm() -> void:
+	_quit_armed = false
+	if _quit_btn != null:
+		_quit_btn.title = _quit_title_default
+		_quit_btn.subtitle = ""
 
 
 func _unhandled_input(event: InputEvent) -> void:

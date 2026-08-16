@@ -29,6 +29,12 @@ var _health: float = 0.0
 var _energy: int = 0
 var _invuln_time: float = 0.0
 var _alive: bool = true
+## Fraction of incoming damage absorbed by hangar defense (0..0.9). Applied via
+## the shared CombatProfile so armor math lives in one place.
+var _damage_reduction: float = 0.0
+## True once we hold private duplicates so run upgrades never mutate shared .tres.
+var _owns_combat_data: bool = false
+var _owns_move_data: bool = false
 
 @onready var _core: CollisionShape2D = $CollisionCore
 @onready var _sprite: Sprite2D = $Sprite
@@ -147,8 +153,70 @@ func get_core_global_position() -> Vector2:
 	return _core.global_position
 
 
+## Applies a run's derived hangar stats. Duplicates the movement/combat data so
+## the shared .tres resources are never mutated (docs/04_ARCHITECTURE.md).
+func apply_combat_profile(profile: CombatProfile) -> void:
+	if profile == null:
+		return
+	if combat_data == null:
+		combat_data = PlayerCombatData.new()
+	# Scale the run's tuned baseline HP by the hangar HP multiplier (relative), so
+	# a level-0 ship keeps the balanced baseline and upgrades add real survivability.
+	var baseline_hp := combat_data.max_health
+	combat_data = combat_data.duplicate() as PlayerCombatData
+	_owns_combat_data = true
+	combat_data.max_health = maxf(1.0, baseline_hp * profile.hp_mult)
+	_health = combat_data.max_health
+	_damage_reduction = clampf(profile.damage_reduction, 0.0, 0.9)
+	if data != null and not is_equal_approx(profile.move_speed_mult, 1.0):
+		data = data.duplicate() as PlayerMovementData
+		_owns_move_data = true
+		data.follow_smoothing = clampf(data.follow_smoothing * profile.move_speed_mult, 1.0, 40.0)
+	health_changed.emit(_health, combat_data.max_health)
+
+
+# --- Run upgrade hooks (called by UpgradeManager) ----------------------------
+
+## Adds flat incoming-damage reduction (stacks on hangar armor, hard-capped).
+func add_damage_reduction(amount: float) -> void:
+	_damage_reduction = clampf(_damage_reduction + amount, 0.0, 0.9)
+
+
+## Multiplies max HP and grants the added headroom as current HP too, so a mid-run
+## survivability pick feels immediately meaningful.
+func apply_max_hp_mult(mult: float) -> void:
+	if mult <= 0.0:
+		return
+	if combat_data == null:
+		combat_data = PlayerCombatData.new()
+	if not _owns_combat_data:
+		combat_data = combat_data.duplicate() as PlayerCombatData
+		_owns_combat_data = true
+	var old_max := combat_data.max_health
+	combat_data.max_health = maxf(1.0, old_max * mult)
+	var delta := combat_data.max_health - old_max
+	if delta > 0.0:
+		_health = minf(combat_data.max_health, _health + delta)
+	health_changed.emit(_health, combat_data.max_health)
+
+
+## Multiplies movement responsiveness (follow smoothing), clamped to safe bounds.
+func apply_move_speed_mult(mult: float) -> void:
+	if data == null or mult <= 0.0:
+		return
+	if not _owns_move_data:
+		data = data.duplicate() as PlayerMovementData
+		_owns_move_data = true
+	data.follow_smoothing = clampf(data.follow_smoothing * mult, 1.0, 40.0)
+
+
 func get_health() -> float:
 	return _health
+
+
+## Current incoming-damage reduction (0..0.9), for HUD/debug and probes.
+func get_damage_reduction() -> float:
+	return _damage_reduction
 
 
 func get_energy() -> int:
@@ -167,7 +235,8 @@ func take_damage(amount: float) -> void:
 		# Invuln window acts as a brief shield: feedback only, no HP change.
 		GameFeel.shield_impact(global_position)
 		return
-	_health = maxf(0.0, _health - amount)
+	var mitigated := amount * (1.0 - _damage_reduction)
+	_health = maxf(0.0, _health - maxf(0.0, mitigated))
 	_invuln_time = combat_data.invuln_seconds
 	GameFeel.player_hit(global_position)
 	health_changed.emit(_health, combat_data.max_health)
@@ -185,7 +254,7 @@ func _on_area_entered(area: Area2D) -> void:
 			energy_changed.emit(_energy)
 			GameFeel.pickup_collected(global_position)
 	elif area is Enemy:
-		take_damage((area as Enemy).data.contact_damage if (area as Enemy).data != null else 0.0)
+		take_damage((area as Enemy).get_contact_damage())
 
 
 func _begin_drag(index: int, screen_pos: Vector2) -> void:

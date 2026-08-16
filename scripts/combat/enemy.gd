@@ -8,6 +8,9 @@ extends Area2D
 ## freed at runtime.
 
 signal died(enemy: Enemy)
+## Emitted when a SPLITTER dies so the WaveDirector can spawn its children from
+## the shared enemy pool (the Enemy has no pool reference of its own).
+signal split_requested(origin: Vector2, child_data: EnemyData, count: int)
 
 enum Phase { IDLE, ENTER, WAIT, EXIT }
 
@@ -35,6 +38,11 @@ var _shoot_timer: float = 0.0
 var _telegraphing: bool = false
 var _flash: float = 0.0
 
+## Difficulty scaling applied per run without mutating shared EnemyData.
+var _contact_damage_mult: float = 1.0
+## DIVER: set true once the dive begins so it only re-targets the player once.
+var _diving: bool = false
+
 @onready var _sprite: Sprite2D = $Sprite
 @onready var _shape: CollisionShape2D = $CollisionShape2D
 
@@ -54,6 +62,8 @@ func spawn(enemy_data: EnemyData, enter_from: Vector2, hold_pos: Vector2, exit_t
 	_shoot_timer = data.shoot_rest
 	_telegraphing = false
 	_flash = 0.0
+	_contact_damage_mult = 1.0
+	_diving = false
 	global_position = enter_from
 
 	if _sprite != null:
@@ -95,7 +105,10 @@ func _process(delta: float) -> void:
 				_update_shooting(delta)
 			if _telegraphing:
 				queue_redraw()
-			if _phase_time >= _wait_seconds:
+			# Divers commit to a plunge toward the player instead of waiting out.
+			if data.behavior == EnemyData.Behavior.DIVER and _phase_time >= data.dive_delay:
+				_begin_dive()
+			elif _phase_time >= _wait_seconds:
 				_enter_phase(Phase.EXIT)
 		Phase.EXIT:
 			var te: float = clampf(_phase_time / _exit_seconds, 0.0, 1.0)
@@ -126,6 +139,33 @@ func _draw() -> void:
 			var aim := to_local(player.global_position).normalized()
 			draw_line(aim * r * 1.2, aim * r * 4.6, Color(1.0, 0.23, 0.23, 0.8), 3.5, true)
 			draw_circle(aim * r * 4.6, 5.0, Color(1.0, 0.9, 0.4, 0.85))
+
+
+## Applies per-run difficulty scaling. Called by the WaveDirector right after
+## spawn; multiplies current HP and stores the contact-damage multiplier so the
+## shared EnemyData is never mutated.
+func apply_scaling(hp_mult: float, contact_damage_mult: float) -> void:
+	if hp_mult > 0.0:
+		_health = maxf(1.0, _health * hp_mult)
+	_contact_damage_mult = maxf(0.0, contact_damage_mult)
+
+
+## Contact damage after difficulty scaling (read by the player on body overlap).
+func get_contact_damage() -> float:
+	if data == null:
+		return 0.0
+	return data.contact_damage * _contact_damage_mult
+
+
+## Diver commit: aim the plunge at the player's column and speed up the exit.
+func _begin_dive() -> void:
+	_diving = true
+	var target_x := _exit_to.x
+	if player != null:
+		target_x = player.global_position.x
+	_exit_to = Vector2(target_x, _exit_to.y)
+	_exit_seconds = maxf(0.2, _exit_seconds / maxf(1.0, data.dive_speed_mult))
+	_enter_phase(Phase.EXIT)
 
 
 ## Applies damage from a player projectile. Handles death + drops once.
@@ -200,6 +240,8 @@ func _die() -> void:
 	var is_major := data.is_elite or data.can_shoot or data.max_health >= 40.0
 	GameFeel.enemy_death(global_position, is_major)
 	_drop_energy()
+	if data.behavior == EnemyData.Behavior.SPLITTER and data.split_into != null and data.split_count > 0:
+		split_requested.emit(global_position, data.split_into, data.split_count)
 	died.emit(self)
 	_release()
 

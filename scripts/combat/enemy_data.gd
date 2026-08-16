@@ -5,8 +5,16 @@ extends Resource
 ## Scout vs Shooter is expressed purely as data (docs/04_ARCHITECTURE.md): the
 ## Enemy runtime node reads these values; no archetype-specific script exists.
 
+## Movement/behavior archetype. STANDARD hovers then exits; DIVER drops toward
+## the player after a brief hover; TANK is a slow, durable STANDARD variant;
+## SPLITTER spawns smaller enemies on death (docs/02_GAMEPLAY_SPEC.md).
+enum Behavior { STANDARD, DIVER, TANK, SPLITTER }
+
 ## Human-readable name for debug surfaces.
 @export var display_name: String = "Enemy"
+
+## Archetype behavior driving the runtime movement / death logic.
+@export var behavior: Behavior = Behavior.STANDARD
 
 ## Hit points before destruction.
 @export_range(1.0, 5000.0, 1.0) var max_health: float = 20.0
@@ -49,3 +57,19 @@ extends Resource
 
 ## Projectile fired by this enemy (enemy bullets are a distinct resource).
 @export var projectile: ProjectileData
+
+# --- Diver behavior ---------------------------------------------------------
+
+## DIVER: seconds hovered before diving toward the player's column.
+@export_range(0.0, 4.0, 0.1) var dive_delay: float = 0.5
+
+## DIVER: how much faster than the authored exit the dive plunges.
+@export_range(1.0, 6.0, 0.1) var dive_speed_mult: float = 3.0
+
+# --- Splitter behavior ------------------------------------------------------
+
+## SPLITTER: enemy spawned on death (usually a small, fast archetype).
+@export var split_into: EnemyData
+
+## SPLITTER: how many children spawn on death (0 disables splitting).
+@export_range(0, 6) var split_count: int = 0

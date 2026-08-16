@@ -70,6 +70,8 @@ var _summoned: Array[Enemy] = []
 
 var _flash: float = 0.0
 var _defeated_emitted: bool = false
+## Per-run HP scaling (difficulty). Applied at begin(); never mutates BossData.
+var _hp_mult: float = 1.0
 
 @onready var _sprite: Sprite2D = $Sprite
 @onready var _shape: CollisionShape2D = $CollisionShape2D
@@ -108,7 +110,7 @@ func begin() -> void:
 	_defeated_emitted = false
 	_current = null
 	_laser_hot = false
-	_health = data.max_health
+	_health = _max_health()
 	_phase = 1
 	_hold_pos = Vector2(screen_size.x * data.hold_ratio.x, screen_size.y * data.hold_ratio.y)
 	_enter_from = Vector2(_hold_pos.x, -data.hit_radius * 2.0)
@@ -122,7 +124,7 @@ func begin() -> void:
 
 	_enter_state(State.WARNING)
 	set_process(true)
-	health_changed.emit(_health, data.max_health)
+	health_changed.emit(_health, _max_health())
 	warning_started.emit(data.display_name)
 	AudioManager.play_sfx("boss_warning", Vector2.ZERO, AudioManager.PRIORITY_HIGH)
 	var haptics: HapticsService = PlatformServices.haptics
@@ -135,7 +137,18 @@ func get_health() -> float:
 
 
 func get_health_fraction() -> float:
-	return 0.0 if data.max_health <= 0.0 else _health / data.max_health
+	var maxhp := _max_health()
+	return 0.0 if maxhp <= 0.0 else _health / maxhp
+
+
+## Per-run HP scaling (difficulty). Applied at begin(); never mutates BossData.
+func set_scaling(hp_mult: float) -> void:
+	_hp_mult = maxf(0.1, hp_mult)
+
+
+## Scaled maximum health for this run (BossData is never mutated).
+func _max_health() -> float:
+	return data.max_health * _hp_mult
 
 
 func get_phase() -> int:
@@ -402,7 +415,7 @@ func debug_defeat() -> void:
 	if _state == State.DEFEATED or _defeated_emitted:
 		return
 	_health = 0.0
-	health_changed.emit(_health, data.max_health)
+	health_changed.emit(_health, _max_health())
 	_enter_defeated()
 	_defeated_emitted = true
 	defeated.emit()
@@ -420,7 +433,7 @@ func take_damage(amount: float) -> void:
 	_health = maxf(0.0, _health - amount)
 	_flash = 1.0
 	_apply_tint()
-	health_changed.emit(_health, data.max_health)
+	health_changed.emit(_health, _max_health())
 	GameFeel.projectile_hit(global_position, amount, false)
 
 	if _health <= 0.0:

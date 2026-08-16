@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="StageTimelineData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/stage_timeline_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/waves/nova_wave_diver_split.tres" id="2"]
+[ext_resource type="Resource" path="res://resources/waves/slice_wave_mid.tres" id="3"]
+[ext_resource type="Resource" path="res://resources/bosses/void_wisp.tres" id="4"]
+[ext_resource type="Resource" path="res://resources/bosses/void_titan.tres" id="5"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Nova Sector Escalation"
+early_wave = ExtResource("2")
+mid_wave = ExtResource("3")
+mini_boss = ExtResource("4")
+final_boss = ExtResource("5")
+mini_boss_at = 55.0
+boss_warning_at = 140.0
+guaranteed_level_up_at = 16.0
+guaranteed_level_up_xp = 10

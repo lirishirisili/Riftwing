@@ -37,6 +37,14 @@ extends Resource
 ## Fresh saves unlock these without any clears (prompt: first three for testing).
 @export var starts_unlocked: bool = false
 
+## Graded difficulty for this node: multiplies enemy/boss durability on top of the
+## selected RunDifficultyData so later stages ramp up even on NORMAL. 1.0 = base.
+@export_range(0.5, 3.0, 0.05) var difficulty_scalar: float = 1.0
+
+## Optional per-stage clock/wave/boss authoring. When null the RunController falls
+## back to the shared vertical-slice timeline so early stages keep the baseline.
+@export var timeline: StageTimelineData
+
 ## Star objectives on victory (additive): clear / HP ratio / score. Pure data.
 @export_range(0.0, 1.0, 0.05) var stars_hp_ratio_for_2: float = 0.5
 @export var stars_score_for_3: int = 4000

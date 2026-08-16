@@ -10,15 +10,17 @@ signal currencies_changed(rift_energy: int, rift_core: int)
 signal hangar_changed(selected_ship_id: String)
 signal campaign_changed(selected_stage_id: String)
 
-const SCHEMA_VERSION := 4
+const SCHEMA_VERSION := 6
 const SAVE_PATH := "user://riftwing_save.json"
 const _TEMP_PATH := "user://riftwing_save.json.tmp"
+const _BACKUP_PATH := "user://riftwing_save.json.bak"
 const _MAX_GRANTED_IDS := 256
 const _DEFAULT_SHIP_ID := "vanguard_mk2"
 const _DEFAULT_STAGE_ID := "1-1"
 const _TRACK_IDS := ["weapons", "shield", "engine", "drones", "ultimate"]
 const DIFFICULTY_NORMAL := "normal"
 const DIFFICULTY_HARD := "hard"
+const _EVENT_PATH := "res://resources/events/void_invasion.tres"
 
 var _data: Dictionary = {}
 
@@ -47,11 +49,21 @@ func _default_data() -> Dictionary:
 			"difficulty": DIFFICULTY_NORMAL,
 			"cleared_stage_ids": [],
 			"stage_stars": {},
+			"stage_best_scores": {},
 		},
 		"monetization": {
 			# Legacy AdMob fields kept for save migration; unused at runtime.
 			"completed_run_count": 0,
 			"doubled_reward_run_ids": [],
+		},
+		"daily": {
+			# Local-date key ("YYYY-MM-DD") of the last claimed Daily Challenge.
+			"last_completed_date": "",
+		},
+		"events": {
+			# Progress counters + one-time claim flags keyed by event id.
+			"progress": {},
+			"claimed_event_ids": [],
 		},
 	}
 
@@ -131,25 +143,108 @@ func get_cleared_stage_ids() -> Array:
 	return (_data["campaign"]["cleared_stage_ids"] as Array).duplicate()
 
 
-func is_stage_cleared(stage_id: String) -> bool:
-	return stage_id != "" and _data["campaign"]["cleared_stage_ids"].has(stage_id)
+## Composite save key so HARD progress (stars / best / clears) is tracked apart
+## from NORMAL. NORMAL keeps the bare stage id (no migration needed).
+func _stage_key(stage_id: String, difficulty: String) -> String:
+	if difficulty == DIFFICULTY_HARD:
+		return "%s#%s" % [stage_id, DIFFICULTY_HARD]
+	return stage_id
 
 
-func get_stage_stars(stage_id: String) -> int:
+func is_stage_cleared(stage_id: String, difficulty: String = DIFFICULTY_NORMAL) -> bool:
+	return stage_id != "" and _data["campaign"]["cleared_stage_ids"].has(_stage_key(stage_id, difficulty))
+
+
+func get_stage_stars(stage_id: String, difficulty: String = DIFFICULTY_NORMAL) -> int:
 	var stars: Dictionary = _data["campaign"]["stage_stars"]
-	return clampi(int(stars.get(stage_id, 0)), 0, 3)
+	return clampi(int(stars.get(_stage_key(stage_id, difficulty), 0)), 0, 3)
 
 
-## Whether the stage can be launched right now (unlocked + NORMAL difficulty).
+func get_stage_best_score(stage_id: String, difficulty: String = DIFFICULTY_NORMAL) -> int:
+	if stage_id == "":
+		return 0
+	var scores: Dictionary = _data["campaign"].get("stage_best_scores", {})
+	return maxi(0, int(scores.get(_stage_key(stage_id, difficulty), 0)))
+
+
+## Whether the stage can be launched right now. NORMAL needs the unlock chain;
+## HARD additionally requires the stage to have been cleared on NORMAL first.
+## --- Daily Challenge -------------------------------------------------------
+
+func get_daily_last_completed() -> String:
+	var daily: Dictionary = _data.get("daily", {})
+	return String(daily.get("last_completed_date", ""))
+
+
+func is_daily_completed(date_key: String) -> bool:
+	return date_key != "" and get_daily_last_completed() == date_key
+
+
+func _mark_daily_completed(date_key: String) -> void:
+	if typeof(_data.get("daily")) != TYPE_DICTIONARY:
+		_data["daily"] = _default_data()["daily"]
+	_data["daily"]["last_completed_date"] = date_key
+
+
+## --- Timed Events ----------------------------------------------------------
+
+func get_event_progress(event_id: String) -> int:
+	if event_id == "":
+		return 0
+	var events: Dictionary = _data.get("events", {})
+	var progress: Dictionary = events.get("progress", {})
+	return maxi(0, int(progress.get(event_id, 0)))
+
+
+func is_event_claimed(event_id: String) -> bool:
+	if event_id == "":
+		return false
+	var events: Dictionary = _data.get("events", {})
+	return (events.get("claimed_event_ids", []) as Array).has(event_id)
+
+
+## Adds progress toward an event goal (clamped at the goal) and persists. Returns
+## the new progress value.
+func add_event_progress(event_id: String, amount: int, goal: int) -> int:
+	if event_id == "" or amount <= 0:
+		return get_event_progress(event_id)
+	if typeof(_data.get("events")) != TYPE_DICTIONARY:
+		_data["events"] = _default_data()["events"]
+	var progress: Dictionary = _data["events"]["progress"]
+	var next := mini(maxi(0, goal), get_event_progress(event_id) + amount)
+	progress[event_id] = next
+	save_game()
+	return next
+
+
+## Grants an event's reward exactly once, when its goal has been reached. Returns
+## true if the reward was banked by this call.
+func claim_event_reward(event_id: String, goal: int, reward_energy: int, reward_core: int) -> bool:
+	if event_id == "" or is_event_claimed(event_id):
+		return false
+	if get_event_progress(event_id) < maxi(1, goal):
+		return false
+	if typeof(_data.get("events")) != TYPE_DICTIONARY:
+		_data["events"] = _default_data()["events"]
+	(_data["events"]["claimed_event_ids"] as Array).append(event_id)
+	_data["currencies"]["rift_energy"] = get_rift_energy() + maxi(0, reward_energy)
+	_data["currencies"]["rift_core"] = get_rift_core() + maxi(0, reward_core)
+	save_game()
+	currencies_changed.emit(get_rift_energy(), get_rift_core())
+	return true
+
+
 func can_launch_stage(map: StageMapData, stage_id: String) -> bool:
 	if map == null or stage_id == "":
-		return false
-	if get_campaign_difficulty() != DIFFICULTY_NORMAL:
 		return false
 	var stage := map.find_by_id(stage_id)
 	if stage == null:
 		return false
-	return StageProgress.is_unlocked(map, stage, get_cleared_stage_ids())
+	if not StageProgress.is_unlocked(map, stage, get_cleared_stage_ids()):
+		return false
+	if get_campaign_difficulty() == DIFFICULTY_HARD:
+		return is_stage_cleared(stage_id, DIFFICULTY_NORMAL)
+	return true
 
 
 # --- Writes -----------------------------------------------------------------
@@ -169,10 +264,18 @@ func grant_run_rewards(run_id: String, rewards: RunRewards, stats: RunStats) -> 
 	if stats != null:
 		if stats.score > get_best_score():
 			_data["progression"]["best_score"] = stats.score
+		if stats.stage_id != "":
+			_update_stage_best_score(stats.stage_id, stats.score, stats.difficulty)
 		if stats.victory:
 			_mark_sector_completed(stats.sector)
 			if stats.stage_id != "":
 				_record_stage_clear_from_stats(stats)
+			# One-time Daily Challenge Rift Core bonus (per local date).
+			if stats.is_daily and stats.daily_date != "" and not is_daily_completed(stats.daily_date):
+				_data["currencies"]["rift_core"] = get_rift_core() + maxi(0, stats.daily_reward_core)
+				_mark_daily_completed(stats.daily_date)
+		# Timed event participation: enemies destroyed count toward the active window.
+		_accrue_event_progress(stats)
 
 	save_game()
 	currencies_changed.emit(get_rift_energy(), get_rift_core())
@@ -201,6 +304,42 @@ func unlock_ship(ship_id: String) -> void:
 	hangar_changed.emit(get_selected_ship_id())
 
 
+## True when the ship's non-currency prerequisite is satisfied (its gate stage has
+## been cleared on either difficulty). Ships with no stage gate are always eligible.
+func ship_requirement_met(ship: ShipData) -> bool:
+	if ship == null:
+		return false
+	if ship.unlock_stage_id == "":
+		return true
+	return is_stage_cleared(ship.unlock_stage_id, DIFFICULTY_NORMAL) \
+		or is_stage_cleared(ship.unlock_stage_id, DIFFICULTY_HARD)
+
+
+## True when the ship can be unlocked right now: locked, gate cleared, and enough
+## Rift Cores banked to pay its unlock cost.
+func can_unlock_ship(ship: ShipData) -> bool:
+	if ship == null or is_ship_unlocked(ship.id):
+		return false
+	if not ship_requirement_met(ship):
+		return false
+	return get_rift_core() >= ship.unlock_core_cost
+
+
+## Atomically unlocks a ship: re-validates the gate + cost, spends the Rift Cores,
+## records the unlock, and saves once. Returns false (no charge) if not eligible.
+func try_unlock_ship(ship: ShipData) -> bool:
+	if not can_unlock_ship(ship):
+		return false
+	if ship.unlock_core_cost > 0:
+		_data["currencies"]["rift_core"] = get_rift_core() - ship.unlock_core_cost
+	_data["ships"]["unlocked_ship_ids"].append(ship.id)
+	_ensure_upgrade_entry(ship.id)
+	save_game()
+	currencies_changed.emit(get_rift_energy(), get_rift_core())
+	hangar_changed.emit(get_selected_ship_id())
+	return true
+
+
 func try_purchase_upgrade(ship_id: String, track: HangarUpgradeTrackData) -> bool:
 	if ship_id == "" or track == null or track.id == "":
 		return false
@@ -224,6 +363,66 @@ func try_purchase_upgrade(ship_id: String, track: HangarUpgradeTrackData) -> boo
 	return true
 
 
+## Plans an "Upgrade All" purchase: one level in each non-maxed track that fits the
+## current Rift Energy budget (walked in track order, skipping any single level the
+## budget can't cover). Returns the exact set of track ids and their combined cost so
+## the hangar previews precisely what will happen — never a surprise partial buy.
+func plan_upgrade_all(ship: ShipData) -> Dictionary:
+	var result := {"track_ids": PackedStringArray(), "total_cost": 0}
+	if ship == null or not is_ship_unlocked(ship.id):
+		return result
+	var levels := get_upgrade_levels(ship.id)
+	var budget := get_rift_energy()
+	var spent := 0
+	var ids := PackedStringArray()
+	for track in ship.tracks():
+		if track == null or track.id == "":
+			continue
+		var current := int(levels.get(track.id, 0))
+		var cost := track.cost_for_next_level(current)
+		if cost < 0:
+			continue
+		if spent + cost > budget:
+			continue
+		spent += cost
+		ids.append(track.id)
+	result["track_ids"] = ids
+	result["total_cost"] = spent
+	return result
+
+
+## Atomically buys one level in each listed track. Recomputes the cost from live
+## state so a stale plan can never overspend: if the combined cost no longer fits the
+## budget it commits nothing (returns 0). Otherwise it deducts once, bumps each track,
+## and saves once. Returns the number of levels purchased.
+func purchase_upgrade_all(ship: ShipData, track_ids: PackedStringArray) -> int:
+	if ship == null or not is_ship_unlocked(ship.id) or track_ids.is_empty():
+		return 0
+	_ensure_upgrade_entry(ship.id)
+	var levels: Dictionary = _data["ships"]["upgrade_levels"][ship.id]
+	var total := 0
+	var plan: Array = []
+	for tid in track_ids:
+		var track := ship.track_by_id(tid)
+		if track == null:
+			continue
+		var current := int(levels.get(tid, 0))
+		var cost := track.cost_for_next_level(current)
+		if cost < 0:
+			continue
+		total += cost
+		plan.append(tid)
+	if plan.is_empty() or total > get_rift_energy():
+		return 0
+	_data["currencies"]["rift_energy"] = get_rift_energy() - total
+	for tid in plan:
+		levels[tid] = int(levels.get(tid, 0)) + 1
+	save_game()
+	currencies_changed.emit(get_rift_energy(), get_rift_core())
+	hangar_changed.emit(get_selected_ship_id())
+	return plan.size()
+
+
 ## Selects a stage for the detail panel. Locked stages may be inspected but not launched.
 func select_stage(stage_id: String) -> void:
 	if stage_id == "" or get_selected_stage_id() == stage_id:
@@ -233,8 +432,8 @@ func select_stage(stage_id: String) -> void:
 	campaign_changed.emit(stage_id)
 
 
-## NORMAL is the only playable difficulty in this milestone. HARD is stored as
-## preference for the UI lock state but launch always requires NORMAL.
+## Sets the campaign difficulty preference. Both NORMAL and HARD are playable;
+## the per-stage launch gate (can_launch_stage) decides eligibility.
 func set_campaign_difficulty(difficulty: String) -> void:
 	if difficulty != DIFFICULTY_NORMAL and difficulty != DIFFICULTY_HARD:
 		return
@@ -245,17 +444,18 @@ func set_campaign_difficulty(difficulty: String) -> void:
 	campaign_changed.emit(get_selected_stage_id())
 
 
-## Records a stage clear + star rating (keeps the best stars). Used by probes and
-## by grant_run_rewards on victory.
-func record_stage_clear(stage_id: String, stars: int) -> void:
+## Records a stage clear + star rating (keeps the best stars) for a difficulty.
+## Used by probes and by grant_run_rewards on victory.
+func record_stage_clear(stage_id: String, stars: int, difficulty: String = DIFFICULTY_NORMAL) -> void:
 	if stage_id == "":
 		return
+	var key := _stage_key(stage_id, difficulty)
 	var cleared: Array = _data["campaign"]["cleared_stage_ids"]
-	if not cleared.has(stage_id):
-		cleared.append(stage_id)
+	if not cleared.has(key):
+		cleared.append(key)
 	var star_map: Dictionary = _data["campaign"]["stage_stars"]
-	var best := maxi(get_stage_stars(stage_id), clampi(stars, 0, 3))
-	star_map[stage_id] = best
+	var best := maxi(get_stage_stars(stage_id, difficulty), clampi(stars, 0, 3))
+	star_map[key] = best
 	_data["campaign"]["selected_stage_id"] = stage_id
 	save_game()
 	campaign_changed.emit(stage_id)
@@ -268,13 +468,34 @@ func debug_add_currency(rift_energy: int = 0, rift_core: int = 0) -> void:
 	currencies_changed.emit(get_rift_energy(), get_rift_core())
 
 
+## Adds this run's enemy kills toward the active timed event's current window.
+## Mutates _data only; grant_run_rewards persists once at the end of its call.
+func _accrue_event_progress(stats: RunStats) -> void:
+	if stats == null:
+		return
+	var kills := maxi(0, stats.enemies_destroyed)
+	if kills <= 0:
+		return
+	var event := load(_EVENT_PATH) as EventData
+	if event == null:
+		return
+	var now := int(Time.get_unix_time_from_system())
+	if not event.is_active(now):
+		return
+	if typeof(_data.get("events")) != TYPE_DICTIONARY:
+		_data["events"] = _default_data()["events"]
+	var occ := event.occurrence_id(now)
+	var progress: Dictionary = _data["events"]["progress"]
+	progress[occ] = mini(maxi(1, event.goal), int(progress.get(occ, 0)) + kills)
+
+
 func _record_stage_clear_from_stats(stats: RunStats) -> void:
 	var map: StageMapData = load("res://resources/stages/nova_sector_map.tres")
 	var stage: StageNodeData = null
 	if map != null:
 		stage = map.find_by_id(stats.stage_id)
 	var stars := StageProgress.stars_for_run(stage, stats)
-	record_stage_clear(stats.stage_id, stars)
+	record_stage_clear(stats.stage_id, stars, stats.difficulty)
 
 
 func _ensure_upgrade_entry(ship_id: String) -> void:
@@ -286,6 +507,15 @@ func _ensure_upgrade_entry(ship_id: String) -> void:
 	for key in _TRACK_IDS:
 		if not levels.has(key):
 			levels[key] = 0
+
+
+func _update_stage_best_score(stage_id: String, score: int, difficulty: String = DIFFICULTY_NORMAL) -> void:
+	if stage_id == "":
+		return
+	var key := _stage_key(stage_id, difficulty)
+	var scores: Dictionary = _data["campaign"]["stage_best_scores"]
+	if score > int(scores.get(key, 0)):
+		scores[key] = maxi(0, score)
 
 
 func _mark_sector_completed(sector: int) -> void:
@@ -304,16 +534,29 @@ func _trim_granted_ids() -> void:
 # --- Persistence ------------------------------------------------------------
 
 func load_game() -> void:
-	if not FileAccess.file_exists(SAVE_PATH):
+	var loaded := _read_save_dict(SAVE_PATH)
+	if loaded.is_empty():
+		# Primary save missing/corrupt: fall back to the last known-good backup.
+		loaded = _read_save_dict(_BACKUP_PATH)
+		if not loaded.is_empty():
+			push_warning("SaveManager: primary save unreadable; recovered from backup.")
+	if loaded.is_empty():
 		return
-	var text := FileAccess.get_file_as_string(SAVE_PATH)
+	_data = _migrate(_merge_defaults(loaded))
+
+
+## Reads a save file into a Dictionary, or {} when missing / empty / not JSON.
+func _read_save_dict(path: String) -> Dictionary:
+	if not FileAccess.file_exists(path):
+		return {}
+	var text := FileAccess.get_file_as_string(path)
 	if text.is_empty():
-		return
+		return {}
 	var parsed: Variant = JSON.parse_string(text)
 	if typeof(parsed) != TYPE_DICTIONARY:
-		push_warning("SaveManager: save file unreadable; keeping defaults.")
-		return
-	_data = _migrate(_merge_defaults(parsed as Dictionary))
+		push_warning("SaveManager: %s unreadable (invalid JSON)." % path)
+		return {}
+	return parsed as Dictionary
 
 
 func save_game() -> void:
@@ -325,13 +568,30 @@ func save_game() -> void:
 	f.store_string(text)
 	f.close()
 
+	# Validate the temp file before it is allowed to replace the live save.
+	if _read_save_dict(_TEMP_PATH).is_empty():
+		push_error("SaveManager: temp save failed validation; keeping previous save.")
+		return
+
 	var dir := DirAccess.open("user://")
 	if dir == null:
 		push_error("SaveManager: cannot open user:// to finalize save.")
 		return
+
+	# Roll the current good save into a backup first so a failed replace (e.g. a
+	# Windows rename that refuses an existing destination) can be rolled back.
+	if dir.file_exists(SAVE_PATH):
+		if dir.file_exists(_BACKUP_PATH):
+			dir.remove(_BACKUP_PATH)
+		var back_err := dir.rename(SAVE_PATH, _BACKUP_PATH)
+		if back_err != OK:
+			push_warning("SaveManager: could not create backup (%d)." % back_err)
+
 	var err := dir.rename(_TEMP_PATH, SAVE_PATH)
 	if err != OK:
-		push_error("SaveManager: atomic rename failed (%d)." % err)
+		push_error("SaveManager: atomic rename failed (%d); rolling back." % err)
+		if dir.file_exists(_BACKUP_PATH) and not dir.file_exists(SAVE_PATH):
+			dir.rename(_BACKUP_PATH, SAVE_PATH)
 
 
 func _merge_defaults(loaded: Dictionary) -> Dictionary:
@@ -411,6 +671,32 @@ func _migrate(data: Dictionary) -> Dictionary:
 			data["monetization"] = mon
 		data["schema_version"] = 4
 		version = 4
+	if version < 5:
+		if typeof(data.get("campaign")) != TYPE_DICTIONARY:
+			data["campaign"] = _default_data()["campaign"]
+		else:
+			var camp5: Dictionary = data["campaign"]
+			if typeof(camp5.get("stage_best_scores")) != TYPE_DICTIONARY:
+				camp5["stage_best_scores"] = {}
+			data["campaign"] = camp5
+		data["schema_version"] = 5
+		version = 5
+	if version < 6:
+		if typeof(data.get("daily")) != TYPE_DICTIONARY:
+			data["daily"] = _default_data()["daily"]
+		elif not (data["daily"] as Dictionary).has("last_completed_date"):
+			(data["daily"] as Dictionary)["last_completed_date"] = ""
+		if typeof(data.get("events")) != TYPE_DICTIONARY:
+			data["events"] = _default_data()["events"]
+		else:
+			var ev: Dictionary = data["events"]
+			if typeof(ev.get("progress")) != TYPE_DICTIONARY:
+				ev["progress"] = {}
+			if typeof(ev.get("claimed_event_ids")) != TYPE_ARRAY:
+				ev["claimed_event_ids"] = []
+			data["events"] = ev
+		data["schema_version"] = 6
+		version = 6
 	if version < SCHEMA_VERSION:
 		data["schema_version"] = SCHEMA_VERSION
 	_ensure_upgrade_entry(String(data["ships"]["selected_ship_id"]))

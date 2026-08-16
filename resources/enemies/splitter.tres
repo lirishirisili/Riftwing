@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/enemy_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/art/enemies/void_scout.svg" id="2"]
+[ext_resource type="Resource" path="res://resources/enemies/splitter_child.tres" id="3"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Splitter"
+behavior = 3
+max_health = 48.0
+contact_damage = 14.0
+energy_drop = 2
+sprite = ExtResource("2")
+sprite_scale = 0.17
+hit_radius = 56.0
+tint = Color(0.4, 1, 0.6, 1)
+can_shoot = false
+split_into = ExtResource("3")
+split_count = 2

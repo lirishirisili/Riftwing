@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/upgrade_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/progression/upgrade_effect_data.gd" id="2"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_target.svg" id="3"]
+
+[sub_resource type="Resource" id="crit"]
+script = ExtResource("2")
+kind = 11
+target = "plasma"
+value = 0.06
+
+[resource]
+script = ExtResource("1")
+id = "targeting_matrix"
+title = "Targeting Matrix"
+description = "+6% plasma crit chance."
+icon = ExtResource("3")
+rarity = 1
+prerequisites = PackedStringArray("plasma")
+max_level = 3
+weight = 3.0
+effects = Array[Resource]([SubResource("crit")])

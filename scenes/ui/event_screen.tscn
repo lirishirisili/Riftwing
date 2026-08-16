@@ -1,10 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://c0riftwplaceh01"]
+[gd_scene load_steps=4 format=3 uid="uid://c0riftwevent01"]
 
-[ext_resource type="Script" path="res://scripts/ui/placeholder_screen.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/event_screen.gd" id="1"]
 [ext_resource type="Theme" path="res://resources/theme/riftwing_theme.tres" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/ui/chrome/meta_screen_shell.tscn" id="3"]
 
-[node name="PlaceholderScreen" type="Control"]
+[node name="EventScreen" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

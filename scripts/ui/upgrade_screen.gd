@@ -3,13 +3,17 @@ extends CanvasLayer
 ## Production paused three-card upgrade choice (prompts/20_upgrade_cards_production.md).
 ##
 ## Dims frozen combat, presents rarity-framed UpgradeCards, and applies the pick
-## through UpgradeManager. Reroll is presentation-only (disabled stub). Animations
-## run while the tree is paused. Branding: RIFTWING.
+## through UpgradeManager. One free reroll per run re-draws the current choices.
+## Animations run while the tree is paused. Branding: RIFTWING.
 
 signal upgrade_selected(upgrade: UpgradeData)
 signal closed()
 
 const _CARD_SCENE := preload("res://scenes/ui/upgrade_card.tscn")
+
+## Free rerolls granted per run (no currency cost, per plan). Consumed across the
+## whole run, not per level-up.
+const _REROLLS_PER_RUN := 1
 
 @onready var _veil: ColorRect = $Veil
 @onready var _panel: Control = $Center
@@ -23,6 +27,8 @@ var _manager: UpgradeManager
 var _cards: Array[UpgradeCard] = []
 var _selecting: bool = false
 var _pulse_time := 0.0
+var _rerolls_left := _REROLLS_PER_RUN
+var _current_level := 1
 
 
 func _ready() -> void:
@@ -32,10 +38,9 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_apply_safe_area)
 	_apply_safe_area()
 	if _reroll_button != null:
-		_reroll_button.configure("REROLL · SOON", "", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.NONE, 96.0)
 		_reroll_button.chrome_modulate = Color(1.05, 0.9, 0.55, 1)
-		_reroll_button.set_enabled(false)
 		_reroll_button.pressed.connect(_on_reroll_pressed)
+		_refresh_reroll_button()
 	set_process(true)
 
 
@@ -76,6 +81,9 @@ func _fit_card_widths() -> void:
 
 func configure(manager: UpgradeManager) -> void:
 	_manager = manager
+	# One free reroll per run; this screen is rebuilt each run so reset here.
+	_rerolls_left = _REROLLS_PER_RUN
+	_refresh_reroll_button()
 
 
 ## Rolls three choices, pauses the game, and shows the cards.
@@ -87,10 +95,12 @@ func open(level: int) -> bool:
 		return false
 
 	_selecting = false
+	_current_level = level
 	_clear_cards()
 	_title.text = "LEVEL %d" % level
 	_subtitle.text = "CHOOSE AN UPGRADE"
 	_build_cards(choices)
+	_refresh_reroll_button()
 
 	visible = true
 	get_tree().paused = true
@@ -188,6 +198,42 @@ func is_open() -> bool:
 	return visible
 
 
+## Re-draws the current level's three choices using one of the run's free
+## rerolls. No currency involved; disabled once the run's rerolls are spent.
 func _on_reroll_pressed() -> void:
-	# Presentation stub — reroll economy is not part of this milestone.
-	AudioManager.play_sfx("ui_back", Vector2.ZERO, AudioManager.PRIORITY_LOW)
+	if _manager == null or _selecting or _rerolls_left <= 0:
+		return
+	var choices := _manager.roll_choices(3, _current_level)
+	if choices.is_empty():
+		return
+	_rerolls_left -= 1
+	_build_cards(choices)
+	_animate_cards_in()
+	_refresh_reroll_button()
+	AudioManager.play_sfx("upgrade_open", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
+	var haptics: HapticsService = PlatformServices.haptics
+	if GameFeel.haptics_enabled and haptics != null:
+		haptics.light()
+
+
+## Updates the reroll CTA label + enabled state from the remaining count.
+func _refresh_reroll_button() -> void:
+	if _reroll_button == null:
+		return
+	if _rerolls_left > 0:
+		_reroll_button.configure(
+			"REROLL · %d" % _rerolls_left, "",
+			GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.MAGENTA, 96.0)
+		_reroll_button.set_enabled(true)
+	else:
+		_reroll_button.configure(
+			"REROLL · USED", "",
+			GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.NONE, 96.0)
+		_reroll_button.set_enabled(false)
+	_reroll_button.chrome_modulate = Color(1.05, 0.9, 0.55, 1)
+
+
+## Animates freshly built cards into view (used by reroll; veil already shown).
+func _animate_cards_in() -> void:
+	for i in _cards.size():
+		_cards[i].animate_in(0.04 * float(i))

@@ -1,9 +1,11 @@
-[gd_resource type="Resource" script_class="BossData" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="BossData" load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/combat/boss_data.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/art/boss/void_titan.svg" id="2"]
 [ext_resource type="Resource" path="res://resources/bosses/void_titan_radial.tres" id="3"]
 [ext_resource type="Resource" path="res://resources/bosses/void_titan_laser.tres" id="4"]
+[ext_resource type="Resource" path="res://resources/bosses/void_wisp_radial_p2.tres" id="5"]
+[ext_resource type="Resource" path="res://resources/bosses/void_wisp_laser_p2.tres" id="6"]
 
 [resource]
 script = ExtResource("1")
@@ -19,4 +21,4 @@ entry_seconds = 1.1
 hold_ratio = Vector2(0.5, 0.26)
 phase2_threshold = 0.35
 phase1_patterns = Array[Resource]([ExtResource("3"), ExtResource("4")])
-phase2_patterns = Array[Resource]([ExtResource("3"), ExtResource("4")])
+phase2_patterns = Array[Resource]([ExtResource("5"), ExtResource("6")])

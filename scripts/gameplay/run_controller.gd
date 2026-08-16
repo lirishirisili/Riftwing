@@ -31,9 +31,13 @@ enum Phase {
 @onready var _xp: ExperienceTracker = $ExperienceTracker
 @onready var _upgrades: UpgradeManager = $UpgradeManager
 @onready var _upgrade_screen: UpgradeScreen = $UpgradeScreen
+@onready var _secondary: SecondaryWeaponSystem = $SecondaryWeaponSystem
 
 const _PICKUP_DATA_PATH := "res://resources/pickups/energy_small.tres"
+const _CATALOG_PATH := "res://resources/ships/ship_catalog_default.tres"
 const _DEFAULT_TIMELINE := "res://resources/stages/vertical_slice_timeline.tres"
+const _STAGE_MAP_PATH := "res://resources/stages/nova_sector_map.tres"
+const _DIFFICULTY_DIR := "res://resources/difficulty/"
 const _COMBO_WINDOW := 2.5
 const _RESULTS_DELAY := 1.6
 const _PHASE_NAMES := ["EARLY", "MINI", "MID", "BOSS", "END"]
@@ -58,6 +62,15 @@ var _guaranteed_level_done: bool = false
 var _peak_enemy_bolts: int = 0
 var _peak_enemies: int = 0
 var _awaiting_boss_outcome: bool = false
+var _profile: CombatProfile
+var _difficulty_id: String = ""
+var _difficulty: RunDifficultyData
+var _reward_mult: float = 1.0
+var _star_score_mult: float = 1.0
+var _timing_scale: float = 1.0
+var _is_daily: bool = false
+var _daily_date: String = ""
+var _daily_reward_core: int = 0
 
 
 func receive_payload(payload: Dictionary) -> void:
@@ -67,11 +80,21 @@ func receive_payload(payload: Dictionary) -> void:
 		_stage_id = String(payload["stage_id"])
 	if payload.has("fast"):
 		_fast = bool(payload["fast"])
+	if payload.has("difficulty"):
+		_difficulty_id = String(payload["difficulty"])
 	if payload.has("timeline") and payload["timeline"] is StageTimelineData:
 		timeline = payload["timeline"] as StageTimelineData
+	if payload.has("daily"):
+		_is_daily = bool(payload["daily"])
+	if payload.has("daily_date"):
+		_daily_date = String(payload["daily_date"])
+	if payload.has("daily_reward_core"):
+		_daily_reward_core = int(payload["daily_reward_core"])
 
 
 func _ready() -> void:
+	if timeline == null:
+		timeline = _resolve_stage_timeline()
 	if timeline == null:
 		timeline = load(_DEFAULT_TIMELINE) as StageTimelineData
 	var pickup_data: PickupData = load(_PICKUP_DATA_PATH)
@@ -102,6 +125,12 @@ func _ready() -> void:
 	_player.died.connect(_on_player_died)
 
 	_upgrades.bind_plasma_weapon(_weapon)
+	_apply_hangar_profile()
+	_apply_difficulty()
+	if _secondary != null:
+		var dmg_mult := _profile.weapon_damage_mult if _profile != null else 1.0
+		_secondary.configure(_player_bullet_pool, _player, _director, _boss, dmg_mult)
+		_upgrades.bind_combat(_player, _secondary)
 	_upgrade_screen.configure(_upgrades)
 	_upgrade_screen.upgrade_selected.connect(_on_upgrade_selected)
 	_upgrade_screen.closed.connect(_on_upgrade_screen_closed)
@@ -117,6 +146,70 @@ func _ready() -> void:
 	_begin_run()
 
 
+## Derives this run's combat stats from the selected ship + hangar levels and
+## applies them to the player and weapon via runtime copies (no Resource writes).
+func _apply_hangar_profile() -> void:
+	var catalog: ShipCatalogData = load(_CATALOG_PATH) as ShipCatalogData
+	if catalog == null:
+		return
+	var ship := catalog.find_by_id(SaveManager.get_selected_ship_id())
+	if ship == null:
+		return
+	var levels := SaveManager.get_upgrade_levels(ship.id)
+	_profile = CombatProfile.from_hangar(ship, levels)
+	if _player != null:
+		_player.apply_combat_profile(_profile)
+	if _weapon != null:
+		_weapon.add_damage_mult(_profile.weapon_damage_mult)
+		_weapon.set_crit(_profile.crit_chance, _profile.crit_multiplier)
+
+
+## Resolves the run's difficulty profile (payload override or campaign setting)
+## and the stage's graded scalar, then applies scaling to enemies, the boss,
+## boss timing, and the reward/star multipliers. Never mutates shared resources.
+func _apply_difficulty() -> void:
+	if _difficulty_id == "":
+		_difficulty_id = SaveManager.get_campaign_difficulty()
+	_difficulty = load(_DIFFICULTY_DIR + _difficulty_id + ".tres") as RunDifficultyData
+	if _difficulty == null:
+		_difficulty = load(_DIFFICULTY_DIR + "normal.tres") as RunDifficultyData
+	if _difficulty == null:
+		return
+	var scalar := _stage_difficulty_scalar()
+	var enemy_hp := _difficulty.enemy_hp_mult * scalar
+	var boss_hp := _difficulty.boss_hp_mult * scalar
+	if _director != null:
+		_director.set_difficulty(enemy_hp, _difficulty.enemy_contact_damage_mult, _difficulty.enemy_count_add)
+	if _boss != null:
+		_boss.set_scaling(boss_hp)
+	_reward_mult = _difficulty.reward_mult
+	_star_score_mult = _difficulty.star_score_mult
+	_timing_scale = clampf(_difficulty.timing_scale, 0.4, 1.0)
+
+
+## Per-stage graded difficulty from the map node (1.0 when off-map / missing).
+func _stage_difficulty_scalar() -> float:
+	if _stage_id == "":
+		return 1.0
+	var map: StageMapData = load(_STAGE_MAP_PATH) as StageMapData
+	if map == null:
+		return 1.0
+	var stage := map.find_by_id(_stage_id)
+	return stage.difficulty_scalar if stage != null else 1.0
+
+
+## Per-stage authored timeline from the map node (null when off-map / unset so the
+## caller falls back to the shared vertical-slice timeline).
+func _resolve_stage_timeline() -> StageTimelineData:
+	if _stage_id == "":
+		return null
+	var map: StageMapData = load(_STAGE_MAP_PATH) as StageMapData
+	if map == null:
+		return null
+	var stage := map.find_by_id(_stage_id)
+	return stage.timeline if stage != null else null
+
+
 func _adapt_screen_size() -> void:
 	var vp := get_viewport().get_visible_rect().size
 	_screen = Vector2(maxi(1080, int(vp.x)), maxi(1920, int(vp.y)))
@@ -127,13 +220,13 @@ func _adapt_screen_size() -> void:
 func _mini_at() -> float:
 	if timeline == null:
 		return 60.0
-	return 12.0 if _fast else timeline.mini_boss_at
+	return 12.0 if _fast else timeline.mini_boss_at * _timing_scale
 
 
 func _boss_at() -> float:
 	if timeline == null:
 		return 150.0
-	return 24.0 if _fast else timeline.boss_warning_at
+	return 24.0 if _fast else timeline.boss_warning_at * _timing_scale
 
 
 func _guaranteed_at() -> float:
@@ -150,6 +243,12 @@ func _begin_run() -> void:
 	_stats.run_id = "run_%d_%d" % [Time.get_ticks_msec(), randi()]
 	_stats.sector = _sector
 	_stats.stage_id = _stage_id
+	_stats.difficulty = _difficulty_id if _difficulty_id != "" else SaveManager.get_campaign_difficulty()
+	_stats.reward_mult = _reward_mult
+	_stats.star_score_mult = _star_score_mult
+	_stats.is_daily = _is_daily
+	_stats.daily_date = _daily_date
+	_stats.daily_reward_core = _daily_reward_core
 	_combo = 0
 	_combo_timer = 0.0
 	_run_time = 0.0
@@ -472,6 +571,8 @@ func _end_run(victory: bool) -> void:
 	_awaiting_boss_outcome = false
 	if _weapon != null:
 		_weapon.firing_active = false
+	if _secondary != null:
+		_secondary.disable()
 	AudioManager.set_fire_loop_suppressed(false)
 	AudioManager.stop_fire_loop()
 	_hud.force_resume()
@@ -527,11 +628,16 @@ func _on_hud_quit_to_menu() -> void:
 	_run_active = false
 	_run_over = true
 	_director.stop()
+	if _secondary != null:
+		_secondary.disable()
 	SceneRouter.go_to(SceneRouter.SCREEN_MAIN_MENU)
 
 
 func _on_ability_feedback(is_left: bool) -> void:
-	# Presentation hook only — no combat resolution changes this milestone.
+	# Real combat: fire the bound ability weapon (Missile Barrage / Arc Burst),
+	# plus the presentation beat. Cooldown/charges are gated by the HUD button.
+	if _secondary != null:
+		_secondary.fire_ability(is_left)
 	var pos := _player.get_core_global_position() + Vector2(0, -80)
 	var tint := Palette.get_color("cyan") if is_left else Palette.get_color("purple")
 	GameFeel.ability_activated(pos, tint)

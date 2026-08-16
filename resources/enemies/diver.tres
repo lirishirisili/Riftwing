@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/enemy_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/art/enemies/void_scout.svg" id="2"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Diver"
+behavior = 1
+max_health = 24.0
+contact_damage = 16.0
+energy_drop = 1
+sprite = ExtResource("2")
+sprite_scale = 0.135
+hit_radius = 48.0
+tint = Color(1, 0.35, 0.5, 1)
+can_shoot = false
+dive_delay = 0.4
+dive_speed_mult = 3.5

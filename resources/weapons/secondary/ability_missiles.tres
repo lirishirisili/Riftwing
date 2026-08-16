@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="SecondaryWeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/secondary_weapon_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/weapons/friendly_missile_projectile.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "ability_missiles"
+display_name = "Missile Barrage"
+interval = 1.0
+projectiles_per_shot = 6
+spread_degrees = 60.0
+homing = true
+is_ability = true
+damage = 30.0
+muzzle_offset = Vector2(0, -60)
+projectile = ExtResource("2")

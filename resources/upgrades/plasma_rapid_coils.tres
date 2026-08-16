@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/upgrade_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/progression/upgrade_effect_data.gd" id="2"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_energy.svg" id="3"]
+
+[sub_resource type="Resource" id="fire_rate"]
+script = ExtResource("2")
+kind = 1
+target = "plasma"
+value = 1.12
+
+[resource]
+script = ExtResource("1")
+id = "plasma_rapid_coils"
+title = "Rapid Coils"
+description = "+12% plasma fire rate."
+icon = ExtResource("3")
+rarity = 0
+prerequisites = PackedStringArray("plasma")
+max_level = 4
+weight = 5.0
+effects = Array[Resource]([SubResource("fire_rate")])
+synergy_ids = PackedStringArray("plasma_spread_array")
+synergy_hint = "Synergy: Rapid Spread"

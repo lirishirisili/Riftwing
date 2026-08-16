@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/upgrade_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/progression/upgrade_effect_data.gd" id="2"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_energy.svg" id="3"]
+
+[sub_resource type="Resource" id="move"]
+script = ExtResource("2")
+kind = 10
+target = ""
+value = 1.08
+
+[resource]
+script = ExtResource("1")
+id = "afterburner"
+title = "Afterburner"
+description = "+8% ship agility."
+icon = ExtResource("3")
+rarity = 0
+prerequisites = PackedStringArray()
+max_level = 3
+weight = 3.5
+effects = Array[Resource]([SubResource("move")])

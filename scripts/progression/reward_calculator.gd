@@ -8,7 +8,16 @@ extends RefCounted
 ## granted exactly once (prompts/07_results_screen.md).
 
 ## Returns the rewards a run earns. Never mutates its inputs.
-static func calculate(stats: RunStats, rules: RewardRulesData) -> RunRewards:
+##
+## `stage` (optional) adds the authored per-stage payout on victory, and
+## `is_first_clear` adds the stage's first-clear Rift Core bonus. Both are pure
+## inputs; the caller (results screen) decides first-clear state before granting,
+## and SaveManager still dedupes the whole payout by run id.
+static func calculate(
+		stats: RunStats,
+		rules: RewardRulesData,
+		stage: StageNodeData = null,
+		is_first_clear: bool = false) -> RunRewards:
 	if stats == null or rules == null:
 		return RunRewards.new(0, 0)
 
@@ -18,5 +27,16 @@ static func calculate(stats: RunStats, rules: RewardRulesData) -> RunRewards:
 		energy *= rules.victory_energy_multiplier
 
 	var core := rules.rift_core_on_victory if stats.victory else rules.rift_core_on_defeat
+
+	if stats.victory and stage != null:
+		energy += float(maxi(0, stage.reward_rift_energy))
+		core += maxi(0, stage.reward_rift_core)
+		if is_first_clear:
+			core += maxi(0, stage.first_clear_rift_core)
+
+	# Difficulty payout multiplier (HARD pays more). Neutral (1.0) on NORMAL.
+	var mult := maxf(1.0, stats.reward_mult)
+	energy *= mult
+	core = int(round(float(core) * mult))
 
 	return RunRewards.new(int(round(maxf(0.0, energy))), maxi(0, core))

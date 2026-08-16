@@ -3,10 +3,10 @@ extends Control
 ## Production RIFTWING home screen (prompts/17_main_menu_production.md).
 ##
 ## Cinematic key art + parallax, tech header chrome, hex CTAs, holo pad hero.
-## Navigation is unchanged:
+## Navigation:
 ##   Start Run       -> stage map
-##   Daily Challenge -> placeholder (later milestone)
-##   Event banner    -> same placeholder route
+##   Daily Challenge -> daily challenge hub
+##   Event banner    -> VOID INVASION event hub
 ##   Ships / Upgrades-> hangar
 ##   Settings        -> settings
 
@@ -17,7 +17,7 @@ const _CATALOG_PATH := "res://resources/ships/ship_catalog_default.tres"
 const _VANGUARD_HERO_PATH := "res://assets/art/ships/hero_vanguard_menu.png"
 const _CAPTURE_SIZE := Vector2i(1080, 1920)
 const _CAPTURE_PATH := "user://riftwing_main_menu_1080x1920.png"
-const _EVENT_TIMER_COPY := "2D 14H"
+const _EVENT_PATH := "res://resources/events/void_invasion.tres"
 
 @onready var _parallax: ParallaxBackground = $Background
 @onready var _safe: MarginContainer = %Safe
@@ -44,6 +44,8 @@ const _EVENT_TIMER_COPY := "2D 14H"
 
 var _hero_time := 0.0
 var _catalog: ShipCatalogData
+var _event: EventData
+var _event_tick := 0.0
 
 
 func _ready() -> void:
@@ -74,8 +76,8 @@ func _ready() -> void:
 	_ships_button.custom_minimum_size = Vector2(0, 104)
 	_upgrades_button.custom_minimum_size = Vector2(0, 104)
 
-	if _event_timer != null:
-		_event_timer.text = _EVENT_TIMER_COPY
+	_event = load(_EVENT_PATH) as EventData
+	_refresh_event_timer()
 
 	SaveManager.currencies_changed.connect(_on_currencies_changed)
 	SaveManager.hangar_changed.connect(_on_hangar_changed)
@@ -112,6 +114,10 @@ func _process(delta: float) -> void:
 		_brand_logo.modulate = Color(title_glow, title_glow, 1.0, 1.0)
 	elif _title != null:
 		_title.modulate = Color(title_glow, title_glow, 1.0, 1.0)
+	_event_tick += delta
+	if _event_tick >= 1.0:
+		_event_tick = 0.0
+		_refresh_event_timer()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -129,10 +135,7 @@ func _on_start_run() -> void:
 
 func _on_daily_challenge() -> void:
 	_click()
-	SceneRouter.go_to(SceneRouter.SCREEN_PLACEHOLDER, {
-		"title": "DAILY CHALLENGE",
-		"subtitle": "Daily runs with modifiers arrive in a future update.",
-	})
+	SceneRouter.go_to(SceneRouter.SCREEN_DAILY)
 
 
 func _on_event_gui_input(event: InputEvent) -> void:
@@ -148,20 +151,17 @@ func _on_event_gui_input(event: InputEvent) -> void:
 
 func _on_event_pressed() -> void:
 	_click()
-	SceneRouter.go_to(SceneRouter.SCREEN_PLACEHOLDER, {
-		"title": "VOID INVASION",
-		"subtitle": "Event details arrive in a future update.",
-	})
+	SceneRouter.go_to(SceneRouter.SCREEN_EVENT)
 
 
 func _on_ships() -> void:
 	_click()
-	SceneRouter.go_to(SceneRouter.SCREEN_HANGAR)
+	SceneRouter.go_to(SceneRouter.SCREEN_HANGAR, {"return_to": SceneRouter.SCREEN_MAIN_MENU})
 
 
 func _on_upgrades() -> void:
 	_click()
-	SceneRouter.go_to(SceneRouter.SCREEN_HANGAR)
+	SceneRouter.go_to(SceneRouter.SCREEN_HANGAR, {"return_to": SceneRouter.SCREEN_MAIN_MENU})
 
 
 func _on_settings() -> void:
@@ -174,6 +174,21 @@ func _click() -> void:
 	var haptics: HapticsService = PlatformServices.haptics
 	if haptics != null and GameFeel.haptics_enabled:
 		haptics.light()
+
+
+## Shows the real remaining time on the event banner (active window or next open).
+func _refresh_event_timer() -> void:
+	if _event_timer == null:
+		return
+	if _event == null:
+		_event_timer.text = "SOON"
+		return
+	var now := int(Time.get_unix_time_from_system())
+	var remaining := _event.remaining_seconds(now)
+	if _event.is_active(now):
+		_event_timer.text = EventData.format_countdown(remaining)
+	else:
+		_event_timer.text = "IN %s" % EventData.format_countdown(remaining)
 
 
 # --- Currencies / profile ---------------------------------------------------

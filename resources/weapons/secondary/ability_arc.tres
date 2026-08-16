@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="SecondaryWeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/secondary_weapon_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/weapons/friendly_arc_projectile.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "ability_arc"
+display_name = "Arc Burst"
+interval = 1.0
+projectiles_per_shot = 9
+spread_degrees = 120.0
+homing = false
+is_ability = true
+damage = 16.0
+muzzle_offset = Vector2(0, -60)
+projectile = ExtResource("2")

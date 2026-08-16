@@ -27,6 +27,8 @@ var _owned: Dictionary = {}
 
 var _rng := RandomNumberGenerator.new()
 var _plasma: PlasmaWeapon = null
+var _secondary: SecondaryWeaponSystem = null
+var _player: PlayerShip = null
 
 
 func _ready() -> void:
@@ -39,6 +41,13 @@ func _ready() -> void:
 ## The live plasma weapon whose runtime modifiers plasma upgrades adjust.
 func bind_plasma_weapon(weapon: PlasmaWeapon) -> void:
 	_plasma = weapon
+
+
+## Binds the secondary weapon host and player so weapon acquisitions, secondary
+## boosts, and defensive/utility upgrades take real runtime effect.
+func bind_combat(player: PlayerShip, secondary: SecondaryWeaponSystem) -> void:
+	_player = player
+	_secondary = secondary
 
 
 ## Deterministic seeding so a probe/test can reproduce a specific roll.
@@ -123,6 +132,8 @@ func _apply_effect(effect: UpgradeEffectData) -> void:
 			if not _weapons.has(effect.target) and _weapons.size() < max_weapons:
 				_weapons[effect.target] = 1
 				_owned[effect.target] = true
+				if _secondary != null:
+					_secondary.acquire(effect.target)
 		UpgradeEffectData.Kind.FIRE_RATE_MULT:
 			if effect.target == "plasma" and _plasma != null:
 				_plasma.add_fire_rate_mult(effect.value)
@@ -135,6 +146,27 @@ func _apply_effect(effect: UpgradeEffectData) -> void:
 		UpgradeEffectData.Kind.DAMAGE_MULT:
 			if effect.target == "plasma" and _plasma != null:
 				_plasma.add_damage_mult(effect.value)
+		UpgradeEffectData.Kind.SECONDARY_DAMAGE_MULT:
+			if _secondary != null:
+				_secondary.add_damage_mult(effect.target, effect.value)
+		UpgradeEffectData.Kind.SECONDARY_RATE_MULT:
+			if _secondary != null:
+				_secondary.add_rate_mult(effect.target, effect.value)
+		UpgradeEffectData.Kind.SECONDARY_COUNT_ADD:
+			if _secondary != null:
+				_secondary.add_count(effect.target, int(round(effect.value)))
+		UpgradeEffectData.Kind.ARMOR_ADD:
+			if _player != null:
+				_player.add_damage_reduction(effect.value)
+		UpgradeEffectData.Kind.MAX_HP_MULT:
+			if _player != null:
+				_player.apply_max_hp_mult(effect.value)
+		UpgradeEffectData.Kind.MOVE_SPEED_MULT:
+			if _player != null:
+				_player.apply_move_speed_mult(effect.value)
+		UpgradeEffectData.Kind.CRIT_CHANCE_ADD:
+			if _plasma != null:
+				_plasma.add_crit_chance(effect.value)
 
 
 func _acquires_new_weapon(upgrade: UpgradeData) -> bool:

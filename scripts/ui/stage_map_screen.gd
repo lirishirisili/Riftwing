@@ -42,11 +42,18 @@ var _selected_id: String = ""
 var _node_buttons: Dictionary = {} # stage_id -> Button
 var _feedback_tween: Tween
 var _pulse_time := 0.0
+var _return_to: String = ""
+var _return_payload: Dictionary = {}
+var _header_back: HeaderBackButton
 
 
 func receive_payload(payload: Dictionary) -> void:
 	if payload.has("stage_id"):
 		_selected_id = String(payload["stage_id"])
+	if payload.has("return_to"):
+		_return_to = String(payload["return_to"])
+	if payload.has("return_payload") and payload["return_payload"] is Dictionary:
+		_return_payload = payload["return_payload"]
 
 
 func _ready() -> void:
@@ -60,7 +67,6 @@ func _ready() -> void:
 		_selected_id = _map.default_stage_id()
 
 	_mount_meta_shell()
-	_back_button.pressed.connect(_on_back)
 	_hangar_button.pressed.connect(_on_hangar)
 	_launch_button.pressed.connect(_on_launch)
 	_normal_button.pressed.connect(_on_normal)
@@ -114,11 +120,14 @@ func _mount_meta_shell() -> void:
 		body.add_child(child)
 		_adopt_owner(child)
 	_legacy_safe.visible = false
-	if _back_button.get_parent() != null:
-		_back_button.get_parent().remove_child(_back_button)
-	_back_button.configure("BACK", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 68.0)
-	_shell.set_trailing(_back_button)
-	_adopt_owner(_back_button)
+	# Compact header Back: the full GlowCta overflowed the header and overlapped
+	# the currency chips. Free the scene stub and mount the dedicated widget.
+	if is_instance_valid(_back_button):
+		_back_button.queue_free()
+		_back_button = null
+	_header_back = HeaderBackButton.new()
+	_header_back.pressed.connect(_on_back)
+	_shell.set_trailing(_header_back)
 	_hangar_button.configure("HANGAR", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 96.0)
 	_launch_button.configure("LAUNCH", "", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN)
 
@@ -285,7 +294,8 @@ func _refresh_detail() -> void:
 
 	_rewards_label.text = "REWARDS  Energy %s  ·  Core %d" % [
 		_format_int(stage.reward_rift_energy), stage.reward_rift_core]
-	var cleared := SaveManager.is_stage_cleared(stage.id)
+	var diff := SaveManager.get_campaign_difficulty()
+	var cleared := SaveManager.is_stage_cleared(stage.id, diff)
 	if cleared:
 		_first_clear_label.text = "FIRST CLEAR  claimed"
 		_first_clear_label.add_theme_color_override("font_color", Palette.get_color("muted", Color(0.46, 0.57, 0.71)))
@@ -293,26 +303,29 @@ func _refresh_detail() -> void:
 		_first_clear_label.text = "FIRST CLEAR  Core +%d" % stage.first_clear_rift_core
 		_first_clear_label.add_theme_color_override("font_color", Palette.get_color("purple", Color(0.55, 0.26, 1)))
 
-	var earned := SaveManager.get_stage_stars(stage.id)
+	var earned := SaveManager.get_stage_stars(stage.id, diff)
 	var obj := StageProgress.star_objective_lines(stage)
 	_stars_label.text = "STARS  %s\n%s" % [_star_text(earned), "\n".join(obj)]
 
 	var can_launch := SaveManager.can_launch_stage(_map, stage.id)
 	_launch_button.set_enabled(can_launch)
+	var hard_needs_normal := diff == SaveManager.DIFFICULTY_HARD \
+		and not SaveManager.is_stage_cleared(stage.id, SaveManager.DIFFICULTY_NORMAL)
 	if not unlocked:
 		_lock_label.visible = true
 		_lock_label.text = "LOCKED  ·  Clear the previous stage"
 		_launch_button.configure("LOCKED", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE)
 		_launch_button.set_enabled(false)
-	elif SaveManager.get_campaign_difficulty() != SaveManager.DIFFICULTY_NORMAL:
+	elif hard_needs_normal:
 		_lock_label.visible = true
-		_lock_label.text = "HARD difficulty is locked in this prototype"
+		_lock_label.text = "HARD  ·  Clear this stage on NORMAL first"
 		_launch_button.configure("LOCKED", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE)
 		_launch_button.set_enabled(false)
 	else:
 		_lock_label.visible = false
+		var launch_text := "LAUNCH · HARD" if diff == SaveManager.DIFFICULTY_HARD else "LAUNCH"
 		_launch_button.configure(
-			"LAUNCH",
+			launch_text,
 			"",
 			GlowCtaButton.Variant.PRIMARY,
 			GlowCtaButton.Pulse.CYAN if can_launch else GlowCtaButton.Pulse.NONE)
@@ -326,11 +339,13 @@ func _refresh_difficulty() -> void:
 	if normal:
 		_normal_button.configure("NORMAL", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.CYAN, 72.0)
 		_normal_button.chrome_modulate = Color(1, 1, 1, 1)
+		_hard_button.configure("HARD", "", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.NONE, 72.0)
+		_hard_button.chrome_modulate = Color(0.7, 0.6, 0.85, 1)
 	else:
 		_normal_button.configure("NORMAL", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 72.0)
 		_normal_button.chrome_modulate = Color(0.7, 0.75, 0.85, 1)
-	_hard_button.configure("HARD  🔒", "", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.NONE, 72.0)
-	_hard_button.chrome_modulate = Color(0.55, 0.45, 0.7, 1)
+		_hard_button.configure("HARD", "", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.MAGENTA, 72.0)
+		_hard_button.chrome_modulate = Color(1, 0.85, 1, 1)
 
 
 # --- Map draw ---------------------------------------------------------------
@@ -514,6 +529,7 @@ func _on_launch() -> void:
 	SceneRouter.go_to(SceneRouter.SCREEN_RUN, {
 		"sector": stage.index,
 		"stage_id": stage.id,
+		"difficulty": SaveManager.get_campaign_difficulty(),
 	})
 
 
@@ -524,10 +540,8 @@ func _on_normal() -> void:
 
 
 func _on_hard() -> void:
-	# HARD remains locked — selecting it only shows the locked launch state.
 	SaveManager.set_campaign_difficulty(SaveManager.DIFFICULTY_HARD)
 	_click()
-	_show_feedback("HARD is locked in this prototype", true)
 	_refresh_all()
 
 
@@ -538,12 +552,18 @@ func handle_system_back() -> bool:
 
 func _on_back() -> void:
 	AudioManager.play_sfx("ui_back", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
-	SceneRouter.go_to(SceneRouter.SCREEN_MAIN_MENU)
+	if _return_to != "":
+		SceneRouter.go_to(_return_to, _return_payload)
+	else:
+		SceneRouter.go_to(SceneRouter.SCREEN_MAIN_MENU)
 
 
 func _on_hangar() -> void:
 	_click()
-	SceneRouter.go_to(SceneRouter.SCREEN_HANGAR)
+	SceneRouter.go_to(SceneRouter.SCREEN_HANGAR, {
+		"return_to": SceneRouter.SCREEN_STAGE_MAP,
+		"return_payload": {"stage_id": _selected_id},
+	})
 
 
 func _on_campaign_changed(stage_id: String) -> void:

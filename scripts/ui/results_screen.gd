@@ -51,6 +51,16 @@ func receive_payload(payload: Dictionary) -> void:
 		_stats = payload["stats"]
 
 
+## Resolves the map node for the run's stage, or null when played outside the map.
+func _resolve_stage() -> StageNodeData:
+	if _stats == null or _stats.stage_id == "":
+		return null
+	var map: StageMapData = load("res://resources/stages/nova_sector_map.tres") as StageMapData
+	if map == null:
+		return null
+	return map.find_by_id(_stats.stage_id)
+
+
 func _ready() -> void:
 	_rules = load(_RULES_PATH)
 	if _rules == null:
@@ -60,7 +70,10 @@ func _ready() -> void:
 		_stats.run_id = "standalone_%d" % Time.get_ticks_msec()
 
 	_stats.finalize_score(_rules)
-	_rewards = RewardCalculator.calculate(_stats, _rules)
+	var stage := _resolve_stage()
+	# First clear is decided BEFORE granting so the bonus is only offered once.
+	var is_first_clear := _stats.victory and stage != null and not SaveManager.is_stage_cleared(_stats.stage_id, _stats.difficulty)
+	_rewards = RewardCalculator.calculate(_stats, _rules, stage, is_first_clear)
 	var best_before := SaveManager.get_best_score()
 	_was_new_best = _stats.score > best_before
 
@@ -214,7 +227,6 @@ func _populate() -> void:
 		_upgrade_button.configure("UPGRADE SHIP", "", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.NONE, 108.0)
 		_replay_button.configure("REPLAY", "", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN, 88.0)
 	_home_button.configure("HOME", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 88.0)
-	_refresh_double_button()
 
 	_score_value.text = _format_int(_stats.score)
 	_best_badge.visible = _was_new_best or (_stats.score > 0 and _stats.score >= SaveManager.get_best_score())
@@ -412,7 +424,10 @@ func _on_next_sector() -> void:
 
 func _on_upgrade_ship() -> void:
 	_click_feedback()
-	SceneRouter.go_to(SceneRouter.SCREEN_HANGAR)
+	SceneRouter.go_to(SceneRouter.SCREEN_HANGAR, {
+		"return_to": SceneRouter.SCREEN_RESULTS,
+		"return_payload": {"stats": _stats},
+	})
 
 
 func _on_replay() -> void:
@@ -420,6 +435,7 @@ func _on_replay() -> void:
 	var payload := {
 		"sector": _stats.sector,
 		"stage_id": _stats.stage_id,
+		"difficulty": _stats.difficulty,
 	}
 	SceneRouter.go_to(SceneRouter.SCREEN_RUN, payload)
 

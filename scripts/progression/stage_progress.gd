@@ -26,7 +26,9 @@ static func stars_for_run(stage: StageNodeData, stats: RunStats) -> int:
 	var stars := 1
 	if stats.hp_ratio_end >= stage.stars_hp_ratio_for_2:
 		stars += 1
-	if stats.score >= stage.stars_score_for_3:
+	# Harder difficulties raise the 3-star score bar (star_score_mult >= 1.0).
+	var score_for_3 := int(round(float(stage.stars_score_for_3) * maxf(1.0, stats.star_score_mult)))
+	if stats.score >= score_for_3:
 		stars += 1
 	return clampi(stars, 0, 3)
 

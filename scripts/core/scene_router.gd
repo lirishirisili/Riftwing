@@ -21,9 +21,10 @@ const SCREEN_MAIN_MENU := "main_menu"
 const SCREEN_SETTINGS := "settings"
 const SCREEN_HANGAR := "hangar"
 const SCREEN_STAGE_MAP := "stage_map"
-## Shared "coming soon" stand-in for meta destinations owned by later milestones
-## (Daily Challenge). Built by the payload it receives.
-const SCREEN_PLACEHOLDER := "placeholder"
+## Daily Challenge hub (deterministic per local date) and the recurring timed
+## event (VOID INVASION). Both are real screens — no coming-soon placeholder.
+const SCREEN_DAILY := "daily"
+const SCREEN_EVENT := "event"
 
 const _SCREEN_SCENES := {
 	SCREEN_VISUAL_SANDBOX: "res://scenes/gameplay/visual_sandbox.tscn",
@@ -38,7 +39,8 @@ const _SCREEN_SCENES := {
 	SCREEN_SETTINGS: "res://scenes/ui/settings_screen.tscn",
 	SCREEN_HANGAR: "res://scenes/ui/hangar_screen.tscn",
 	SCREEN_STAGE_MAP: "res://scenes/ui/stage_map_screen.tscn",
-	SCREEN_PLACEHOLDER: "res://scenes/ui/placeholder_screen.tscn",
+	SCREEN_DAILY: "res://scenes/ui/daily_screen.tscn",
+	SCREEN_EVENT: "res://scenes/ui/event_screen.tscn",
 }
 
 var _holder: Node = null

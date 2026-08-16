@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="SecondaryWeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/secondary_weapon_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/weapons/friendly_void_projectile.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "void_bomb"
+display_name = "Void Bomb"
+interval = 2.2
+projectiles_per_shot = 1
+spread_degrees = 0.0
+homing = true
+is_ability = false
+damage = 60.0
+muzzle_offset = Vector2(0, -50)
+projectile = ExtResource("2")

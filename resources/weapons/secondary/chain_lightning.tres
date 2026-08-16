@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="SecondaryWeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/secondary_weapon_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/weapons/friendly_chain_projectile.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "chain_lightning"
+display_name = "Chain Lightning"
+interval = 0.95
+projectiles_per_shot = 2
+spread_degrees = 26.0
+homing = true
+is_ability = false
+damage = 18.0
+muzzle_offset = Vector2(0, -60)
+projectile = ExtResource("2")

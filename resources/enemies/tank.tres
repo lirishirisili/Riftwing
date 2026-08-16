@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/enemy_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/art/enemies/void_shooter.svg" id="2"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Tank"
+behavior = 2
+max_health = 140.0
+contact_damage = 18.0
+energy_drop = 5
+sprite = ExtResource("2")
+sprite_scale = 0.28
+hit_radius = 92.0
+tint = Color(0.4, 0.6, 1, 1)
+can_shoot = false

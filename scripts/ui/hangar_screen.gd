@@ -41,6 +41,18 @@ var _rows: Dictionary = {} # track_id -> HangarUpgradeRow
 var _ship_buttons: Dictionary = {} # ship_id -> Button
 var _feedback_tween: Tween
 var _hero_time := 0.0
+var _return_to: String = ""
+var _return_payload: Dictionary = {}
+var _header_back: HeaderBackButton
+var _upgrade_all_armed: bool = false
+var _upgrade_all_plan: PackedStringArray = PackedStringArray()
+
+
+func receive_payload(payload: Dictionary) -> void:
+	if payload.has("return_to"):
+		_return_to = String(payload["return_to"])
+	if payload.has("return_payload") and payload["return_payload"] is Dictionary:
+		_return_payload = payload["return_payload"]
 
 
 func _ready() -> void:
@@ -49,11 +61,8 @@ func _ready() -> void:
 		_catalog = ShipCatalogData.new()
 
 	_mount_meta_shell()
-	_back_button.pressed.connect(_on_back)
 	_equip_button.pressed.connect(_on_equip)
-	# Placeholder CTA — no Upgrade All economy yet.
-	_upgrade_all_button.configure("UPGRADE ALL · SOON", "", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.NONE, 88.0)
-	_upgrade_all_button.set_enabled(false)
+	_upgrade_all_button.pressed.connect(_on_upgrade_all_pressed)
 	SaveManager.currencies_changed.connect(_on_currencies_changed)
 	SaveManager.hangar_changed.connect(_on_hangar_changed)
 	get_viewport().size_changed.connect(_on_viewport_changed)
@@ -85,11 +94,14 @@ func _mount_meta_shell() -> void:
 		body.add_child(child)
 		_adopt_owner(child)
 	_legacy_safe.visible = false
-	if _back_button.get_parent() != null:
-		_back_button.get_parent().remove_child(_back_button)
-	_back_button.configure("BACK", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 68.0)
-	_shell.set_trailing(_back_button)
-	_adopt_owner(_back_button)
+	# Compact header Back: the full GlowCta overflowed the header and overlapped
+	# the currency chips. Free the scene stub and mount the dedicated widget.
+	if is_instance_valid(_back_button):
+		_back_button.queue_free()
+		_back_button = null
+	_header_back = HeaderBackButton.new()
+	_header_back.pressed.connect(_on_back)
+	_shell.set_trailing(_header_back)
 
 
 func _adopt_owner(node: Node) -> void:
@@ -190,6 +202,7 @@ func _refresh_all() -> void:
 	_refresh_ship_list()
 	_refresh_ship_panel()
 	_refresh_upgrade_rows()
+	_refresh_upgrade_all_button()
 
 
 func _refresh_ship_list() -> void:
@@ -260,9 +273,18 @@ func _refresh_ship_panel() -> void:
 			_equip_button.set_enabled(true)
 	else:
 		_lock_banner.visible = true
-		_lock_banner.text = "LOCKED  ·  %s" % ship.unlock_hint
-		_equip_button.configure("LOCKED", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 96.0)
-		_equip_button.set_enabled(false)
+		_lock_banner.text = "LOCKED  ·  %s" % ship.unlock_requirement_label()
+		if SaveManager.can_unlock_ship(ship):
+			var cost_line := "%d RIFT CORE" % ship.unlock_core_cost if ship.unlock_core_cost > 0 else "FREE"
+			_equip_button.configure("UNLOCK SHIP", cost_line, GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.MAGENTA, 96.0)
+			_equip_button.set_enabled(true)
+		elif SaveManager.ship_requirement_met(ship):
+			# Gate cleared but not enough Rift Cores yet.
+			_equip_button.configure("NEED %d CORE" % ship.unlock_core_cost, "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 96.0)
+			_equip_button.set_enabled(false)
+		else:
+			_equip_button.configure("LOCKED", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 96.0)
+			_equip_button.set_enabled(false)
 
 
 func _refresh_upgrade_rows() -> void:
@@ -299,11 +321,25 @@ func _on_ship_pressed(ship_id: String) -> void:
 	_viewed_ship_id = ship_id
 	_click()
 	_refresh_all()
-	_preview_label.text = "Tap a ship to inspect. Equip unlocked ships. Locked ships have no purchase path."
+	_preview_label.text = "Tap a ship to inspect. Equip owned ships. Clear the gate stage, then spend Rift Cores to unlock."
 	_preview_label.add_theme_color_override("font_color", Palette.get_color("muted", Color(0.46, 0.57, 0.71)))
 
 
 func _on_equip() -> void:
+	var ship := _catalog.find_by_id(_viewed_ship_id)
+	# Locked ship: the CTA is an UNLOCK action (spends Rift Cores) when eligible.
+	if ship != null and not SaveManager.is_ship_unlocked(ship.id):
+		if SaveManager.try_unlock_ship(ship):
+			_click()
+			var haptics: HapticsService = PlatformServices.haptics
+			if haptics != null and GameFeel.haptics_enabled:
+				haptics.medium()
+			_show_feedback("Unlocked %s" % ship.display_name, false)
+		else:
+			AudioManager.play_sfx("ui_back", Vector2.ZERO, AudioManager.PRIORITY_LOW)
+			_show_feedback("Cannot unlock yet", true)
+		_refresh_all()
+		return
 	if SaveManager.select_ship(_viewed_ship_id):
 		_click()
 		_show_feedback("Equipped %s" % _viewed_ship_id, false)
@@ -313,7 +349,8 @@ func _on_equip() -> void:
 
 
 func _on_confirm_armed(track_id: String) -> void:
-	# Only one row stays armed at a time.
+	# Only one row stays armed at a time; also cancel any Upgrade All arm.
+	_disarm_upgrade_all()
 	for id in _rows:
 		if id != track_id:
 			(_rows[id] as HangarUpgradeRow).clear_arm()
@@ -363,17 +400,100 @@ func _on_upgrade_requested(track_id: String) -> void:
 func _clear_all_arms() -> void:
 	for id in _rows:
 		(_rows[id] as HangarUpgradeRow).clear_arm()
+	_disarm_upgrade_all()
+
+
+## Refreshes the Upgrade All CTA from the current affordable plan. When nothing can
+## be bought (all maxed or nothing affordable) the button is disabled; otherwise it
+## shows the number of tracks and combined cost that a confirm will buy.
+func _refresh_upgrade_all_button() -> void:
+	if _upgrade_all_button == null:
+		return
+	if _upgrade_all_armed:
+		return
+	var ship := _catalog.find_by_id(_viewed_ship_id)
+	if ship == null or not SaveManager.is_ship_unlocked(ship.id):
+		_upgrade_all_button.configure("UPGRADE ALL", "", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.NONE, 88.0)
+		_upgrade_all_button.set_enabled(false)
+		return
+	var plan := SaveManager.plan_upgrade_all(ship)
+	var ids: PackedStringArray = plan["track_ids"]
+	var cost := int(plan["total_cost"])
+	if ids.is_empty():
+		_upgrade_all_button.configure("UPGRADE ALL", "", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.NONE, 88.0)
+		_upgrade_all_button.set_enabled(false)
+	else:
+		_upgrade_all_button.configure(
+			"UPGRADE ALL · %d" % ids.size(),
+			"%s ENERGY" % _format_int(cost),
+			GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.CYAN, 88.0)
+		_upgrade_all_button.set_enabled(true)
+
+
+func _disarm_upgrade_all() -> void:
+	if not _upgrade_all_armed:
+		return
+	_upgrade_all_armed = false
+	_upgrade_all_plan = PackedStringArray()
+	_refresh_upgrade_all_button()
+
+
+## Two-tap flow: first tap previews the exact tracks + cost and arms; second tap
+## commits atomically via SaveManager (one deduction, one save, no partial buy).
+func _on_upgrade_all_pressed() -> void:
+	var ship := _catalog.find_by_id(_viewed_ship_id)
+	if ship == null or not SaveManager.is_ship_unlocked(ship.id):
+		return
+	if _upgrade_all_armed:
+		var bought := SaveManager.purchase_upgrade_all(ship, _upgrade_all_plan)
+		_disarm_upgrade_all()
+		if bought > 0:
+			_click()
+			var haptics: HapticsService = PlatformServices.haptics
+			if haptics != null and GameFeel.haptics_enabled:
+				haptics.medium()
+			_show_feedback("Upgraded %d tracks" % bought, false)
+			_preview_label.text = "Upgrade All applied. Stats updated."
+			_preview_label.add_theme_color_override("font_color", Palette.get_color("green", Color(0.21, 0.89, 0.44)))
+		else:
+			AudioManager.play_sfx("ui_back", Vector2.ZERO, AudioManager.PRIORITY_LOW)
+			_show_feedback("Not enough Rift Energy", true)
+		_refresh_all()
+		return
+	# First tap: build and show the plan.
+	_clear_all_arms()
+	var plan := SaveManager.plan_upgrade_all(ship)
+	var ids: PackedStringArray = plan["track_ids"]
+	var cost := int(plan["total_cost"])
+	if ids.is_empty():
+		AudioManager.play_sfx("ui_back", Vector2.ZERO, AudioManager.PRIORITY_LOW)
+		_show_feedback("Nothing to upgrade", true)
+		return
+	_upgrade_all_armed = true
+	_upgrade_all_plan = ids
+	_click()
+	_upgrade_all_button.configure(
+		"CONFIRM · %s" % _format_int(cost),
+		"%d tracks · tap to buy" % ids.size(),
+		GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN, 88.0)
+	_upgrade_all_button.set_enabled(true)
+	_preview_label.text = "UPGRADE ALL  ·  %d tracks  ·  %s Rift Energy  —  tap CONFIRM" % [ids.size(), _format_int(cost)]
+	_preview_label.add_theme_color_override("font_color", Palette.get_color("gold", Color(1, 0.69, 0)))
 
 
 func _on_back() -> void:
 	AudioManager.play_sfx("ui_back", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
-	SceneRouter.go_to(SceneRouter.SCREEN_MAIN_MENU)
+	if _return_to != "":
+		SceneRouter.go_to(_return_to, _return_payload)
+	else:
+		SceneRouter.go_to(SceneRouter.SCREEN_MAIN_MENU)
 
 
 func _on_currencies_changed(_energy: int, _core: int) -> void:
 	if _shell != null:
 		_shell.refresh_currencies()
 	_refresh_upgrade_rows()
+	_refresh_upgrade_all_button()
 
 
 func _on_hangar_changed(_selected: String) -> void:

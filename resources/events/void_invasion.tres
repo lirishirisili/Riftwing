@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/event_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "void_invasion"
+display_name = "VOID INVASION"
+description = "The Void surges into Nova Sector. Destroy enemies during the invasion window to fill the containment cache and claim the reward."
+period_days = 7
+active_days = 5
+anchor_unix = 1704067200
+metric = 0
+goal = 300
+reward_energy = 500
+reward_core = 3

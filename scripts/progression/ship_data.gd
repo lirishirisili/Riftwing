@@ -31,6 +31,27 @@ extends Resource
 ## Shown under LOCKED ships (progression teaser; not a store SKU).
 @export var unlock_hint: String = "Coming soon"
 
+# --- Unlock requirements (data-driven; earned by playing, not purchased) -----
+
+## Stage that must be cleared (either difficulty) before this ship can be unlocked.
+## Empty = no stage gate.
+@export var unlock_stage_id: String = ""
+
+## Rift Cores spent to unlock once the stage gate is met. 0 = free on gate.
+@export_range(0, 999) var unlock_core_cost: int = 0
+
+
+## Human-readable unlock requirement for the hangar (falls back to `unlock_hint`).
+func unlock_requirement_label() -> String:
+	var parts: PackedStringArray = PackedStringArray()
+	if unlock_stage_id != "":
+		parts.append("Clear %s" % unlock_stage_id)
+	if unlock_core_cost > 0:
+		parts.append("%d Rift Core%s" % [unlock_core_cost, "" if unlock_core_cost == 1 else "s"])
+	if parts.is_empty():
+		return unlock_hint
+	return "  ·  ".join(parts)
+
 @export var weapons_track: HangarUpgradeTrackData
 @export var shield_track: HangarUpgradeTrackData
 @export var engine_track: HangarUpgradeTrackData

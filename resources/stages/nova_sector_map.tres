@@ -1,7 +1,9 @@
-[gd_resource type="Resource" script_class="StageMapData" load_steps=11 format=3]
+[gd_resource type="Resource" script_class="StageMapData" load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/progression/stage_map_data.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/progression/stage_node_data.gd" id="2"]
+[ext_resource type="Resource" path="res://resources/stages/nova_mid_timeline.tres" id="3"]
+[ext_resource type="Resource" path="res://resources/stages/nova_late_timeline.tres" id="4"]
 
 [sub_resource type="Resource" id="stage_1"]
 script = ExtResource("2")
@@ -20,6 +22,7 @@ planet_modulate = Color(0.35, 0.85, 0.55, 1)
 starts_unlocked = true
 stars_hp_ratio_for_2 = 0.5
 stars_score_for_3 = 3500
+difficulty_scalar = 1.0
 
 [sub_resource type="Resource" id="stage_2"]
 script = ExtResource("2")
@@ -38,6 +41,7 @@ planet_modulate = Color(1, 0.45, 0.25, 1)
 starts_unlocked = true
 stars_hp_ratio_for_2 = 0.5
 stars_score_for_3 = 4000
+difficulty_scalar = 1.05
 
 [sub_resource type="Resource" id="stage_3"]
 script = ExtResource("2")
@@ -56,6 +60,7 @@ planet_modulate = Color(0.45, 0.75, 1, 1)
 starts_unlocked = true
 stars_hp_ratio_for_2 = 0.5
 stars_score_for_3 = 4500
+difficulty_scalar = 1.1
 
 [sub_resource type="Resource" id="stage_4"]
 script = ExtResource("2")
@@ -74,6 +79,8 @@ planet_modulate = Color(0.95, 0.3, 0.35, 1)
 starts_unlocked = false
 stars_hp_ratio_for_2 = 0.5
 stars_score_for_3 = 5000
+difficulty_scalar = 1.2
+timeline = ExtResource("3")
 
 [sub_resource type="Resource" id="stage_5"]
 script = ExtResource("2")
@@ -92,6 +99,8 @@ planet_modulate = Color(0.55, 0.35, 0.95, 1)
 starts_unlocked = false
 stars_hp_ratio_for_2 = 0.5
 stars_score_for_3 = 5500
+difficulty_scalar = 1.3
+timeline = ExtResource("3")
 
 [sub_resource type="Resource" id="stage_6"]
 script = ExtResource("2")
@@ -110,6 +119,8 @@ planet_modulate = Color(0.25, 0.9, 0.85, 1)
 starts_unlocked = false
 stars_hp_ratio_for_2 = 0.5
 stars_score_for_3 = 6000
+difficulty_scalar = 1.4
+timeline = ExtResource("4")
 
 [sub_resource type="Resource" id="stage_7"]
 script = ExtResource("2")
@@ -128,6 +139,8 @@ planet_modulate = Color(0.7, 0.25, 0.85, 1)
 starts_unlocked = false
 stars_hp_ratio_for_2 = 0.5
 stars_score_for_3 = 6500
+difficulty_scalar = 1.5
+timeline = ExtResource("4")
 
 [sub_resource type="Resource" id="stage_8"]
 script = ExtResource("2")
@@ -146,6 +159,8 @@ planet_modulate = Color(1, 0.7, 0.2, 1)
 starts_unlocked = false
 stars_hp_ratio_for_2 = 0.5
 stars_score_for_3 = 7000
+difficulty_scalar = 1.6
+timeline = ExtResource("4")
 
 [resource]
 script = ExtResource("1")

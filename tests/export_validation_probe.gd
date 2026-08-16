@@ -24,6 +24,16 @@ func _run() -> void:
 		quit(1)
 
 
+func _manifest_version_name() -> String:
+	var text := FileAccess.get_file_as_string("res://manifests/product_identity.json")
+	if text.is_empty():
+		return ""
+	var parsed: Variant = JSON.parse_string(text)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return ""
+	return String((parsed as Dictionary).get("version_name", ""))
+
+
 func _check_identity_and_presets() -> int:
 	var identity_text := FileAccess.get_file_as_string("res://manifests/product_identity.json")
 	if identity_text.is_empty():
@@ -43,8 +53,18 @@ func _check_identity_and_presets() -> int:
 	if android_id != "com.lishistudio.riftwing" or ios_id != "com.lishistudio.riftwing":
 		printerr("unexpected provisional ids")
 		return 1
-	if version_name != "0.1.0" or version_code != 1:
-		printerr("unexpected version fields")
+	# The manifest is the source of truth for the version; the probe asserts the
+	# other files agree with it rather than pinning a literal that breaks on bumps.
+	var version_parts := version_name.split(".")
+	if version_parts.size() != 3:
+		printerr("version_name must be MAJOR.MINOR.PATCH, got %s" % version_name)
+		return 1
+	for part in version_parts:
+		if not part.is_valid_int():
+			printerr("version_name must be numeric MAJOR.MINOR.PATCH, got %s" % version_name)
+			return 1
+	if version_code < 1:
+		printerr("version_code must be a positive build number, got %d" % version_code)
 		return 1
 	if min_sdk != 24 or target_sdk != 36:
 		printerr("unexpected sdk fields")
@@ -60,8 +80,10 @@ func _check_identity_and_presets() -> int:
 		'name="iOS"',
 		'package/unique_name="com.lishistudio.riftwing"',
 		'application/bundle_identifier="com.lishistudio.riftwing"',
-		'version/name="0.1.0"',
-		"version/code=1",
+		'version/name="%s"' % version_name,
+		"version/code=%d" % version_code,
+		'application/short_version="%s"' % version_name,
+		'application/version="%d"' % version_code,
 		"permissions/vibrate=true",
 		"permissions/internet=true",
 		'gradle_build/export_format=1',
@@ -101,8 +123,12 @@ func _check_project_portrait_and_version() -> int:
 	if project.find("window/handheld/orientation=1") < 0:
 		printerr("portrait orientation not set in project.godot")
 		return 1
-	if project.find('config/version="0.1.0"') < 0:
-		printerr("config/version missing")
+	var version_name := _manifest_version_name()
+	if version_name == "":
+		printerr("could not read version_name from product_identity.json")
+		return 1
+	if project.find('config/version="%s"' % version_name) < 0:
+		printerr("config/version must match manifest version_name %s" % version_name)
 		return 1
 	if project.find("renderer/rendering_method=\"mobile\"") < 0:
 		printerr("mobile renderer not set")

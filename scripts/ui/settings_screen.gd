@@ -20,23 +20,34 @@ var _reset_armed := false
 
 func _ready() -> void:
 	var body := _shell.get_body()
+	# Scroll fallback so short/dense devices never clip the rows or Back button.
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.add_child(scroll)
+	var content := VBoxContainer.new()
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.add_theme_constant_override("separation", 14)
+	scroll.add_child(content)
+
 	var title := Label.new()
 	title.text = "SETTINGS"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 56)
-	body.add_child(title)
+	content.add_child(title)
 
 	var subtitle := Label.new()
 	subtitle.text = "AUDIO · FEEL · PROGRESS"
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	subtitle.add_theme_font_size_override("font_size", 22)
 	subtitle.add_theme_color_override("font_color", Color(0.7, 0.55, 1, 1))
-	body.add_child(subtitle)
+	content.add_child(subtitle)
 
 	var panel := PanelContainer.new()
 	panel.theme_type_variation = &"NeonPanel"
-	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.add_child(panel)
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.add_child(panel)
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 12)
 	panel.add_child(col)
@@ -55,7 +66,7 @@ func _ready() -> void:
 	col.add_child(_reset_hint)
 
 	_back_btn = _GLOW.instantiate() as GlowCtaButton
-	body.add_child(_back_btn)
+	content.add_child(_back_btn)
 	_back_btn.configure("BACK TO MENU", "", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN)
 
 	_audio_btn.pressed.connect(_on_audio)

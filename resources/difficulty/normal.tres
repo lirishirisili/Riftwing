@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RunDifficultyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/run_difficulty_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "normal"
+display_name = "NORMAL"
+enemy_hp_mult = 1.0
+enemy_contact_damage_mult = 1.0
+enemy_count_add = 0
+boss_hp_mult = 1.0
+reward_mult = 1.0
+timing_scale = 1.0
+star_score_mult = 1.0

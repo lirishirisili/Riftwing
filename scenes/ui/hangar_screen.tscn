@@ -578,6 +578,6 @@ theme_override_constants/separation = 10
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 88)
 layout_mode = 2
-title = "UPGRADE ALL · SOON"
+title = "UPGRADE ALL"
 variant = 1
 min_height = 88.0
