@@ -161,7 +161,7 @@ func _check_screen_and_launch() -> int:
 	var brand := screen.find_child("BrandLabel", true, false) as Label
 	if brand == null:
 		brand = screen.find_child("Brand", true, false) as Label
-	if brand == null or brand.text != "RIFTWING":
+	if brand == null or brand.text != "RIFTSTRIKE":
 		printerr("branding missing")
 		return 1
 

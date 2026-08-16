@@ -28,7 +28,7 @@ See `manifests/color_tokens.json`.
 ## Typography scale (1080 wide)
 | Role | Size | Use |
 |---|---:|---|
-| Hero brand | 64–80 | RIFTWING |
+| Hero brand | 64–80 | RIFTSTRIKE |
 | Screen title | 48–72 | VICTORY / SECTOR |
 | CTA | 28–34 | START RUN |
 | Body | 20–24 | objectives |
@@ -68,7 +68,7 @@ Font files (Oxanium / Rajdhani) only after license review. Until then: theme fal
 - Angular corners and hexagonal accents.
 - Text must be real Godot UI text, never baked into images.
 - Main action buttons use blue; secondary challenge/event actions use purple; high-value reward actions may use gold (`ButtonReward`).
-- Branding is **RIFTWING** only — never Starforge / Galaxy Rush.
+- Branding is **RIFTSTRIKE** only — never Starforge / Galaxy Rush / the retired RIFTWING wordmark.
 
 ## Motion language
 - UI opens with short 140-220 ms transitions.

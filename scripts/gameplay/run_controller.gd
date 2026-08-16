@@ -586,7 +586,7 @@ func _end_run(victory: bool) -> void:
 		_stats.hp_ratio_end = 0.0
 	_director.stop()
 	_results_timer = _RESULTS_DELAY
-	_banner.text = "SECTOR CLEARED" if victory else "RIFTWING DOWN"
+	_banner.text = "SECTOR CLEARED" if victory else Brand.DEFEAT_LINE
 	_banner.visible = true
 
 
@@ -621,7 +621,7 @@ func _wave_label_for_phase() -> String:
 		Phase.ENDING:
 			return "COMPLETE" if _stats != null and _stats.victory else "DEFEAT"
 		_:
-			return "RIFTWING"
+			return Brand.DISPLAY
 
 
 func _on_hud_quit_to_menu() -> void:
@@ -650,7 +650,7 @@ func _update_readout() -> void:
 	if not _readout.visible:
 		return
 	var lines: Array[String] = []
-	lines.append("RIFTWING RUN  [F6 mini  F7 boss  F8 win  F9 lose]")
+	lines.append("%s RUN  [F6 mini  F7 boss  F8 win  F9 lose]" % Brand.DISPLAY)
 	lines.append("FPS %d  t=%.1fs  phase=%s" % [
 		Engine.get_frames_per_second(), _run_time, get_phase_name()])
 	lines.append("HP %d/%d  Lv %d  XP %d/%d  last=%s" % [

@@ -28,8 +28,8 @@ func _check_resources() -> int:
 		if blob.find("Starforge") >= 0 or blob.find("Galaxy Rush") >= 0 or blob.find("STARFORGE") >= 0:
 			printerr("legacy brand found in main menu sources")
 			return 1
-	if scene_src.find("RIFTWING") < 0:
-		printerr("RIFTWING missing from main menu scene")
+	if scene_src.find("RIFTSTRIKE") < 0:
+		printerr("RIFTSTRIKE missing from main menu scene")
 		return 1
 	if theme_src.find("ButtonPrimary") < 0 or theme_src.find("ButtonSecondary") < 0 or theme_src.find("ButtonTertiary") < 0:
 		printerr("theme missing primary/secondary/tertiary button variations")
@@ -42,7 +42,7 @@ func _check_resources() -> int:
 		return 1
 	for path in [
 		"res://assets/backgrounds/menu_space_keyart.png",
-		"res://assets/branding/logo_riftwing.png",
+		"res://assets/branding/logo_riftstrike.png",
 		"res://assets/art/ships/hero_vanguard_menu.png",
 		"res://assets/ui/chrome/cta_start_hex.svg",
 		"res://assets/ui/chrome/cta_daily_bar.svg",
@@ -59,7 +59,7 @@ func _check_resources() -> int:
 	if scene_src.find("HoloPad") < 0 or scene_src.find("menu_space_keyart") < 0:
 		printerr("main menu missing keyart / holo pad wiring")
 		return 1
-	if scene_src.find("logo_riftwing") < 0 or scene_src.find("hero_vanguard_menu") < 0:
+	if scene_src.find("logo_riftstrike") < 0 or scene_src.find("hero_vanguard_menu") < 0:
 		printerr("main menu missing logo / hero art wiring")
 		return 1
 	if scene_src.find("ENDLESS MODE") < 0:
@@ -107,8 +107,8 @@ func _check_runtime() -> int:
 		if not (start is GlowCtaButton) or not (daily is GlowCtaButton):
 			printerr("primary CTAs are not GlowCtaButton @ %s" % str(size))
 			fails += 1
-		if title.text != "RIFTWING":
-			printerr("title is not RIFTWING: %s" % title.text)
+		if title.text != "RIFTSTRIKE":
+			printerr("title is not RIFTSTRIKE: %s" % title.text)
 			fails += 1
 		if start.custom_minimum_size.y < daily.custom_minimum_size.y:
 			printerr("primary CTA is not taller than daily")

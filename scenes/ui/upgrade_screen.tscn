@@ -54,7 +54,7 @@ z_index = 4
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.84, 1, 1)
 theme_override_font_sizes/font_size = 22
-text = "RIFTWING"
+text = "RIFTSTRIKE"
 horizontal_alignment = 1
 
 [node name="PausedHint" type="Label" parent="Center/Layout"]

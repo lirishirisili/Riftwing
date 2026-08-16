@@ -27,7 +27,7 @@
 [ext_resource type="Texture2D" path="res://assets/icons/icon_timer.svg" id="25"]
 [ext_resource type="Texture2D" path="res://assets/icons/icon_nav_ship.svg" id="26"]
 [ext_resource type="Texture2D" path="res://assets/icons/icon_nav_upgrade.svg" id="27"]
-[ext_resource type="Texture2D" path="res://assets/branding/logo_riftwing.png" id="28"]
+[ext_resource type="Texture2D" path="res://assets/branding/logo_riftstrike.png" id="28"]
 [ext_resource type="PackedScene" path="res://scenes/ui/chrome/glow_cta_button.tscn" id="29"]
 
 [sub_resource type="StyleBoxFlat" id="event_panel"]
@@ -368,7 +368,7 @@ unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 1
-text = "RIFTWING"
+text = "RIFTSTRIKE"
 horizontal_alignment = 1
 
 [node name="TaglineRow" type="HBoxContainer" parent="Safe/Root/Brand"]

@@ -56,7 +56,7 @@ func _update_readout() -> void:
 		_grew = true
 	var growth := "NO (pool reused)" if not _grew else "YES (exceeded prewarm)"
 	_label.text = "\n".join([
-		"RIFTWING · projectile stress test",
+		"RIFTSTRIKE · projectile stress test",
 		"FPS: %d" % Engine.get_frames_per_second(),
 		"Active: %d" % int(stats["active"]),
 		"Free: %d" % int(stats["free"]),

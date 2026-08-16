@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bc2sfnthew5kg"
-path="res://.godot/imported/logo_riftwing.png-314f4a7f21ee5a355b835cd57bc055ea.ctex"
+uid="uid://bgid2t2hnkxey"
+path="res://.godot/imported/logo_riftstrike.png-230932e9c675c93dcc7d1a611fb982d5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/branding/logo_riftwing.png"
-dest_files=["res://.godot/imported/logo_riftwing.png-314f4a7f21ee5a355b835cd57bc055ea.ctex"]
+source_file="res://assets/branding/logo_riftstrike.png"
+dest_files=["res://.godot/imported/logo_riftstrike.png-230932e9c675c93dcc7d1a611fb982d5.ctex"]
 
 [params]
 

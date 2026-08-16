@@ -4,7 +4,7 @@ extends SceneTree
 
 func _init() -> void:
 	var jobs: Array = [
-		{"path": "res://assets/branding/logo_riftwing.png", "modes": ["white", "black"], "white_t": 0.90, "black_t": 0.12, "crop": true, "pad": 10, "alpha_crop": 0.2},
+		{"path": "res://assets/branding/logo_riftstrike.png", "modes": ["white", "black"], "white_t": 0.90, "black_t": 0.12, "crop": true, "pad": 10, "alpha_crop": 0.2},
 		{"path": "res://assets/ui/chrome/cta_start_plate.png", "modes": ["white", "black"], "white_t": 0.86, "black_t": 0.05, "crop": true, "pad": 6, "alpha_crop": 0.25},
 		{"path": "res://assets/ui/chrome/cta_daily_plate.png", "modes": ["white", "black"], "white_t": 0.86, "black_t": 0.05, "crop": true, "pad": 6, "alpha_crop": 0.28},
 		{"path": "res://assets/ui/chrome/cta_nav_plate.png", "modes": ["white", "black"], "white_t": 0.86, "black_t": 0.05, "crop": true, "pad": 6, "alpha_crop": 0.25},

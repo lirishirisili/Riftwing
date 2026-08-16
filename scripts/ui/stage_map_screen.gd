@@ -5,7 +5,7 @@ extends Control
 ## Data-driven mission nodes from StageMapData with glowing paths, clear
 ## completed / current / unlocked / locked states, mission detail panel, and
 ## Launch into a real run. Save / unlock / HARD restrictions unchanged.
-## Branding reads RIFTWING only.
+## Branding reads RIFTSTRIKE only.
 
 const _MAP_PATH := "res://resources/stages/nova_sector_map.tres"
 const _TEX_NODE_ACTIVE: Texture2D = preload("res://assets/ui/chrome/map_node_active.svg")

@@ -49,8 +49,8 @@ func _check_resources() -> int:
 	if scene_src.find("Starforge") >= 0 or scene_src.find("Galaxy Rush") >= 0:
 		printerr("legacy brand in gameplay_hud.tscn")
 		return 1
-	if scene_src.find("RIFTWING") < 0:
-		printerr("RIFTWING brand missing from gameplay HUD scene")
+	if scene_src.find("RIFTSTRIKE") < 0:
+		printerr("RIFTSTRIKE brand missing from gameplay HUD scene")
 		return 1
 	if scene_src.find("bottom_hud_frame.svg") < 0:
 		printerr("bottom_hud_frame missing from gameplay HUD scene")

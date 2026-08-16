@@ -1,36 +1,38 @@
 # Brand and Naming
 
 ## Canonical name
-The only production game name is **RIFTWING**.
+The only production game name is **RIFTSTRIKE**.
 
-Working store subtitle: **Space Survivor**. The subtitle is descriptive metadata and may change later; the core brand must remain `RIFTWING`.
+Working store title: **Riftstrike: Space Survivor**. The subtitle is descriptive metadata; the core brand must remain `RIFTSTRIKE`.
 
 ## Legacy text in references
-Some concept screenshots contain `STARFORGE`, `GALAXY RUSH`, or `STARFORGE: GALAXY RUSH`. These were temporary concept labels. Treat them exactly like placeholder lorem ipsum:
+Some concept screenshots contain `STARFORGE`, `GALAXY RUSH`, `STARFORGE: GALAXY RUSH`, or the earlier production name `RIFTWING`. Treat those exactly like placeholder lorem ipsum:
 
 - Do not reproduce them in Godot UI.
 - Do not use them in folder names or code classes.
-- Do not use them in package IDs, application IDs, export presets, save paths, analytics events, or store metadata.
-- In the implemented screens, use real text controls containing `RIFTWING`.
+- Do not use them in application IDs, export display names, analytics events, or store metadata.
+- Package/bundle IDs remain `com.lishistudio.riftwing` (store identity already allocated).
+- In the implemented screens, use real text controls containing `RIFTSTRIKE`.
 
 ## Technical naming
 - Repository folder: `riftwing`
-- Godot project name: `Riftwing`
+- Godot project name: `Riftstrike`
 - Internal slug: `riftwing`
-- Suggested provisional Android application ID: `com.lishistudio.riftwing`
-- Suggested provisional iOS bundle ID: `com.lishistudio.riftwing`
+- Android application ID: `com.lishistudio.riftwing`
+- iOS bundle ID: `com.lishistudio.riftwing`
+- Player-visible launcher name: `RIFTSTRIKE`
 
-The application IDs are provisional. Keep them centralized and easy to change. Do not submit them to stores without owner approval and availability checks.
+The application IDs are frozen for the existing store listings. Do not change them without creating a new app.
 
 ## Visual wordmark direction
-- Uppercase `RIFTWING`.
+- Uppercase `RIFTSTRIKE`.
 - Wide geometric sci-fi lettering.
 - White or cold silver main face.
 - Restrained cyan edge light.
-- Optional rift slash or wing motif, but no copied franchise insignia.
+- Optional rift slash or strike motif, but no copied franchise insignia.
 - Text must remain readable at small mobile sizes.
 
-During the prototype, use a licensed system/fallback font and real Godot text. Do not package unreviewed font files.
+The main-menu hero uses `assets/branding/logo_riftstrike.png` (metallic baked wordmark). Other screens use real Godot Labels. During the prototype, use a licensed system/fallback font and real Godot text. Do not package unreviewed font files.
 
 ## Tone
 Fast, heroic, dangerous, and technologically precise. Avoid comedy, retro parody, military realism, or generic casino-style reward language.

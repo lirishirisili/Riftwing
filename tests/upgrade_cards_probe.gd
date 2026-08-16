@@ -37,8 +37,8 @@ func _check_resources() -> int:
 	if screen_src.find("Starforge") >= 0 or screen_src.find("Galaxy Rush") >= 0:
 		printerr("legacy brand in upgrade screen")
 		return 1
-	if screen_src.find("RIFTWING") < 0:
-		printerr("RIFTWING missing from upgrade screen")
+	if screen_src.find("RIFTSTRIKE") < 0:
+		printerr("RIFTSTRIKE missing from upgrade screen")
 		return 1
 	if card_src.find("play_selection") < 0 or card_src.find("_FRAME_PATHS") < 0:
 		printerr("card rarity/selection chrome missing")
@@ -92,7 +92,7 @@ func _check_runtime() -> int:
 		fails += 1
 
 	var brand := upgrade_screen.find_child("Brand", true, false) as Label
-	if brand == null or brand.text != "RIFTWING":
+	if brand == null or brand.text != "RIFTSTRIKE":
 		printerr("brand missing on overlay")
 		fails += 1
 

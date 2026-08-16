@@ -100,7 +100,7 @@ func _check_runtime() -> int:
 			printerr("failed open %s" % screen_id)
 			fails += 1
 		var text_blob := FileAccess.get_file_as_string("res://scripts/ui/%s.gd" % _script_for(screen_id))
-		if text_blob.find("RIFTWING") < 0 and screen_id != "stage_map":
+		if text_blob.find("RIFTSTRIKE") < 0 and text_blob.find("Brand.DISPLAY") < 0 and screen_id != "stage_map":
 			# stage map may brand in tscn
 			pass
 

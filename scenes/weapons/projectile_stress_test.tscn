@@ -33,4 +33,4 @@ theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 14
 
 [node name="Info" type="Label" parent="Overlay/Panel/Margin"]
-text = "RIFTWING · projectile stress test"
+text = "RIFTSTRIKE · projectile stress test"

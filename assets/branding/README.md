@@ -1,6 +1,6 @@
 # Branding export assets
 
-Launcher / splash PNGs for Godot mobile export presets. Source art: `icon_source.png` (RIFTWING ship + nebula icon).
+Launcher / splash PNGs for Godot mobile export presets. Source art: `icon_source.png` (ship + nebula icon, no wordmark).
 
 | File | Use |
 |---|---|
@@ -9,5 +9,6 @@ Launcher / splash PNGs for Godot mobile export presets. Source art: `icon_source
 | `icon_adaptive_fg_432.png` | Android adaptive foreground + splash icon |
 | `icon_adaptive_bg_432.png` | Android adaptive background (deep navy `#0A1230`) |
 | `icon_ios_1024.png` | iOS App Store / base icon |
+| `logo_riftstrike.png` | Main-menu metallic wordmark |
 
-Brand text remains **RIFTWING** only.
+Brand text remains **RIFTSTRIKE** only.

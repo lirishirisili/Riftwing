@@ -215,7 +215,7 @@ theme_override_styles/panel = SubResource("brand_frame")
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 22
-text = "RIFTWING"
+text = "RIFTSTRIKE"
 horizontal_alignment = 1
 
 [node name="Header" type="VBoxContainer" parent="Safe/Root"]

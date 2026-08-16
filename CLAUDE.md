@@ -1,10 +1,10 @@
 # Project Rules: Riftwing
 
 ## Canonical product identity
-- Display name: `RIFTWING`.
-- Working store title: `Riftwing: Space Survivor`.
-- Internal slug: `riftwing`.
-- The legacy words `Starforge` and `Galaxy Rush` may appear inside reference screenshots only. Never use them in production UI, code, project settings, identifiers, metadata, package IDs, filenames, or store text.
+- Display name: `RIFTSTRIKE`.
+- Working store title: `Riftstrike: Space Survivor`.
+- Internal slug: `riftwing` (package/bundle IDs stay `com.lishistudio.riftwing`).
+- The legacy words `Starforge`, `Galaxy Rush`, and `RIFTWING` may appear inside reference screenshots or historical docs only. Never use them in production UI.
 - Do not rename the product without explicit approval.
 
 ## Product

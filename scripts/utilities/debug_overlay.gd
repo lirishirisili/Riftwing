@@ -40,7 +40,7 @@ func _process(_delta: float) -> void:
 	var node_count := int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT))
 	var pool_line := _pool_summary()
 	_label.text = "\n".join([
-		"RIFTWING · debug",
+		"RIFTSTRIKE · debug",
 		"FPS: %d" % Engine.get_frames_per_second(),
 		"Mem: %.1f / %.1f MB" % [mem_static / 1048576.0, mem_static_max / 1048576.0],
 		"Objects: %d  Nodes: %d" % [obj_count, node_count],

@@ -20,7 +20,7 @@ var _scroll_time := 0.0
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	if _brand != null:
-		_brand.text = "RIFTWING"
+		_brand.text = Brand.DISPLAY
 	get_viewport().size_changed.connect(_on_viewport_changed)
 	_on_viewport_changed()
 	refresh_currencies()

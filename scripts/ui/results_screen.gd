@@ -4,7 +4,7 @@ extends Control
 ##
 ## Celebrates the outcome, shows run stats + rewards, and offers Next Sector /
 ## Upgrade / Replay / Home. Rewards go through RewardCalculator +
-## SaveManager.grant_run_rewards (deduped by run id). Branding: RIFTWING only.
+## SaveManager.grant_run_rewards (deduped by run id). Branding: RIFTSTRIKE only.
 
 const _RULES_PATH := "res://resources/progression/reward_rules_default.tres"
 const _CATALOG_PATH := "res://resources/ships/ship_catalog_default.tres"
@@ -217,7 +217,7 @@ func _populate() -> void:
 		_title.text = "DEFEAT"
 		_title.add_theme_color_override("font_color", Palette.get_color("danger", Color(1, 0.23, 0.31)))
 		_title.add_theme_color_override("font_shadow_color", Color(1, 0.15, 0.25, 0.45))
-		_subtitle.text = "RIFTWING DOWN  ·  regroup"
+		_subtitle.text = "%s  ·  regroup" % Brand.DEFEAT_LINE
 		_subtitle.add_theme_color_override("font_color", Palette.get_color("muted", Color(0.46, 0.57, 0.71)))
 		_set_wing_tint(Palette.get_color("danger", Color(1, 0.23, 0.31)))
 		if _nebula != null:

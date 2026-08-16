@@ -4,8 +4,8 @@ This repository starter pack is the implementation brief for an original portrai
 
 ## Canonical identity
 
-- Game brand: **RIFTWING**
-- Working store title: **Riftwing: Space Survivor**
+- Game brand: **RIFTSTRIKE**
+- Working store title: **Riftstrike: Space Survivor**
 - Internal project slug: `riftwing`
 - Engine: Godot 4.x
 - Platforms: Android and iOS from one shared project

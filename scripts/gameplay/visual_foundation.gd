@@ -17,7 +17,7 @@ var _flash_t: float = 0.0
 
 
 func _ready() -> void:
-	_label.text = "RIFTWING visual foundation\nPlayer / enemies / bolts / pickup / parallax\nF3 debug overlay"
+	_label.text = "RIFTSTRIKE visual foundation\nPlayer / enemies / bolts / pickup / parallax\nF3 debug overlay"
 	_scout.modulate = Color(0.62, 0.32, 1, 1)
 	_shooter.modulate = Color(0.55, 0.28, 0.95, 1)
 	_elite.modulate = Color(0.7, 0.35, 1, 1)

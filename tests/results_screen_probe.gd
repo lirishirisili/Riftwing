@@ -27,8 +27,8 @@ func _check_resources() -> int:
 		if blob.find("Starforge") >= 0 or blob.find("Galaxy Rush") >= 0 or blob.find("STARFORGE") >= 0:
 			printerr("legacy brand in results sources")
 			return 1
-	if scene_src.find("RIFTWING") < 0:
-		printerr("RIFTWING missing from results scene")
+	if scene_src.find("RIFTSTRIKE") < 0:
+		printerr("RIFTSTRIKE missing from results scene")
 		return 1
 	if script_src.find("grant_run_rewards") < 0:
 		printerr("reward grant path missing")
@@ -74,7 +74,7 @@ func _check_runtime() -> int:
 	var brand := screen.find_child("BrandLabel", true, false) as Label
 	if brand == null:
 		brand = screen.find_child("Brand", true, false) as Label
-	if brand == null or brand.text != "RIFTWING":
+	if brand == null or brand.text != "RIFTSTRIKE":
 		printerr("brand missing")
 		fails += 1
 	var title := screen.find_child("Title", true, false) as Label

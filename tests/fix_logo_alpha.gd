@@ -3,7 +3,7 @@ extends SceneTree
 
 
 func _init() -> void:
-	var path := "res://assets/branding/logo_riftwing.png"
+	var path := "res://assets/branding/logo_riftstrike.png"
 	var img := Image.new()
 	var err := img.load(ProjectSettings.globalize_path(path))
 	if err != OK:

@@ -160,7 +160,7 @@ func _check_hangar_screen() -> int:
 	var brand := screen.find_child("BrandLabel", true, false) as Label
 	if brand == null:
 		brand = screen.find_child("Brand", true, false) as Label
-	if brand == null or brand.text != "RIFTWING":
+	if brand == null or brand.text != "RIFTSTRIKE":
 		printerr("branding missing")
 		return 1
 	if screen.find_child("Shell", true, false) == null:

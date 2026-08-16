@@ -125,8 +125,8 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_colors/font_color = Color(0.55, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 28
-text = "RIFTWING"
+theme_override_font_sizes/font_size = 26
+text = "RIFTSTRIKE"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="Safe/Root/HeaderFrame/TopBar"]

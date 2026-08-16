@@ -79,6 +79,7 @@ func _check_identity_and_presets() -> int:
 		'name="Android Release"',
 		'name="iOS"',
 		'package/unique_name="com.lishistudio.riftwing"',
+		'package/name="RIFTSTRIKE"',
 		'application/bundle_identifier="com.lishistudio.riftwing"',
 		'version/name="%s"' % version_name,
 		"version/code=%d" % version_code,

@@ -4,7 +4,7 @@ extends CanvasLayer
 ##
 ## Dims frozen combat, presents rarity-framed UpgradeCards, and applies the pick
 ## through UpgradeManager. One free reroll per run re-draws the current choices.
-## Animations run while the tree is paused. Branding: RIFTWING.
+## Animations run while the tree is paused. Branding: RIFTSTRIKE.
 
 signal upgrade_selected(upgrade: UpgradeData)
 signal closed()

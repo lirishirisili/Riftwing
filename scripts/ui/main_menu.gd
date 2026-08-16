@@ -1,6 +1,6 @@
 class_name MainMenu
 extends Control
-## Production RIFTWING home screen (prompts/17_main_menu_production.md).
+## Production RIFTSTRIKE home screen (prompts/17_main_menu_production.md).
 ##
 ## Cinematic key art + parallax, tech header chrome, hex CTAs, holo pad hero.
 ## Navigation:
@@ -216,7 +216,7 @@ func _refresh_profile() -> void:
 		_profile_name.text = String(ship.display_name).to_upper()
 		_hero_ship.modulate = ship.accent_modulate
 	else:
-		_profile_name.text = "RIFTWING"
+		_profile_name.text = Brand.DISPLAY
 		_hero_ship.modulate = Color(1, 1, 1, 1)
 	var power := StageProgress.player_power_from(ship, levels)
 	_profile_power.text = "PWR  %d" % power

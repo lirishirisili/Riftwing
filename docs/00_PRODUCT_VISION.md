@@ -1,10 +1,10 @@
 # Product Vision
 
 ## Elevator pitch
-Riftwing is a premium-feeling portrait arcade shooter in which the last interceptor squadron enters unstable spatial rifts, destroys the Void Swarm, and assembles a different weapon build during every short roguelite run.
+Riftstrike is a premium-feeling portrait arcade shooter in which the last interceptor squadron enters unstable spatial rifts, destroys the Void Swarm, and assembles a different weapon build during every short roguelite run.
 
 ## Player fantasy
-The player is an elite Riftwing pilot flying a highly responsive interceptor into impossible battles. A weak starting cannon rapidly evolves into a screen-filling arsenal of missiles, lasers, drones, and defensive systems, culminating in a spectacular but readable boss fight.
+The player is an elite Riftstrike pilot flying a highly responsive interceptor into impossible battles. A weak starting cannon rapidly evolves into a screen-filling arsenal of missiles, lasers, drones, and defensive systems, culminating in a spectacular but readable boss fight.
 
 ## Player promise
 Within ten seconds the player is moving, firing, destroying enemies, collecting rewards, and receiving satisfying audiovisual feedback. Within one minute the ship looks and behaves noticeably stronger. Every run ends with a memorable boss encounter or a clear reason to retry.
@@ -13,7 +13,7 @@ Within ten seconds the player is moving, firing, destroying enemies, collecting 
 Move -> auto-fire -> destroy enemies -> collect Rift Energy -> choose one of three upgrades -> create weapon synergies -> defeat a boss -> earn permanent resources -> upgrade the hangar -> launch another run.
 
 ## World vocabulary
-- Riftwing: the pilot unit and game brand.
+- RIFTSTRIKE: the game brand.
 - Void Swarm: the main enemy faction.
 - Void Titan: the first major boss.
 - Rift Energy: in-run XP energy.

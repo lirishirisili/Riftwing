@@ -5,7 +5,7 @@ extends Control
 ## Featured ship bay with hangar_pad hologram / engine glow, ship strip with
 ## locked·equipped states, clearer stat chips, and color-coded upgrade rows.
 ## Purchase logic stays in SaveManager — this screen only presents and requests.
-## Branding is RIFTWING only.
+## Branding is RIFTSTRIKE only.
 
 const _CATALOG_PATH := "res://resources/ships/ship_catalog_default.tres"
 const _ROW_SCENE := preload("res://scenes/ui/hangar_upgrade_row.tscn")

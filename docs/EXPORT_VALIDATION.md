@@ -6,11 +6,11 @@ Provisional identity (change before submission): `manifests/product_identity.jso
 
 | Field | Value |
 |---|---|
-| Brand | RIFTWING |
+| Brand | RIFTSTRIKE |
 | Android application id | `com.lishistudio.riftwing` |
 | iOS bundle id | `com.lishistudio.riftwing` |
-| Version name | `0.1.5` |
-| Version code / build | `6` (Android `version/code`; iOS `application/version`) |
+| Version name | `0.1.7` |
+| Version code / build | `8` (Android `version/code`; iOS `application/version`) |
 | Orientation | Portrait (`project.godot` → `window/handheld/orientation=1`) |
 | Android minSdk | 24 |
 | Android targetSdk | 36 (Release/Gradle override; Debug APK verified same via template default) |
@@ -43,8 +43,8 @@ Provisional identity (change before submission): `manifests/product_identity.jso
 ### Preset: Android Debug
 - Output: `build/android/riftwing-debug.apk`
 - Format: APK (`gradle_build/export_format=0`), classic template export (`use_gradle_build=false`)
-- Package: `com.lishistudio.riftwing` / display name `RIFTWING`
-- Version: name `0.1.5`, code `6`
+- Package: `com.lishistudio.riftwing` / display name `RIFTSTRIKE`
+- Version: name `0.1.7`, code `8`
 - Arch: `arm64-v8a` only
 - SDK: min/target left empty (Godot forbids overrides without Gradle); template default applies for local debug
 - Icons / splash: `assets/branding/*`
@@ -100,8 +100,8 @@ Provisional identity (change before submission): `manifests/product_identity.jso
 
 ### Preset: iOS
 - Bundle id: `com.lishistudio.riftwing`
-- Name: `RIFTWING`
-- `application/short_version`: `0.1.5`; `application/version` (build): `6`
+- Name: `RIFTSTRIKE`
+- `application/short_version`: `0.1.7`; `application/version` (build): `8`
 - `application/min_ios_version`: `15.0`
 - `application/targeted_device_family`: `2` (iPhone & iPad; Godot enum: `0`=iPhone, `1`=iPad, `2`=both)
 - `application/export_project_only=true` → export an Xcode project for Mac signing (no fake IPA success)

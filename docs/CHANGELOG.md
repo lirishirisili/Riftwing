@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.7 (build 8)
+- Renamed the player-visible brand to **RIFTSTRIKE** (store title `Riftstrike: Space Survivor`). Package/bundle IDs stay `com.lishistudio.riftwing`; save path and theme filenames unchanged.
+- New metallic main-menu wordmark `assets/branding/logo_riftstrike.png`; meta headers, pause, results/defeat, and brand chips now read RIFTSTRIKE. Centralized display copy in `scripts/core/brand.gd`.
+- Bumped store version to `0.1.7` / code `8` for the next Play/App Store binary.
+
 ## 0.1.5 (build 6)
 - Bumped store version to `0.1.5` (iOS/Android build `6`), covering the repair milestones below: progression integrity, responsive navigation, the hangar→combat bridge, 20 real run upgrades, graduated difficulty/HARD, and every former "Coming Soon" screen.
 - Synced the version across `manifests/product_identity.json` (source of truth), `project.godot`, all three export presets, and `docs/EXPORT_VALIDATION.md`.

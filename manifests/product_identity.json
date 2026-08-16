@@ -1,10 +1,10 @@
 {
-  "brand": "RIFTWING",
-  "project_name": "Riftwing",
-  "working_store_title": "Riftwing: Space Survivor",
+  "brand": "RIFTSTRIKE",
+  "project_name": "Riftstrike",
+  "working_store_title": "Riftstrike: Space Survivor",
   "internal_slug": "riftwing",
-  "version_name": "0.1.5",
-  "version_code": 6,
+  "version_name": "0.1.7",
+  "version_code": 8,
   "android_application_id_provisional": "com.lishistudio.riftwing",
   "ios_bundle_id_provisional": "com.lishistudio.riftwing",
   "android_min_sdk": 24,
@@ -14,8 +14,10 @@
   "legacy_reference_names_to_ignore": [
     "Starforge",
     "Galaxy Rush",
-    "Starforge: Galaxy Rush"
+    "Starforge: Galaxy Rush",
+    "RIFTWING",
+    "Riftwing"
   ],
-  "status": "prototype; IDs and store subtitle require owner approval before submission",
-  "notes": "Change IDs here first, then sync export_presets.cfg and docs/EXPORT_VALIDATION.md before store submission."
+  "status": "prototype; IDs require owner approval before submission",
+  "notes": "Visible brand is RIFTSTRIKE. Package/bundle IDs stay com.lishistudio.riftwing. Change IDs here first, then sync export_presets.cfg and docs/EXPORT_VALIDATION.md before store submission."
 }
