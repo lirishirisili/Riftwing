@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AdsConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/services/ads_config.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+android_app_key = "27c3b0395"
+android_banner_id = "jqgg68ya19n3ytgi"
+android_interstitial_id = "rbll62fz9v6c3g8z"
+android_rewarded_id = "0kp8369fne1aw2cr"
+ios_app_key = "27c3aca0d"
+ios_banner_id = "05n2yrznzri2l1pp"
+ios_interstitial_id = "tarcjz9o8di0xoe7"
+ios_rewarded_id = "xqcirr4y800m8wpy"
+runs_per_interstitial = 2
+minimum_interstitial_seconds = 90.0
+development_mode = false

@@ -1,5 +1,11 @@
 # Changelog
 
+## Ads / monetization verification (2026-08-24)
+- Confirmed LevelPlay Android/iOS app keys + Banner/Interstitial/Rewarded ad unit IDs match the live dashboard for `com.lishistudio.riftwing`.
+- Android `.gdap` now pulls Unity Ads adapter + Play Services IDs (PoofCam/TOHAV parity) alongside LevelPlay mediation-sdk 9.6.0.
+- Enabled `plugins/RiftstrikeLevelPlay` on the **Android Release** preset; excluded LevelPlay Gradle build intermediates from export packs.
+- Built signed release artifacts for device/Play testing: `build/android/riftwing-release.apk` and `build/android/riftwing-release.aab`.
+
 ## 0.1.7 (build 8)
 - Renamed the player-visible brand to **RIFTSTRIKE** (store title `Riftstrike: Space Survivor`). Package/bundle IDs stay `com.lishistudio.riftwing`; save path and theme filenames unchanged.
 - New metallic main-menu wordmark `assets/branding/logo_riftstrike.png`; meta headers, pause, results/defeat, and brand chips now read RIFTSTRIKE. Centralized display copy in `scripts/core/brand.gd`.

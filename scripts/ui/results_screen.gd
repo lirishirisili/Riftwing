@@ -90,6 +90,19 @@ func _ready() -> void:
 	GameFeel.debug_markers_enabled = false
 	AudioManager.stop_music()
 	set_process(true)
+	# A completed run (victory OR defeat) is a natural break. Report it to the
+	# centralized ads service, which owns the interstitial cadence/cooldown and
+	# decides whether to show one. Deferred so results render first.
+	get_tree().create_timer(0.8).timeout.connect(_maybe_run_break_interstitial)
+
+
+func _maybe_run_break_interstitial() -> void:
+	if not is_inside_tree():
+		return
+	var ads: AdsService = PlatformServices.ads
+	if ads == null:
+		return
+	ads.handle_run_completed(_stats.run_id)
 
 
 func _mount_meta_shell() -> void:

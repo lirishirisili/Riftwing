@@ -68,6 +68,8 @@ func _enter_background(flush_save: bool) -> void:
 		return
 	_backgrounded = true
 	AudioManager.set_has_focus(false)
+	if PlatformServices.ads != null:
+		PlatformServices.ads.on_app_pause()
 	if flush_save:
 		SaveManager.save_game()
 
@@ -75,6 +77,8 @@ func _enter_background(flush_save: bool) -> void:
 func _enter_foreground() -> void:
 	_backgrounded = false
 	AudioManager.set_has_focus(true)
+	if PlatformServices.ads != null:
+		PlatformServices.ads.on_app_resume()
 
 
 func _is_mobile_runtime() -> bool:

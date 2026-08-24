@@ -1,0 +1,43 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace "com.lishistudio.riftwing.levelplay"
+    compileSdk 36
+    buildToolsVersion "36.1.0"
+
+    defaultConfig {
+        minSdk 24
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    libraryVariants.all { variant ->
+        variant.outputs.all { output ->
+            // Emit a stable AAR name that the .gdap references.
+            outputFileName = "RiftstrikeLevelPlay.${variant.name}.aar"
+        }
+    }
+}
+
+dependencies {
+    // The Godot Android library and the LevelPlay SDK are provided at runtime:
+    // - Godot lib by the export template.
+    // - LevelPlay by the .gdap `remote` dependency during the export gradle build.
+    // Both are compileOnly here so this AAR stays a thin bridge.
+    compileOnly "org.godotengine:godot:4.7.0.stable"
+    compileOnly "com.unity3d.ads-mediation:mediation-sdk:9.6.0"
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:2.1.21"
+    implementation "androidx.core:core:1.13.1"
+}

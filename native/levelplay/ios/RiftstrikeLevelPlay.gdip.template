@@ -1,0 +1,42 @@
+[config]
+name="RiftstrikeLevelPlay"
+binary="riftstrike_levelplay.xcframework"
+
+initialization="register_riftstrike_levelplay_types"
+deinitialization="unregister_riftstrike_levelplay_types"
+
+[dependencies]
+; The LevelPlay iOS SDK (IronSourceSDK 9.5.0.0) is added to the generated Xcode
+; project via CocoaPods or SPM (see native/levelplay/ios/README.md). System
+; frameworks required by LevelPlay:
+linked=[]
+embedded=[]
+system=[
+  "AdSupport.framework",
+  "AppTrackingTransparency.framework",
+  "StoreKit.framework",
+  "WebKit.framework",
+  "JavaScriptCore.framework",
+  "SystemConfiguration.framework"
+]
+capabilities=[]
+files=[]
+linker_flags=["-ObjC"]
+
+[plist]
+;Warning: MERGE these SKAdNetwork ids with the app's existing SKAdNetworkItems;
+; do not replace them. This is the LevelPlay core set (ironSource) plus the
+; default-bundled Unity Ads adapter. Add any additional mediated network ids
+; from the LevelPlay dashboard plist generator before submission.
+SKAdNetworkItems:raw="
+<array>
+  <dict>
+    <key>SKAdNetworkIdentifier</key>
+    <string>su67r6k2v3.skadnetwork</string>
+  </dict>
+  <dict>
+    <key>SKAdNetworkIdentifier</key>
+    <string>4dzt52r2t5.skadnetwork</string>
+  </dict>
+</array>
+"

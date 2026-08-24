@@ -4,7 +4,10 @@
 
 # Local export outputs / secrets (never commit)
 build/
-android/
+/android/
+native/levelplay/android/.gradle/
+native/levelplay/android/.kotlin/
+native/levelplay/android/plugin/build/
 .local/
 *.apk
 *.aab

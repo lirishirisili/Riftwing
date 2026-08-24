@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- LevelPlay / Google Play services requires INTERNET + network state.
+         These are also declared by the app; merged here for the AAR. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Advertising ID (Android 13+ normal permission), used by mediation SDKs. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+
+    <application>
+        <!-- Godot v2 plugin discovery: maps the plugin name to its class. -->
+        <meta-data
+            android:name="org.godotengine.plugin.v2.RiftstrikeLevelPlay"
+            android:value="com.lishistudio.riftwing.levelplay.RiftstrikeLevelPlayPlugin" />
+    </application>
+</manifest>

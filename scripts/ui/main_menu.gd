@@ -12,6 +12,9 @@ extends Control
 
 const _BASE_PADDING := 36.0
 const _BASE_PADDING_BOTTOM := 88.0
+## Extra bottom reserve (logical px) so the LevelPlay banner overlay never
+## covers the START/DAILY/SHIPS/UPGRADES CTAs. Only applied when ads are live.
+const _BANNER_RESERVE := 168.0
 const _SCROLL_SPEED := 14.0
 const _CATALOG_PATH := "res://resources/ships/ship_catalog_default.tres"
 const _VANGUARD_HERO_PATH := "res://assets/art/ships/hero_vanguard_menu.png"
@@ -87,6 +90,32 @@ func _ready() -> void:
 	_refresh_profile()
 	GameFeel.debug_markers_enabled = false
 	AudioManager.play_music("menu")
+	_request_banner()
+
+
+## Shows the main-menu banner. The banner is a bottom-anchored native overlay
+## and is the only surface allowed to show a banner. If LevelPlay has not
+## finished initializing yet, it is shown once init succeeds.
+func _request_banner() -> void:
+	var ads: AdsService = PlatformServices.ads
+	if ads == null or not ads.is_available():
+		return
+	ads.show_banner()
+	if not ads.initialization_finished.is_connected(_on_ads_initialized):
+		ads.initialization_finished.connect(_on_ads_initialized, CONNECT_ONE_SHOT)
+
+
+func _on_ads_initialized(success: bool) -> void:
+	if success and is_inside_tree():
+		PlatformServices.ads.show_banner()
+
+
+func _exit_tree() -> void:
+	# Hide the banner whenever we leave the menu so it never covers gameplay,
+	# the hangar, upgrades, or any other screen.
+	var ads: AdsService = PlatformServices.ads
+	if ads != null:
+		ads.hide_banner()
 
 
 func _process(delta: float) -> void:
@@ -252,9 +281,15 @@ func _apply_safe_area() -> void:
 	var bottom_inset := full.y - (safe.position.y + safe.size.y)
 	# Hard cap — never let a bogus safe-area inset crush the CTA stack.
 	bottom_inset = clampf(bottom_inset, 0.0, 96.0)
+	# Reserve room for the bottom banner overlay when ads are live so the native
+	# banner never overlaps the CTA stack.
+	var banner_reserve := 0.0
+	var ads: AdsService = PlatformServices.ads
+	if ads != null and ads.is_available():
+		banner_reserve = _BANNER_RESERVE
 	_safe.add_theme_constant_override(
 		"margin_bottom",
-		int(_BASE_PADDING_BOTTOM + bottom_inset)
+		int(_BASE_PADDING_BOTTOM + bottom_inset + banner_reserve)
 	)
 	call_deferred("_recenter_hero_pivot")
 
