@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.8 (build 9)
+- Bumped store version for Play production after LevelPlay ads (banner / interstitial / rewarded) + Unity Ads mediation wiring.
+- Store privacy/Data Safety declarations aligned with LevelPlay (not AdMob).
+
 ## Ads / monetization verification (2026-08-24)
 - Confirmed LevelPlay Android/iOS app keys + Banner/Interstitial/Rewarded ad unit IDs match the live dashboard for `com.lishistudio.riftwing`.
 - Android `.gdap` now pulls Unity Ads adapter + Play Services IDs (PoofCam/TOHAV parity) alongside LevelPlay mediation-sdk 9.6.0.
