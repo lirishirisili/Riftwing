@@ -5,6 +5,8 @@ extends Resource
 ## Balance/config lives in a Resource, never hard-coded in the service, so the
 ## interstitial cadence and ad ids can be tuned without touching logic. Ids are
 ## the confirmed LevelPlay dashboard values for com.lishistudio.riftwing.
+## Meta Audience Network placement IDs live only in the LevelPlay dashboard;
+## application code never loads Meta directly and never stores those placement IDs.
 
 ## Android LevelPlay app key.
 @export var android_app_key: String = "27c3b0395"

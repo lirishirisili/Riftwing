@@ -32,15 +32,22 @@ import com.unity3d.mediation.rewarded.LevelPlayRewardedAdListener
  * LevelPlay.init + LevelPlayInterstitialAd / LevelPlayRewardedAd /
  * LevelPlayBannerAdView. No legacy IronSource init/load/show APIs are used.
  *
+ * Unity Ads and Meta Audience Network participate only as LevelPlay mediated
+ * networks (unityads-adapter + facebook-adapter). This class never calls
+ * Unity Ads or Meta FAN load/show APIs.
+ *
  * Init happens once; ad objects are created only after init success. All
  * LevelPlay UI calls run on the UI thread; results are re-emitted to Godot as
- * signals consumed by `LevelPlayAdsService`.
+ * signals consumed by `LevelPlayAdsService`. Rewards are emitted only from
+ * LevelPlayRewardedAdListener.onAdRewarded — never from onAdClosed.
  */
 class RiftstrikeLevelPlayPlugin(godot: Godot) : GodotPlugin(godot) {
 
     companion object {
         private const val PLUGIN_NAME = "RiftstrikeLevelPlay"
         private const val TAG = "RiftstrikeLevelPlay"
+        /** Tablet / unfolded foldable — keep banner phone-width, not full-bleed (Salino/PoofCam). */
+        private const val WIDE_LAYOUT_MIN_WIDTH_DP = 600f
     }
 
     @Volatile private var initialized = false
@@ -146,6 +153,20 @@ class RiftstrikeLevelPlayPlugin(godot: Godot) : GodotPlugin(godot) {
 
     // --- Banner -------------------------------------------------------------
 
+    /** Phones: adaptive. Wide / foldable / tablet: fixed BANNER (320×50) centered. */
+    private fun resolveBannerAdSize(activity: android.app.Activity): LevelPlayAdSize {
+        val metrics = activity.resources.displayMetrics
+        val widthDp = metrics.widthPixels / metrics.density
+        if (widthDp >= WIDE_LAYOUT_MIN_WIDTH_DP) {
+            return LevelPlayAdSize.BANNER
+        }
+        return try {
+            LevelPlayAdSize.createAdaptiveAdSize(activity) ?: LevelPlayAdSize.BANNER
+        } catch (_: Throwable) {
+            LevelPlayAdSize.BANNER
+        }
+    }
+
     @UsedByGodot
     fun show_banner() {
         val activity = activity ?: return
@@ -153,8 +174,7 @@ class RiftstrikeLevelPlayPlugin(godot: Godot) : GodotPlugin(godot) {
         activity.runOnUiThread {
             try {
                 if (bannerAdView == null) {
-                    val adSize = LevelPlayAdSize.createAdaptiveAdSize(activity)
-                        ?: LevelPlayAdSize.BANNER
+                    val adSize = resolveBannerAdSize(activity)
                     val adConfig = LevelPlayBannerAdView.Config.Builder()
                         .setAdSize(adSize)
                         .build()
@@ -164,7 +184,8 @@ class RiftstrikeLevelPlayPlugin(godot: Godot) : GodotPlugin(godot) {
                     val container = FrameLayout(activity)
                     val params = FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        Gravity.BOTTOM
                     )
                     val viewParams = FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -343,6 +364,8 @@ class RiftstrikeLevelPlayPlugin(godot: Godot) : GodotPlugin(godot) {
         override fun onAdInfoChanged(adInfo: LevelPlayAdInfo) {}
 
         override fun onAdRewarded(reward: LevelPlayReward, adInfo: LevelPlayAdInfo) {
+            // Official LevelPlay reward-earned callback. Game rewards must be
+            // granted only from this signal, never from onAdClosed.
             emitSignal("rewarded_earned", reward.name ?: "", Integer.valueOf(reward.amount))
         }
     }

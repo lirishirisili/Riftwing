@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<!-- Meta FAN app id (dashboard). Placement IDs stay server-side on LevelPlay. -->
+	<string name="facebook_app_id" translatable="false">1001620726236446</string>
+</resources>

@@ -386,6 +386,7 @@ func _summon_one_wave() -> void:
 		enemy.pickup_pool = pickup_pool
 		enemy.pickup_data = pickup_data
 		enemy.player = player
+		enemy.despawn_bounds = despawn_bounds
 		# `died` fires only on a real kill (not exit-recycle); re-broadcast it so
 		# the run host can tally enemies destroyed.
 		if not enemy.died.is_connected(_on_summoned_died):

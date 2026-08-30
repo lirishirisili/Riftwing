@@ -108,17 +108,21 @@ Define interfaces for:
 - CloudSaveService
 - AchievementService
 
-Prototype implementations are no-op or local on all platforms. `AdsService` remains as a typed interface but has no AdMob (or other ad) adapter wired — the game ships without ads or tracking SDKs.
+Prototype implementations are no-op or local on all platforms. Gameplay talks only to `AdsService`. `PlatformServices` selects `LevelPlayAdsService` when the native `RiftstrikeLevelPlay` plugin is present (Android/iOS), otherwise the no-op base.
 
-### Ads (disabled)
-- No interstitial, rewarded, or banner placement.
-- Poing AdMob editor plugin is disabled in `project.godot`; iOS `.gdip` plugins are renamed to `.gdip.disabled`.
-- No `NSUserTrackingUsageDescription` / ATT purpose string in the iOS export preset.
-- Save schema may still contain legacy `monetization` fields for migration; they are unused at runtime.
+### Ads (Unity LevelPlay)
+- Single mediation layer: **Riftstrike → Unity LevelPlay → Unity Ads + Meta Audience Network**.
+- Formats: banner (main menu), interstitial (run-break cadence on Results), rewarded (opt-in via `AdsService.show_rewarded`; grant only from LevelPlay `onAdRewarded` / `didRewardAd`).
+- Android: LevelPlay `mediation-sdk` 9.6.0, `unityads-adapter` 5.5.0, `facebook-adapter` 5.4.0 + FAN SDK 6.22.0. Network security permits cleartext to `127.0.0.1` for Meta.
+- iOS: ATT (`ATTrackingManager`) + `FBAdSettings.setAdvertiserTrackingEnabled` **before** LevelPlay init. `NSUserTrackingUsageDescription` is declared in the iOS export preset and the LevelPlay `.gdip` template.
+- Application code uses LevelPlay ad unit IDs only. Meta placement IDs stay on the LevelPlay dashboard.
+- Poing AdMob editor plugin stays disabled in `project.godot`; iOS AdMob `.gdip` plugins stay `.gdip.disabled`.
+- Save schema may still contain legacy `monetization` fields for migration.
 
 ## Performance strategy
 - Object pooling is mandatory.
 - Pool growth is hard-capped (`ObjectPool.max_total`); callers must tolerate a null acquire.
+- Projectile/pickup despawn bounds must track the expanded logical viewport (`PlayfieldBounds.from_screen`); a fixed 1080-wide cull box kills bolts on the tablet right lane after the ship playfield expands.
 - Avoid per-frame searches through the scene tree.
 - Cache references.
 - Use collision layers intentionally.

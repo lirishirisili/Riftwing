@@ -5,12 +5,18 @@ Godot iOS plugin that bridges Unity LevelPlay (IronSourceSDK **9.5.0.0**, new
 the engine singleton `RiftstrikeLevelPlay` and emits the same signals as the
 Android plugin, so no GDScript changes are needed per platform.
 
-iOS artifacts **must be compiled on macOS** (Xcode 26+, per LevelPlay 9.5.0).
-This directory holds source only; the build is left to macOS CI.
+Mediation networks (loaded **only** through LevelPlay, never directly):
+- Unity Ads — `IronSourceUnityAdsAdapter` `5.9.0.0`
+- Meta Audience Network — `IronSourceFacebookAdapter` `5.4.0.0` + FAN SDK **6.22.0**
+
+iOS artifacts **must be compiled on macOS** (Xcode 26+, per LevelPlay 9.5.0 /
+FAN 6.22.0). This directory holds source only; the build is left to macOS CI.
 
 ## Files
 - `riftstrike_levelplay.h` / `riftstrike_levelplay.mm` — the bridge + plugin
   registration hooks (`register_/unregister_riftstrike_levelplay_types`).
+  ATT (`ATTrackingManager`) and `FBAdSettings.setAdvertiserTrackingEnabled`
+  run **before** `LevelPlay init`.
 - `RiftstrikeLevelPlay.gdip.template` — Godot iOS plugin descriptor. Copy to
   `ios/plugins/RiftstrikeLevelPlay.gdip` when enabling the iOS build.
 
@@ -29,22 +35,32 @@ This directory holds source only; the build is left to macOS CI.
    ```
    (Add a simulator slice the same way if simulator testing is needed.)
 3. Copy the `.xcframework` and the `.gdip` into `ios/plugins/`.
-4. Add the LevelPlay SDK to the exported Xcode project (Godot exports a project,
-   `export_project_only=true`):
-   - CocoaPods: `pod 'IronSourceSDK','9.5.0.0'` plus Unity Ads bidding adapter
-     `pod 'IronSourceUnityAdsAdapter','5.9.0.0'` (PoofCam/TOHAV parity), or
-   - SPM: `https://github.com/ironsource-mobile/LevelPlay-Swift-Package` (Exact
-     Version >= 9.5.0). Prefer also linking the Unity Ads adapter for bidding fill.
+4. Add the LevelPlay SDK + adapters to the exported Xcode project (Godot exports
+   a project, `export_project_only=true`):
+   ```ruby
+   pod 'IronSourceSDK','9.5.0.0'
+   pod 'IronSourceUnityAdsAdapter','5.9.0.0'
+   pod 'IronSourceFacebookAdapter','5.4.0.0'  # pulls FBAudienceNetwork 6.22.0
+   ```
+   or SPM: `https://github.com/ironsource-mobile/LevelPlay-Swift-Package` plus
+   the matching Facebook adapter package. Do **not** initialize Unity Ads or
+   Meta FAN outside LevelPlay.
 5. Ensure `-ObjC` is in Other Linker Flags (also set by the `.gdip`).
 6. **Privacy**: MERGE the `.gdip` `SKAdNetworkItems` with the app's existing
    `SKAdNetworkItems` — never replace. Add remaining mediated-network ids from
    the LevelPlay dashboard plist generator. Include the LevelPlay SDK privacy
    manifest (`PrivacyInfo.xcprivacy`) shipped with the pod/package.
-7. Do **not** add an `NSUserTrackingUsageDescription` / ATT prompt unless an
-   approved consent flow + copy exists (see privacy gaps in the changelog).
+7. `NSUserTrackingUsageDescription` is declared in the `.gdip` and the iOS
+   export preset. The native bridge requests ATT and sets Meta advertiser
+   tracking **before** LevelPlay initialization.
 
 ## API surface
-Init: `[LevelPlay initWithRequest:[[LPMInitRequestBuilder alloc]
+Init: ATT → `FBAdSettings.setAdvertiserTrackingEnabled` →
+`[LevelPlay initWithRequest:[[LPMInitRequestBuilder alloc]
 initWithAppKey:key] build] completion:...]`.
 Ads: `LPMInterstitialAd`, `LPMRewardedAd`, `LPMBannerAdView` with their
 `LPM*Delegate` protocols. No legacy `IronSource` init/load/show calls are used.
+Rewarded grants emit only from `didRewardAdWithAdInfo` — never from close.
+
+Banner sizing: phones use `createAdaptiveAdSize`; wide layouts (≥600 pt, iPad /
+tablets) use fixed `bannerSize` (320×50) centered — same policy as Salino/PoofCam.

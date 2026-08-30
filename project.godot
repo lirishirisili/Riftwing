@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Riftstrike"
 config/description="RIFTSTRIKE - portrait mobile arcade shooter (prototype)."
-config/version="0.1.8"
+config/version="0.1.10"
 run/main_scene="res://scenes/app/app_root.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/quit_on_go_back=false

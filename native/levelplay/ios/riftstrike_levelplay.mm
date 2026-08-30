@@ -2,6 +2,8 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import <AppTrackingTransparency/AppTrackingTransparency.h>
+#import <AdSupport/AdSupport.h>
 #import <IronSource/IronSource.h>
 
 #include "core/config/engine.h"
@@ -18,6 +20,30 @@ static UIViewController *rlp_root_view_controller() {
 		vc = vc.presentedViewController;
 	}
 	return vc;
+}
+
+/// Tablet / unfolded foldable — keep banner phone-width, not full-bleed (Salino/PoofCam).
+static const CGFloat kRLPWideLayoutMinWidth = 600.0;
+
+static BOOL rlp_is_wide_layout(void) {
+	CGFloat width = UIScreen.mainScreen.bounds.size.width;
+	UIViewController *vc = rlp_root_view_controller();
+	if (vc != nil) {
+		width = vc.view.bounds.size.width;
+	}
+	return width >= kRLPWideLayoutMinWidth;
+}
+
+static LPMAdSize *rlp_resolve_banner_ad_size(void) {
+	// Phones: adaptive. Wide / iPad: fixed BANNER (320×50) so creatives stay phone-sized.
+	if (rlp_is_wide_layout()) {
+		return [LPMAdSize bannerSize];
+	}
+	LPMAdSize *size = [LPMAdSize createAdaptiveAdSize];
+	if (size == nil) {
+		size = [LPMAdSize bannerSize];
+	}
+	return size;
 }
 
 @interface RLPInterstitialDelegate : NSObject <LPMInterstitialAdDelegate>
@@ -41,6 +67,7 @@ static UIViewController *rlp_root_view_controller() {
 @property (nonatomic, copy) NSString *rewardedAdUnitId;
 @property (nonatomic, copy) NSString *bannerAdUnitId;
 @property (nonatomic, assign) BOOL initialized;
+@property (nonatomic, assign) BOOL initInProgress;
 + (instancetype)shared;
 @end
 
@@ -58,6 +85,45 @@ static String rlp_error_string(NSError *error) {
 		return String("unknown error");
 	}
 	return String("code=") + itos((int)error.code) + " message=" + String::utf8([error.localizedDescription UTF8String]);
+}
+
+/// Sets Meta FAN advertiser tracking from the ATT result. Uses a runtime lookup
+/// so this plugin compiles against IronSource headers alone; FBAudienceNetwork
+/// is linked later via IronSourceFacebookAdapter. Never loads Meta ads directly.
+static void rlp_set_meta_advertiser_tracking(BOOL enabled) {
+	Class cls = NSClassFromString(@"FBAdSettings");
+	SEL sel = NSSelectorFromString(@"setAdvertiserTrackingEnabled:");
+	if (cls == nil || ![cls respondsToSelector:sel]) {
+		return;
+	}
+	NSMethodSignature *sig = [cls methodSignatureForSelector:sel];
+	if (sig == nil) {
+		return;
+	}
+	NSInvocation *inv = [NSInvocation invocationWithMethodSignature:sig];
+	[inv setSelector:sel];
+	[inv setTarget:cls];
+	[inv setArgument:&enabled atIndex:2];
+	[inv invoke];
+}
+
+/// Meta requires ATT + setAdvertiserTrackingEnabled BEFORE LevelPlay init.
+static void rlp_request_att_then(void (^then)(void)) {
+	void (^continue_init)(void) = ^{
+		if (then) {
+			then();
+		}
+	};
+	if (@available(iOS 14, *)) {
+		[ATTrackingManager requestTrackingAuthorizationWithCompletionHandler:^(ATTrackingManagerAuthorizationStatus status) {
+			BOOL enabled = (status == ATTrackingManagerAuthorizationStatusAuthorized);
+			rlp_set_meta_advertiser_tracking(enabled);
+			dispatch_async(dispatch_get_main_queue(), continue_init);
+		}];
+		return;
+	}
+	rlp_set_meta_advertiser_tracking(YES);
+	continue_init();
 }
 
 // --- Interstitial delegate --------------------------------------------------
@@ -115,6 +181,7 @@ static String rlp_error_string(NSError *error) {
 }
 - (void)didChangeAdInfo:(LPMAdInfo *)adInfo {}
 - (void)didRewardAdWithAdInfo:(LPMAdInfo *)adInfo reward:(LPMReward *)reward {
+	// Official LevelPlay reward-earned callback. Closed/dismissed never grants.
 	String name = reward.name ? String::utf8([reward.name UTF8String]) : String();
 	RiftstrikeLevelPlay::get_singleton()->notify_reward(name, (int)reward.amount);
 }
@@ -198,36 +265,41 @@ void RiftstrikeLevelPlay::_bind_methods() {
 
 void RiftstrikeLevelPlay::initialize(const String &app_key, const String &banner_id, const String &interstitial_id, const String &rewarded_id, bool development) {
 	RLPBridge *bridge = [RLPBridge shared];
-	if (bridge.initialized) {
+	if (bridge.initialized || bridge.initInProgress) {
 		return;
 	}
+	bridge.initInProgress = YES;
 	bridge.bannerAdUnitId = [NSString stringWithUTF8String:banner_id.utf8().get_data()];
 	bridge.interstitialAdUnitId = [NSString stringWithUTF8String:interstitial_id.utf8().get_data()];
 	bridge.rewardedAdUnitId = [NSString stringWithUTF8String:rewarded_id.utf8().get_data()];
 
 	NSString *key = [NSString stringWithUTF8String:app_key.utf8().get_data()];
+	(void)development;
 
 	dispatch_async(dispatch_get_main_queue(), ^{
-		LPMInitRequestBuilder *builder = [[LPMInitRequestBuilder alloc] initWithAppKey:key];
-		LPMInitRequest *request = [builder build];
-		[LevelPlay initWithRequest:request completion:^(LPMConfiguration *config, NSError *error) {
-			if (error != nil) {
-				bridge.initialized = NO;
-				RiftstrikeLevelPlay::get_singleton()->notify_signal_str("init_failed", rlp_error_string(error));
-				return;
-			}
-			bridge.initialized = YES;
+		rlp_request_att_then(^{
+			LPMInitRequestBuilder *builder = [[LPMInitRequestBuilder alloc] initWithAppKey:key];
+			LPMInitRequest *request = [builder build];
+			[LevelPlay initWithRequest:request completion:^(LPMConfiguration *config, NSError *error) {
+				bridge.initInProgress = NO;
+				if (error != nil) {
+					bridge.initialized = NO;
+					RiftstrikeLevelPlay::get_singleton()->notify_signal_str("init_failed", rlp_error_string(error));
+					return;
+				}
+				bridge.initialized = YES;
 
-			bridge.interstitialDelegate = [[RLPInterstitialDelegate alloc] init];
-			bridge.interstitialAd = [[LPMInterstitialAd alloc] initWithAdUnitId:bridge.interstitialAdUnitId];
-			bridge.interstitialAd.delegate = bridge.interstitialDelegate;
+				bridge.interstitialDelegate = [[RLPInterstitialDelegate alloc] init];
+				bridge.interstitialAd = [[LPMInterstitialAd alloc] initWithAdUnitId:bridge.interstitialAdUnitId];
+				bridge.interstitialAd.delegate = bridge.interstitialDelegate;
 
-			bridge.rewardedDelegate = [[RLPRewardedDelegate alloc] init];
-			bridge.rewardedAd = [[LPMRewardedAd alloc] initWithAdUnitId:bridge.rewardedAdUnitId];
-			bridge.rewardedAd.delegate = bridge.rewardedDelegate;
+				bridge.rewardedDelegate = [[RLPRewardedDelegate alloc] init];
+				bridge.rewardedAd = [[LPMRewardedAd alloc] initWithAdUnitId:bridge.rewardedAdUnitId];
+				bridge.rewardedAd.delegate = bridge.rewardedDelegate;
 
-			RiftstrikeLevelPlay::get_singleton()->notify_signal("init_success");
-		}];
+				RiftstrikeLevelPlay::get_singleton()->notify_signal("init_success");
+			}];
+		});
 	});
 }
 
@@ -239,10 +311,7 @@ void RiftstrikeLevelPlay::show_banner() {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		if (bridge.bannerAdView == nil) {
 			bridge.bannerDelegate = [[RLPBannerDelegate alloc] init];
-			LPMAdSize *size = [LPMAdSize createAdaptiveAdSize];
-			if (size == nil) {
-				size = [LPMAdSize bannerSize];
-			}
+			LPMAdSize *size = rlp_resolve_banner_ad_size();
 			bridge.bannerAdView = [[LPMBannerAdView alloc] initWithAdUnitId:bridge.bannerAdUnitId];
 			[bridge.bannerAdView setAdSize:size];
 			bridge.bannerAdView.delegate = bridge.bannerDelegate;

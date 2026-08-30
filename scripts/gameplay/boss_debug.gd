@@ -90,8 +90,12 @@ func _ready() -> void:
 func _adapt_screen_size() -> void:
 	var vp := get_viewport().get_visible_rect().size
 	_screen = Vector2(maxi(1080, int(vp.x)), maxi(1920, int(vp.y)))
+	var bounds := PlayfieldBounds.from_screen(_screen)
+	_player_bullet_pool.despawn_bounds = bounds
+	_enemy_bullet_pool.despawn_bounds = bounds
 	if _boss != null:
 		_boss.screen_size = _screen
+		_boss.despawn_bounds = bounds
 
 
 func _begin_run() -> void:

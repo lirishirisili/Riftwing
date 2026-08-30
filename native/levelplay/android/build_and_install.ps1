@@ -45,5 +45,17 @@ New-Item -ItemType Directory -Force -Path $pluginsDir | Out-Null
 Copy-Item (Join-Path $distDir "RiftstrikeLevelPlay.aar") (Join-Path $pluginsDir "RiftstrikeLevelPlay.aar") -Force
 Copy-Item (Join-Path $distDir "RiftstrikeLevelPlay.gdap") (Join-Path $pluginsDir "RiftstrikeLevelPlay.gdap") -Force
 
+$godotBuildGradle = Join-Path $repoRoot "android\build\build.gradle"
+$snippetPath = Join-Path $scriptDir "godot_build_gradle_snippet.gradle"
+$marker = "RIFTSTRIKE_META_BROWSER_PIN"
+if ((Test-Path $godotBuildGradle) -and (Test-Path $snippetPath)) {
+    $gradleText = Get-Content $godotBuildGradle -Raw
+    if ($gradleText -notmatch [regex]::Escape($marker)) {
+        $snippet = Get-Content $snippetPath -Raw
+        Add-Content -Path $godotBuildGradle -Value "`n// $marker`n$snippet"
+        Write-Host "== Pinned androidx.browser 1.8.0 in Godot android/build/build.gradle (FAN 6.22.0 + AGP 8.6.1) =="
+    }
+}
+
 Write-Host "== Installed plugin to $pluginsDir =="
 Get-ChildItem $pluginsDir | Select-Object Name, Length

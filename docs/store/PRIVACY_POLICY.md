@@ -18,7 +18,7 @@ The App is a single-player game designed to support offline gameplay. An interne
 
 The App does not require you to create an account and does not intentionally collect your name, email address, phone number, or other contact information.
 
-**The App uses Unity LevelPlay mediation (including ironSource Ads and Unity Ads) to display advertisements** such as banners, interstitials, and rewarded ads. These advertising partners may collect certain device, advertising, and usage information as described below.
+**The App uses Unity LevelPlay mediation (including ironSource Ads, Unity Ads, and Meta Audience Network) to display advertisements** such as banners, interstitials, and rewarded ads. These advertising partners may collect certain device, advertising, and usage information as described below.
 
 The App does **not** use Google AdMob as its advertising mediation path.
 
@@ -37,7 +37,7 @@ The App does not currently provide a personal account system or cloud-based save
 
 ## 3. Advertising (Unity LevelPlay / Unity Ads / ironSource)
 
-The App uses **Unity LevelPlay** to mediate advertisements. Participating ad networks may include **ironSource Ads** and **Unity Ads**, and may change over time as mediation settings are updated.
+The App uses **Unity LevelPlay** to mediate advertisements. Participating ad networks may include **ironSource Ads**, **Unity Ads**, and **Meta Audience Network**, and may change over time as mediation settings are updated.
 
 These providers and their partners may automatically collect or process information such as:
 
@@ -62,6 +62,7 @@ For more information, please review:
 - Unity Privacy Policy: https://unity.com/legal/game-player-and-app-user-privacy-policy
 - Unity LevelPlay / Grow documentation and privacy materials: https://unity.com/legal
 - ironSource / LevelPlay privacy information published by Unity
+- Meta Audience Network: https://www.facebook.com/privacy/policy/
 
 ## 4. Advertising Choices
 

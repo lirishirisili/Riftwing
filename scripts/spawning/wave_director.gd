@@ -11,6 +11,8 @@ signal enemy_killed(enemy: Enemy)
 @export var wave: WaveData
 ## Logical screen size (used to place formations).
 @export var screen_size: Vector2 = Vector2(1080, 1920)
+## Offscreen cull rect for pickups dropped by enemies (expanded on tablets).
+var despawn_bounds: Rect2 = Rect2(-200.0, -400.0, 1480.0, 2720.0)
 
 ## Injected dependencies.
 var enemy_pool: NodePool
@@ -130,6 +132,7 @@ func _spawn_one(enemy_data: EnemyData, enter_from: Vector2, hold: Vector2, exit_
 	enemy.pickup_pool = pickup_pool
 	enemy.pickup_data = pickup_data
 	enemy.player = player
+	enemy.despawn_bounds = despawn_bounds
 	if not enemy.died.is_connected(_on_enemy_died):
 		enemy.died.connect(_on_enemy_died)
 	if not enemy.split_requested.is_connected(_on_split_requested):

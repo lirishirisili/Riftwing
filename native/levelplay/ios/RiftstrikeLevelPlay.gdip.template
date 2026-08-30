@@ -6,9 +6,9 @@ initialization="register_riftstrike_levelplay_types"
 deinitialization="unregister_riftstrike_levelplay_types"
 
 [dependencies]
-; The LevelPlay iOS SDK (IronSourceSDK 9.5.0.0) is added to the generated Xcode
-; project via CocoaPods or SPM (see native/levelplay/ios/README.md). System
-; frameworks required by LevelPlay:
+; The LevelPlay iOS SDK (IronSourceSDK 9.5.0.0) plus Unity Ads and Meta FAN
+; adapters are added to the generated Xcode project via CocoaPods or SPM
+; (see native/levelplay/ios/README.md). Never load Unity Ads or Meta directly.
 linked=[]
 embedded=[]
 system=[
@@ -24,10 +24,9 @@ files=[]
 linker_flags=["-ObjC"]
 
 [plist]
+NSUserTrackingUsageDescription:string="Your advertising identifier is used only to show personalized ads in RIFTSTRIKE, for example recommending similar mobile games instead of unrelated products."
 ;Warning: MERGE these SKAdNetwork ids with the app's existing SKAdNetworkItems;
-; do not replace them. This is the LevelPlay core set (ironSource) plus the
-; default-bundled Unity Ads adapter. Add any additional mediated network ids
-; from the LevelPlay dashboard plist generator before submission.
+; do not replace them. ironSource + Unity Ads + Meta Audience Network.
 SKAdNetworkItems:raw="
 <array>
   <dict>
@@ -37,6 +36,14 @@ SKAdNetworkItems:raw="
   <dict>
     <key>SKAdNetworkIdentifier</key>
     <string>4dzt52r2t5.skadnetwork</string>
+  </dict>
+  <dict>
+    <key>SKAdNetworkIdentifier</key>
+    <string>v9wttpbfk9.skadnetwork</string>
+  </dict>
+  <dict>
+    <key>SKAdNetworkIdentifier</key>
+    <string>n38lu8286q.skadnetwork</string>
   </dict>
 </array>
 "

@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.1.10 (build 11)
+- Production release: Meta Audience Network via LevelPlay mediation (Unity Ads + Meta FAN 6.22.0).
+- Android: FAN app id, network security for localhost, androidx.browser pin for Godot AGP 8.6.1.
+- iOS: ATT + Meta advertiser tracking before LevelPlay init.
+- Rewarded grants remain exclusively from the official LevelPlay reward-earned callback (never close/dismiss).
+
+## 0.1.9 (build 10)
+- Tablet / large-screen banner: fixed `BANNER` (320×50) centered instead of stretched adaptive (Salino/PoofCam parity).
+- Fixed player bolts vanishing on the expanded right play lane (`PlayfieldBounds` syncs pool cull rects with the viewport).
+- Bumped store version for Play production.
+
+## Wide-screen combat: bullets on the right edge
+- Fixed player (and enemy) projectiles vanishing on the expanded right lane of tablets/iPads: `PlayfieldBounds.from_screen` now grows pool despawn rects with the viewport in `RunController` / `boss_debug`, matching the already-expanded ship playfield. Pickup cull bounds follow the same path.
+
+## Banner layout on tablets / large screens
+- Matched Salino/PoofCam: on wide layouts (≥600 dp/pt) the LevelPlay banner uses fixed `BANNER` (320×50) centered instead of full-bleed adaptive, so creatives are not stretched on iPad / tablets / foldables. Phones keep adaptive sizing.
+- Android bridge also anchors the banner container with `Gravity.BOTTOM` (was missing).
+- Touch: Android AAR rebuilt via `native/levelplay/android/build_and_install.ps1`. iOS needs a macOS rebuild of `riftstrike_levelplay.xcframework` from the updated `.mm`.
+
 ## 0.1.8 (build 9)
 - Bumped store version for Play production after LevelPlay ads (banner / interstitial / rewarded) + Unity Ads mediation wiring.
 - Store privacy/Data Safety declarations aligned with LevelPlay (not AdMob).

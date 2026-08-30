@@ -213,8 +213,17 @@ func _resolve_stage_timeline() -> StageTimelineData:
 func _adapt_screen_size() -> void:
 	var vp := get_viewport().get_visible_rect().size
 	_screen = Vector2(maxi(1080, int(vp.x)), maxi(1920, int(vp.y)))
-	_director.screen_size = _screen
-	_boss.screen_size = _screen
+	var bounds := PlayfieldBounds.from_screen(_screen)
+	if _director != null:
+		_director.screen_size = _screen
+		_director.despawn_bounds = bounds
+	if _boss != null:
+		_boss.screen_size = _screen
+		_boss.despawn_bounds = bounds
+	if _player_bullet_pool != null:
+		_player_bullet_pool.despawn_bounds = bounds
+	if _enemy_bullet_pool != null:
+		_enemy_bullet_pool.despawn_bounds = bounds
 
 
 func _mini_at() -> float:

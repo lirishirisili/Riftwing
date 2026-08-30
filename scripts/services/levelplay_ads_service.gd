@@ -312,7 +312,8 @@ func _on_rewarded_display_failed(error: String) -> void:
 
 func _on_rewarded_earned(reward_name: String, amount: int) -> void:
 	# Grant exactly once per show, even if the callback repeats or arrives after
-	# close. The reward economy decision is owned by the caller, not here.
+	# close. Only the official LevelPlay onAdRewarded / didRewardAd path emits
+	# this signal — closed/dismissed never grants.
 	if not _rewarded_reward_pending:
 		return
 	_rewarded_reward_pending = false
@@ -321,6 +322,7 @@ func _on_rewarded_earned(reward_name: String, amount: int) -> void:
 
 
 func _on_rewarded_closed() -> void:
+	# Close/dismiss must never grant. Reload the next rewarded ad.
 	_log("REWARDED", "closed")
 	rewarded_closed.emit()
 	_reload_rewarded()

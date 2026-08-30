@@ -16,7 +16,7 @@
 ### 1) Privacy Policy page (required before upload)
 Edit Google Sites: https://sites.google.com/view/riftwing/home  
 Replace the whole page with the text in `docs/store/PRIVACY_POLICY.md`  
-**Key change:** AdMob → **Unity LevelPlay / Unity Ads / ironSource**; banners + interstitial + rewarded.
+**Key change:** AdMob → **Unity LevelPlay / Unity Ads / ironSource / Meta Audience Network**; banners + interstitial + rewarded.
 
 ### 2) Google Play Console → Policy → App content
 Package: `com.lishistudio.riftwing`

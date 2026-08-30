@@ -21,6 +21,8 @@ var enemy_projectile_pool: ProjectilePool
 var pickup_pool: NodePool
 var pickup_data: PickupData
 var player: Node2D
+## Offscreen cull for energy drops; set by WaveDirector / Boss for tablet expand.
+var despawn_bounds: Rect2 = Rect2(-200.0, -400.0, 1480.0, 2720.0)
 
 var _phase: int = Phase.IDLE
 var _health: float = 0.0
@@ -256,7 +258,7 @@ func _drop_energy() -> void:
 			continue
 		var jitter := Vector2(randf_range(-24.0, 24.0), randf_range(-16.0, 16.0))
 		pickup.release_callback = Callable(pickup_pool, "release")
-		pickup.spawn(global_position + jitter, pickup_data, Rect2(-200, -400, 1480, 2720))
+		pickup.spawn(global_position + jitter, pickup_data, despawn_bounds)
 
 
 func _apply_tint() -> void:

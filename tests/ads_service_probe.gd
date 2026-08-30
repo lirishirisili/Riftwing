@@ -3,8 +3,9 @@ extends SceneTree
 ## - Config exposes the confirmed app keys + ad unit ids.
 ## - Interstitial cadence policy (no 1st-run ad, every 2 runs, 90s cooldown, id dedupe).
 ## - Service init ordering, ad creation only after init, auto-reload, and
-##   exactly-once rewarded grant.
-## - Legacy AdMob stays inactive and no ATT string is declared.
+##   exactly-once rewarded grant from the LevelPlay earned callback (never close).
+## - Meta FAN + Unity Ads participate only as LevelPlay adapters.
+## - ATT purpose string is declared for Meta advertiser tracking.
 ## godot --headless --path . --script res://tests/ads_service_probe.gd
 
 const _MOCK := preload("res://tests/mocks/mock_levelplay_native.gd")
@@ -44,6 +45,7 @@ func _check_files() -> int:
 		"res://resources/ads/levelplay_ads_config.tres",
 		"res://native/levelplay/android/plugin/src/main/java/com/lishistudio/riftwing/levelplay/RiftstrikeLevelPlayPlugin.kt",
 		"res://native/levelplay/ios/riftstrike_levelplay.mm",
+		"res://native/levelplay/android/plugin/src/main/res/xml/network_security_config.xml",
 	]:
 		if not FileAccess.file_exists(path):
 			printerr("expected LevelPlay file missing: %s" % path)
@@ -64,8 +66,12 @@ func _check_files() -> int:
 		printerr("AdMob editor plugin still enabled in project.godot")
 		fails += 1
 	var export_cfg := FileAccess.get_file_as_string("res://export_presets.cfg")
-	if export_cfg.find("NSUserTrackingUsageDescription") >= 0:
-		printerr("export_presets still declares NSUserTrackingUsageDescription (no approved ATT flow)")
+	if export_cfg.find("NSUserTrackingUsageDescription") < 0:
+		printerr("export_presets missing NSUserTrackingUsageDescription (required for Meta ATT)")
+		fails += 1
+	var gdip := FileAccess.get_file_as_string("res://native/levelplay/ios/RiftstrikeLevelPlay.gdip.template")
+	if gdip.find("NSUserTrackingUsageDescription") < 0:
+		printerr("LevelPlay gdip missing NSUserTrackingUsageDescription")
 		fails += 1
 	var platform := FileAccess.get_file_as_string("res://scripts/services/platform_services.gd")
 	if platform.find("AdMobAdsService") >= 0:
@@ -79,6 +85,46 @@ func _check_files() -> int:
 	if results.find("show_rewarded") >= 0 or results.find("show_interstitial") >= 0:
 		printerr("results still calls ad show APIs directly")
 		fails += 1
+	var gdap := FileAccess.get_file_as_string("res://native/levelplay/android/dist/RiftstrikeLevelPlay.gdap")
+	if gdap.find("facebook-adapter:5.4.0") < 0:
+		printerr("gdap missing LevelPlay facebook-adapter 5.4.0")
+		fails += 1
+	if gdap.find("audience-network-sdk:6.22.0") < 0:
+		printerr("gdap missing Meta FAN SDK 6.22.0")
+		fails += 1
+	if gdap.find("unityads-adapter:5.5.0") < 0:
+		printerr("gdap missing LevelPlay unityads-adapter")
+		fails += 1
+	var nsc := FileAccess.get_file_as_string("res://native/levelplay/android/plugin/src/main/res/xml/network_security_config.xml")
+	if nsc.find("127.0.0.1") < 0:
+		printerr("network_security_config missing 127.0.0.1 cleartext for Meta FAN")
+		fails += 1
+	var ios_mm := FileAccess.get_file_as_string("res://native/levelplay/ios/riftstrike_levelplay.mm")
+	if ios_mm.find("ATTrackingManager") < 0 or ios_mm.find("setAdvertiserTrackingEnabled") < 0:
+		printerr("iOS bridge missing ATT / Meta advertiser tracking before init")
+		fails += 1
+	if ios_mm.find("initWithRequest") < 0:
+		printerr("iOS bridge missing LevelPlay init")
+		fails += 1
+	var android_kt := FileAccess.get_file_as_string("res://native/levelplay/android/plugin/src/main/java/com/lishistudio/riftwing/levelplay/RiftstrikeLevelPlayPlugin.kt")
+	if android_kt.find("import com.unity3d.ads.UnityAds") >= 0 or android_kt.find("import com.facebook.ads") >= 0:
+		printerr("Android bridge still loads Unity Ads or Meta FAN directly")
+		fails += 1
+	if android_kt.find("LevelPlay.init") < 0:
+		printerr("Android bridge missing LevelPlay.init")
+		fails += 1
+	var ads_config_src := FileAccess.get_file_as_string("res://scripts/services/ads_config.gd")
+	for meta_placement in [
+		"1001621046236414",
+		"1001621049569747",
+		"1001621052903080",
+		"1001621062903079",
+		"1001621069569745",
+		"1001621066236412",
+	]:
+		if ads_config_src.find(meta_placement) >= 0:
+			printerr("ads_config contains Meta placement id %s (must stay dashboard-only)" % meta_placement)
+			fails += 1
 	print("files_ok")
 	return fails
 
@@ -246,6 +292,19 @@ func _check_service_flow() -> int:
 	mock.drive_rewarded_closed()
 	if mock.rewarded_load_calls != rew_loads_before + 1:
 		printerr("rewarded not reloaded after close")
+		fails += 1
+	if _rewarded_earned_count != 1:
+		printerr("rewarded close granted a reward")
+		fails += 1
+
+	# Close without an earned callback must not grant.
+	mock.drive_rewarded_loaded()
+	if not svc.show_rewarded():
+		printerr("second show_rewarded should succeed after reload")
+		fails += 1
+	mock.drive_rewarded_closed()
+	if _rewarded_earned_count != 1:
+		printerr("close-without-earned granted a reward")
 		fails += 1
 
 	print("service_flow_ok")

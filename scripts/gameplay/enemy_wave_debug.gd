@@ -42,6 +42,8 @@ func _ready() -> void:
 	_director.pickup_data = pickup_data
 	_director.player = _player
 	_director.screen_size = Vector2(1080, 1920)
+	_adapt_wave_screen()
+	get_viewport().size_changed.connect(_adapt_wave_screen)
 
 	# Count kills as enemies die so we can confirm destruction + wave clear.
 	_director.enemy_killed.connect(_on_enemy_killed)
@@ -58,6 +60,18 @@ func _ready() -> void:
 
 	_director.start()
 	_overlay.draw.connect(_on_overlay_draw)
+
+
+func _adapt_wave_screen() -> void:
+	var vp := get_viewport().get_visible_rect().size
+	var screen := Vector2(maxi(1080, int(vp.x)), maxi(1920, int(vp.y)))
+	var bounds := PlayfieldBounds.from_screen(screen)
+	_director.screen_size = screen
+	_director.despawn_bounds = bounds
+	_enemy_bullet_pool.despawn_bounds = bounds
+	var player_pool := get_node_or_null("PlayerProjectilePool") as ProjectilePool
+	if player_pool != null:
+		player_pool.despawn_bounds = bounds
 
 
 func _unhandled_input(event: InputEvent) -> void:

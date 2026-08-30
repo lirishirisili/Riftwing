@@ -94,7 +94,9 @@ jobs:
           RUN_PROBES: ${{ inputs.run_probes }}
         run: bash .github/scripts/godot-ios-testflight-run.sh
 
+      # Soft-fail: missing Beta App Information must not block later steps.
       - name: Publish to TestFlight
+        continue-on-error: true
         env:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.APP_STORE_CONNECT_KEY_IDENTIFIER }}

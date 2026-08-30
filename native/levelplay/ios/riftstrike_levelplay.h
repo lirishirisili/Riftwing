@@ -6,7 +6,9 @@
 // Registered as the engine singleton "RiftstrikeLevelPlay". Wraps the current
 // LevelPlay iOS ad-unit APIs (IronSourceSDK 9.5.0.0): LevelPlay init +
 // LPMInterstitialAd / LPMRewardedAd / LPMBannerAdView. No legacy IronSource
-// init/load/show APIs are used. Signals mirror the Android plugin exactly so
+// init/load/show APIs are used. Unity Ads and Meta FAN participate only as
+// LevelPlay mediated networks. ATT + FBAdSettings.setAdvertiserTrackingEnabled
+// run before LevelPlay init. Signals mirror the Android plugin exactly so
 // the shared GDScript `LevelPlayAdsService` is platform-agnostic.
 
 #include "core/object/class_db.h"
