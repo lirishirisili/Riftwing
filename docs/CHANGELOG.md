@@ -1,5 +1,9 @@
 # Changelog
 
+## CI: unique iOS build numbers + optional Appetize
+- TestFlight upload no longer reuses `CFBundleVersion` 11. CI queries App Store Connect for the latest uploaded build, stamps `CURRENT_PROJECT_VERSION` on the Godot-exported Xcode project / `xcodebuild archive`, and fails the job if the archived plist does not match (Godot `GENERATE_INFOPLIST_FILE` ignores a static Info.plist patch).
+- GitHub Actions **iOS — Godot TestFlight** has an optional **Also build iOS Simulator zip for Appetize** checkbox (off by default), same pattern as PEND.
+
 ## 0.1.10 (build 11)
 - Production release: Meta Audience Network via LevelPlay mediation (Unity Ads + Meta FAN 6.22.0).
 - Android: FAN app id, network security for localhost, androidx.browser pin for Godot AGP 8.6.1.

@@ -137,6 +137,8 @@ Shared scripts under `.github/scripts/`; see [`.github/GITHUB_ACTIONS_SETUP.md`]
 - **Codemagic:** root `codemagic.yaml` → workflow **iOS — Godot TestFlight** (env group `basic` with the three ASC API vars)
 - **GitHub Actions:** manual `workflow_dispatch` → same pipeline scripts + `ios-publish-testflight.sh`
 - Requires: `APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_KEY_IDENTIFIER`, `APP_STORE_CONNECT_PRIVATE_KEY` (same team as GG/Salino if shared)
+- iOS `CFBundleVersion` is resolved at build time (`ios-resolve-versions.sh`) so it is always higher than the last upload (Apple already has `11`)
+- Optional GHA checkbox **Also build iOS Simulator zip for Appetize** (off by default)
 - Does **not** replace App Store Connect metadata, screenshots, or privacy labels
 - First-time scheme name: if archive fails on scheme, check CI log for `Discovered Xcode scheme:` and set `XCODE_SCHEME` in `.github/scripts/ci-env.sh` if needed
 

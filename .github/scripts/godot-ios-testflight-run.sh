@@ -36,6 +36,11 @@ else
   echo "=== Skipping probes (RUN_PROBES=false) ==="
 fi
 
+echo "=== Resolve iOS build & marketing version ==="
+# shellcheck source=ios-resolve-versions.sh
+source "$SCRIPT_DIR/ios-resolve-versions.sh"
+echo "Marketing version: $MARKETING_VERSION, build: $BUILD_NUMBER"
+
 echo "=== Godot first import (bounded) ==="
 set +e
 "$GODOT_BIN" --headless --path "$REPO_ROOT" -e &
@@ -47,6 +52,7 @@ set -e
 
 echo "=== Godot iOS export (Xcode project) ==="
 ci_patch_export_presets_team_id
+ci_patch_export_presets_ios_versions
 mkdir -p "$(dirname "$IOS_EXPORT_ABS")"
 "$GODOT_BIN" --headless --path "$REPO_ROOT" --export-release "$IOS_EXPORT_PRESET" "$IOS_EXPORT_ABS"
 
@@ -56,14 +62,14 @@ if [ ! -d "$XCODE_PROJECT_ABS" ]; then
   exit 1
 fi
 
-MARKETING_VERSION="$(ci_read_marketing_version)"
 echo "Marketing version: $MARKETING_VERSION, build: $BUILD_NUMBER"
+ci_patch_xcode_project_versions
 
 ci_patch_exported_plist_versions() {
   local plist
   plist=$(find "$(dirname "$XCODE_PROJECT_ABS")" -name 'Info.plist' -not -path '*/Pods/*' 2>/dev/null | head -1)
   if [ -z "$plist" ]; then
-    echo "::warning::No Info.plist found to patch versions; relying on export preset values."
+    echo "No static Info.plist to patch (Godot uses GENERATE_INFOPLIST_FILE); relying on CURRENT_PROJECT_VERSION."
     return 0
   fi
   echo "Patching $plist"
@@ -144,6 +150,8 @@ xcodebuild archive \
   -jobs "$(sysctl -n hw.ncpu)" \
   CODE_SIGN_STYLE=Manual \
   DEVELOPMENT_TEAM="$APPLE_DEVELOPMENT_TEAM" \
+  CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+  MARKETING_VERSION="$MARKETING_VERSION" \
   COMPILER_INDEX_STORE_ENABLE=NO \
   ONLY_ACTIVE_ARCH=NO \
   2>&1 | tee "$BUILD_DIR/xcodebuild-archive.log"
@@ -164,7 +172,13 @@ fi
 test -n "$APP_PATH"
 test -d "$APP_PATH"
 /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP_PATH/Info.plist"
-echo "Archived app: $APP_PATH"
+ARCHIVED_BUILD="$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP_PATH/Info.plist")"
+ARCHIVED_MARKETING="$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP_PATH/Info.plist")"
+echo "Archived app: $APP_PATH (CFBundleShortVersionString=$ARCHIVED_MARKETING CFBundleVersion=$ARCHIVED_BUILD)"
+if [ "$ARCHIVED_BUILD" != "$BUILD_NUMBER" ]; then
+  echo "::error::Archived CFBundleVersion is '$ARCHIVED_BUILD', expected '$BUILD_NUMBER'. Godot GENERATE_INFOPLIST_FILE ignored the Info.plist patch." >&2
+  exit 1
+fi
 
 echo "=== Export IPA ==="
 mkdir -p "$BUILD_DIR/ios/ipa"

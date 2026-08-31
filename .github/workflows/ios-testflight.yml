@@ -16,6 +16,11 @@ on:
         description: 'Submit to external TestFlight beta review (requires Beta App Information in App Store Connect)'
         type: boolean
         default: false
+      build_appetize:
+        description: 'Also build iOS Simulator zip for Appetize'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: ios-testflight-${{ github.ref }}
@@ -30,20 +35,23 @@ env:
   IOS_EXPORT_PATH: build/ios/riftwing.ipa
   XCODE_PROJECT: build/ios/riftwing.xcodeproj
   BUILD_DIR: ${{ github.workspace }}/build
-  BUILD_NUMBER_OFFSET: 1
+  SIMULATOR_DERIVED_DATA: ${{ github.workspace }}/build/DerivedDataSimulator
+  APPETIZE_STAGING_DIR: ${{ github.workspace }}/build/appetize-staging
+  APPETIZE_ZIP: ${{ github.workspace }}/build/riftwing-simulator-appetize.zip
+  # Apple already has CFBundleVersion 11; CI must stamp a strictly higher CURRENT_PROJECT_VERSION.
+  IOS_BUILD_NUMBER_FLOOR: "12"
+  IOS_BUILD_NUMBER_OFFSET: "0"
+  APP_STORE_APPLE_ID: "6792694067"
 
 jobs:
   build-and-publish:
     name: Build & publish TestFlight IPA
     runs-on: macos-26
-    timeout-minutes: 90
+    timeout-minutes: 120
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set build number
-        run: echo "BUILD_NUMBER=$(( ${{ github.run_number }} + ${{ env.BUILD_NUMBER_OFFSET }} ))" >> "$GITHUB_ENV"
 
       - name: Require App Store Connect secrets
         env:
@@ -92,6 +100,9 @@ jobs:
           APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.APP_STORE_CONNECT_KEY_IDENTIFIER }}
           APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
           RUN_PROBES: ${{ inputs.run_probes }}
+          APP_STORE_APPLE_ID: ${{ env.APP_STORE_APPLE_ID }}
+          IOS_BUILD_NUMBER_FLOOR: ${{ env.IOS_BUILD_NUMBER_FLOOR }}
+          IOS_BUILD_NUMBER_OFFSET: ${{ env.IOS_BUILD_NUMBER_OFFSET }}
         run: bash .github/scripts/godot-ios-testflight-run.sh
 
       # Soft-fail: missing Beta App Information must not block later steps.
@@ -113,3 +124,28 @@ jobs:
           path: build/ios/ipa/*.ipa
           if-no-files-found: warn
           retention-days: 3
+
+      # Optional — off by default (same toggle as PEND / Tohav). Reuses the Godot-exported Xcode project.
+      - name: Build iOS Simulator zip for Appetize
+        if: ${{ inputs.build_appetize }}
+        run: bash .github/scripts/ios-simulator-appetize.sh
+
+      # Upload .app so GitHub wraps once; Appetize needs riftwing.app at the zip root.
+      - name: Upload Appetize simulator .app
+        if: ${{ inputs.build_appetize }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-appetize-${{ github.run_number }}
+          path: ${{ env.APPETIZE_APP_PATH }}
+          retention-days: 7
+          compression-level: 9
+          if-no-files-found: error
+
+      - name: Upload Appetize flat zip
+        if: ${{ inputs.build_appetize }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: appetize-zip-${{ github.run_number }}
+          path: ${{ env.APPETIZE_ZIP }}
+          retention-days: 7
+          if-no-files-found: error

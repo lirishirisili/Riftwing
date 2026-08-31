@@ -29,11 +29,13 @@ Script: `.github/scripts/godot-ios-testflight-run.sh`
 1. Select Xcode (GHA: Xcode 26; Codemagic: image `xcode: latest`) + install Codemagic CLI (signing / ASC API)
 2. Install/cache Godot **4.7-stable** + iOS export templates
 3. Optional probes (`run_probes`, GHA only): `export_validation_probe.gd`, `ads_service_probe.gd`
-4. Godot headless import (bounded) → `--export-release` iOS preset → `build/ios/riftwing.xcodeproj`
-5. Patch marketing/build version from `manifests/product_identity.json` + `BUILD_NUMBER`
-6. Fetch signing files → `xcode-project use-profiles` → resolve SPM (if any)
-7. `xcodebuild archive` → export IPA
-8. **Publish:** Codemagic YAML `publishing` · GHA `ios-publish-testflight.sh`
+4. Resolve unique `CFBundleVersion` (`ios-resolve-versions.sh`, queries App Store Connect)
+5. Godot headless import (bounded) → patch iOS `application/version` → `--export-release` iOS preset → `build/ios/riftwing.xcodeproj`
+6. Stamp `CURRENT_PROJECT_VERSION` on the Xcode project (Godot `GENERATE_INFOPLIST_FILE` ignores a static Info.plist patch)
+7. Fetch signing files → `xcode-project use-profiles` → resolve SPM (if any)
+8. `xcodebuild archive` (passes `CURRENT_PROJECT_VERSION`) → verify archived plist → export IPA
+9. **Publish:** Codemagic YAML `publishing` · GHA `ios-publish-testflight.sh`
+10. Optional: Simulator zip for Appetize (`build_appetize`)
 
 On GitHub Actions, publish **does not** pass `--testflight` by default (same reason as Codemagic). After Beta App Information is filled, set repository variable `SUBMIT_TESTFLIGHT_BETA_REVIEW=true` or workflow input **Submit external TestFlight beta review** to `true`.
 
@@ -41,15 +43,29 @@ On GitHub Actions, publish **does not** pass `--testflight` by default (same rea
 
 - Config probes (`run_probes` input, default `false`)
 - Uploading IPA to GitHub Artifacts (`upload_ipa_artifact` — TestFlight does not need this)
+- iOS Simulator zip for Appetize (`build_appetize` input, default `false`)
 
 **Signing:** purge Distribution certs (Apple quota) → `fetch-signing-files --create` → `xcode-project use-profiles`. Same App Store Connect API key pattern as Garden Guardians (GG). Do **not** use Codemagic `ios_signing` — profiles are created at build time via the API.
 
-**Build number:**
+**Build number (`CFBundleVersion`):** CI must stamp a value strictly higher than any previously uploaded build. Godot 4 generates Info.plist from `CURRENT_PROJECT_VERSION`, so patching Info.plist alone does not stick.
 
 | Host | Source |
 |------|--------|
-| Codemagic | `$PROJECT_BUILD_NUMBER` → `BUILD_NUMBER` |
-| GitHub Actions | `github.run_number + 1` (`BUILD_NUMBER_OFFSET`) |
+| Both | `ios-resolve-versions.sh` → `max(TestFlight latest + 1, IOS_BUILD_NUMBER_FLOOR, run number)` |
+| Codemagic | `$PROJECT_BUILD_NUMBER` is a candidate, then raised against Apple + floor |
+| GitHub Actions | `github.run_number` is a candidate, then raised against Apple + floor |
+
+`APP_STORE_APPLE_ID` is `6792694067` (Riftstrike). Floor is `12` while Apple already has build `11`.
+
+### Optional Appetize (same iOS run)
+
+On **iOS — Godot TestFlight → Run workflow**, leave **Also build iOS Simulator zip for Appetize** unchecked (default). Check it only when you need [Appetize.io](https://appetize.io/).
+
+Then download either:
+1. **`ios-simulator-appetize-<run>`** — preferred; unzip once so `riftwing.app` is at the root, upload that folder/zip to Appetize
+2. **`appetize-zip-<run>`** — contains `riftwing-simulator-appetize.zip`; upload **that inner zip** (not the GitHub wrapper) to Appetize
+
+No extra secrets required for Appetize packaging.
 
 ## Secrets (same values on both hosts)
 
@@ -89,8 +105,8 @@ Copy from your GG / Salino project if you use the same Apple team.
 1. Push this repo to GitHub with `.github/` present.
 2. Add the three App Store Connect secrets (see above).
 3. Ensure **App Store Connect** has an app record for `com.lishistudio.riftwing`.
-4. Bump version in `manifests/product_identity.json` and sync `export_presets.cfg` before release builds.
-5. **Actions** → **iOS — Godot TestFlight** → **Run workflow**.
+4. Marketing version still comes from `manifests/product_identity.json`; CI auto-increments `CFBundleVersion` above Apple's last upload.
+5. **Actions** → **iOS — Godot TestFlight** → **Run workflow**. Check **Also build iOS Simulator zip for Appetize** only when you need Appetize.
 6. On first failure with scheme errors: check the log for `Discovered Xcode scheme:` — if wrong, set `XCODE_SCHEME` in `.github/scripts/ci-env.sh` to match `xcodebuild -list`.
 
 ## Privacy (App Store Connect)

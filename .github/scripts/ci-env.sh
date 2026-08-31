@@ -113,6 +113,59 @@ print(d.get('version_name', '0.1.0'))
 " "$PRODUCT_IDENTITY"
 }
 
+ci_read_version_code() {
+  python3 -c "
+import json, sys
+with open(sys.argv[1]) as f:
+    d = json.load(f)
+print(int(d.get('version_code', 1)))
+" "$PRODUCT_IDENTITY"
+}
+
+# Godot iOS export copies application/version into CURRENT_PROJECT_VERSION. Patch the
+# working copy only (never commit) so the generated Xcode project matches CI BUILD_NUMBER.
+ci_patch_export_presets_ios_versions() {
+  local cfg="$REPO_ROOT/export_presets.cfg"
+  local ver="${BUILD_NUMBER:?BUILD_NUMBER is required to patch iOS application/version}"
+  local marketing="${MARKETING_VERSION:-$(ci_read_marketing_version)}"
+  python3 -c "
+from pathlib import Path
+cfg = Path('$cfg')
+text = cfg.read_text()
+import re
+text, n_ver = re.subn(r'application/version=\"[^\"]*\"', 'application/version=\"$ver\"', text, count=1)
+text, n_name = re.subn(r'application/short_version=\"[^\"]*\"', 'application/short_version=\"$marketing\"', text, count=1)
+if n_ver != 1:
+    raise SystemExit(f'expected to patch application/version once, patched {n_ver}')
+if n_name != 1:
+    raise SystemExit(f'expected to patch application/short_version once, patched {n_name}')
+cfg.write_text(text)
+print(f'Patched export_presets.cfg iOS application/version=$ver short_version=$marketing')
+"
+}
+
+# Godot 4 iOS projects generate Info.plist from build settings (GENERATE_INFOPLIST_FILE).
+# Patching Info.plist before archive does not stick — CURRENT_PROJECT_VERSION must change.
+ci_patch_xcode_project_versions() {
+  local pbx="$XCODE_PROJECT_ABS/project.pbxproj"
+  local ver="${BUILD_NUMBER:?}"
+  local marketing="${MARKETING_VERSION:-$(ci_read_marketing_version)}"
+  if [ ! -f "$pbx" ]; then
+    echo "::warning::No project.pbxproj at $pbx; relying on xcodebuild CURRENT_PROJECT_VERSION."
+    return 0
+  fi
+  python3 -c "
+from pathlib import Path
+import re
+pbx = Path('$pbx')
+text = pbx.read_text()
+text, n_ver = re.subn(r'CURRENT_PROJECT_VERSION = [^;]+;', 'CURRENT_PROJECT_VERSION = $ver;', text)
+text, n_name = re.subn(r'MARKETING_VERSION = [^;]+;', 'MARKETING_VERSION = $marketing;', text)
+pbx.write_text(text)
+print(f'Patched pbxproj CURRENT_PROJECT_VERSION ($n_ver) MARKETING_VERSION ($n_name) -> $ver / $marketing')
+"
+}
+
 ci_discover_xcode_scheme() {
   if [ ! -d "$XCODE_PROJECT_ABS" ]; then
     echo "ERROR: Xcode project not found: $XCODE_PROJECT_ABS" >&2
@@ -129,6 +182,9 @@ if schemes:
     if [ -n "$discovered" ]; then
       export XCODE_SCHEME="$discovered"
       echo "Discovered Xcode scheme: $XCODE_SCHEME"
+      if [ -n "${GITHUB_ENV:-}" ]; then
+        echo "XCODE_SCHEME=$XCODE_SCHEME" >> "$GITHUB_ENV"
+      fi
       return 0
     fi
   fi
@@ -138,5 +194,8 @@ if schemes:
     echo "Discovered Xcode scheme: $XCODE_SCHEME"
   else
     echo "Using default Xcode scheme: $XCODE_SCHEME"
+  fi
+  if [ -n "${GITHUB_ENV:-}" ]; then
+    echo "XCODE_SCHEME=$XCODE_SCHEME" >> "$GITHUB_ENV"
   fi
 }

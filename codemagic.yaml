@@ -17,6 +17,8 @@ workflows:
         XCODE_PROJECT: build/ios/riftwing.xcodeproj
         BUILD_DIR: $CM_BUILD_DIR
         BUILD_NUMBER: $PROJECT_BUILD_NUMBER
+        APP_STORE_APPLE_ID: "6792694067"
+        IOS_BUILD_NUMBER_FLOOR: "12"
         # Do NOT use `ios_signing` here — profiles are created at build time via
         # App Store Connect API (see .github/scripts/godot-ios-testflight-run.sh).
     scripts:
