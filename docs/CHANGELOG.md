@@ -5,6 +5,7 @@
 - GitHub Actions **iOS — Godot TestFlight** has an optional **Also build iOS Simulator zip for Appetize** checkbox (off by default), same pattern as PEND.
 - Fix CI: `ci_patch_xcode_project_versions` no longer references `$n_ver` in a bash-expanded Python print (unbound variable under `set -u`).
 - Fix CI: Appetize simulator build forces `ARCHS=x86_64` (official Godot templates lack arm64-simulator `libgodot`, which caused undefined `_main` on Apple Silicon runners). Appetize steps soft-fail so TestFlight success stays green.
+- Added **iOS — Godot Appetize** workflow (`.github/workflows/ios-appetize.yml`) to build only the Simulator zip — no ASC secrets, signing, or TestFlight.
 
 ## 0.1.10 (build 11)
 - Production release: Meta Audience Network via LevelPlay mediation (Unity Ads + Meta FAN 6.22.0).

@@ -54,7 +54,8 @@ Windows cannot produce a signed iOS build locally. Options:
 1. Configure secrets per [`.github/GITHUB_ACTIONS_SETUP.md`](../.github/GITHUB_ACTIONS_SETUP.md).
 2. Ensure App Store Connect has an app for `com.lishistudio.riftwing`.
 3. Bump `manifests/product_identity.json` + sync `export_presets.cfg` versions.
-4. **Actions → iOS — Godot TestFlight → Run workflow.** Optional: check **Also build iOS Simulator zip for Appetize** when you need an Appetize.io simulator zip.
+4. **Actions → iOS — Godot TestFlight → Run workflow.** Optional: check **Also build iOS Simulator zip for Appetize** when you need an Appetize.io simulator zip in the same job.
+5. **Appetize only:** **Actions → iOS — Godot Appetize → Run workflow** (no TestFlight / no App Store Connect secrets).
 
 Signing uses `ios/exportOptions.plist` (`teamID` + bundle id) and Codemagic CLI on the runner — **not** `application/app_store_team_id` in committed `export_presets.cfg`.
 

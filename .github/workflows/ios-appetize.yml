@@ -1,0 +1,77 @@
+# iOS — Godot Appetize only (no TestFlight / no signing)
+name: iOS — Godot Appetize
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_probes:
+        description: 'Run export_validation + ads_service probes before export (slower)'
+        type: boolean
+        default: false
+
+concurrency:
+  group: ios-appetize-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TOOLCHAINS: com.apple.dt.toolchain.XcodeDefault
+  BUNDLE_ID: com.lishistudio.riftwing
+  APPLE_DEVELOPMENT_TEAM: 7BLH4NFZDD
+  GODOT_VERSION: 4.7-stable
+  IOS_EXPORT_PRESET: iOS
+  IOS_EXPORT_PATH: build/ios/riftwing.ipa
+  XCODE_PROJECT: build/ios/riftwing.xcodeproj
+  BUILD_DIR: ${{ github.workspace }}/build
+  SIMULATOR_DERIVED_DATA: ${{ github.workspace }}/build/DerivedDataSimulator
+  APPETIZE_STAGING_DIR: ${{ github.workspace }}/build/appetize-staging
+  APPETIZE_ZIP: ${{ github.workspace }}/build/riftwing-simulator-appetize.zip
+
+jobs:
+  build-appetize:
+    name: Build Simulator zip for Appetize
+    runs-on: macos-26
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Godot + export templates
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/.ci-godot
+            ~/Library/Application Support/Godot/export_templates/4.7.stable
+          key: godot-${{ env.GODOT_VERSION }}-templates-v1
+          restore-keys: |
+            godot-${{ env.GODOT_VERSION }}-
+
+      - name: Cache Simulator DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.SIMULATOR_DERIVED_DATA }}
+          key: derived-sim-riftwing-${{ runner.os }}-${{ hashFiles('export_presets.cfg', 'project.godot') }}
+          restore-keys: |
+            derived-sim-riftwing-${{ runner.os }}-
+
+      - name: Export Godot iOS + package Appetize
+        env:
+          RUN_PROBES: ${{ inputs.run_probes }}
+        run: bash .github/scripts/godot-ios-appetize-run.sh
+
+      - name: Upload Appetize simulator .app
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-appetize-${{ github.run_number }}
+          path: ${{ env.APPETIZE_APP_PATH }}
+          retention-days: 7
+          compression-level: 9
+          if-no-files-found: error
+
+      - name: Upload Appetize flat zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: appetize-zip-${{ github.run_number }}
+          path: ${{ env.APPETIZE_ZIP }}
+          retention-days: 7
+          if-no-files-found: error

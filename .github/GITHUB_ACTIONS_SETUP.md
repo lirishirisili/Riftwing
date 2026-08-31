@@ -8,6 +8,7 @@ Two hosts run the **same** Godot → sign → IPA pipeline (shared `.github/scri
 |------|--------|---------|--------|
 | **Codemagic** | `codemagic.yaml` → `ios-testflight` | Start build in Codemagic UI | IPA → App Store Connect |
 | **GitHub Actions** | `.github/workflows/ios-testflight.yml` | manual (`workflow_dispatch`) | IPA → App Store Connect |
+| **GitHub Actions** | `.github/workflows/ios-appetize.yml` | manual (`workflow_dispatch`) | Simulator `.app` / zip for Appetize only (no ASC secrets) |
 
 ## Codemagic setup
 
@@ -59,7 +60,15 @@ On GitHub Actions, publish **does not** pass `--testflight` by default (same rea
 
 ### Optional Appetize (same iOS run)
 
-On **iOS — Godot TestFlight → Run workflow**, leave **Also build iOS Simulator zip for Appetize** unchecked (default). Check it only when you need [Appetize.io](https://appetize.io/).
+On **iOS — Godot TestFlight → Run workflow**, leave **Also build iOS Simulator zip for Appetize** unchecked (default). Check it only when you need [Appetize.io](https://appetize.io/) *in the same TestFlight job*.
+
+### Appetize-only workflow (preferred when you only need the simulator zip)
+
+**Actions → iOS — Godot Appetize → Run workflow**
+
+- Godot export → unsigned Simulator `.app` → artifacts
+- **No** App Store Connect secrets, signing, archive, or TestFlight upload
+- Script: `.github/scripts/godot-ios-appetize-run.sh`
 
 Then download either:
 1. **`ios-simulator-appetize-<run>`** — preferred; unzip once so `riftwing.app` is at the root, upload that folder/zip to Appetize
@@ -67,7 +76,7 @@ Then download either:
 
 No extra secrets required for Appetize packaging.
 
-**Godot note:** Official iOS export templates only ship an **x86_64** simulator `libgodot` (no arm64-simulator slice). CI therefore links the Appetize `.app` as `ARCHS=x86_64`. Appetize packaging is soft-fail — a Simulator build problem does not fail the TestFlight upload.
+**Godot note:** Official iOS export templates only ship an **x86_64** simulator `libgodot` (no arm64-simulator slice). CI therefore links the Appetize `.app` as `ARCHS=x86_64`. On the TestFlight workflow, Appetize packaging is soft-fail so a Simulator build problem does not fail the TestFlight upload.
 
 ## Secrets (same values on both hosts)
 
