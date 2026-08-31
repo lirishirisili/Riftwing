@@ -162,7 +162,7 @@ text = pbx.read_text()
 text, n_ver = re.subn(r'CURRENT_PROJECT_VERSION = [^;]+;', 'CURRENT_PROJECT_VERSION = $ver;', text)
 text, n_name = re.subn(r'MARKETING_VERSION = [^;]+;', 'MARKETING_VERSION = $marketing;', text)
 pbx.write_text(text)
-print(f'Patched pbxproj CURRENT_PROJECT_VERSION ($n_ver) MARKETING_VERSION ($n_name) -> $ver / $marketing')
+print('Patched pbxproj CURRENT_PROJECT_VERSION (%d) MARKETING_VERSION (%d) -> %s / %s' % (n_ver, n_name, '$ver', '$marketing'))
 "
 }
 
