@@ -31,6 +31,9 @@ else
   echo "=== Skipping probes (RUN_PROBES=false) ==="
 fi
 
+echo "=== Build / restore iOS LevelPlay Godot plugin ==="
+bash "$SCRIPT_DIR/build-ios-levelplay-plugin.sh"
+
 # Appetize does not upload to Apple — use marketing version + run number (no ASC query).
 export MARKETING_VERSION="${MARKETING_VERSION:-$(ci_read_marketing_version)}"
 export IOS_MARKETING_VERSION="$MARKETING_VERSION"
@@ -70,6 +73,11 @@ if [ ! -d "$XCODE_PROJECT_ABS" ]; then
 fi
 
 ci_patch_xcode_project_versions
+ci_discover_xcode_scheme
+
+echo "=== LevelPlay CocoaPods (IronSource + adapters) ==="
+# shellcheck source=ios-levelplay-pods.sh
+source "$SCRIPT_DIR/ios-levelplay-pods.sh"
 ci_discover_xcode_scheme
 
 echo "=== Package Simulator app for Appetize ==="

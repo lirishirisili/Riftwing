@@ -47,7 +47,7 @@ jobs:
   build-and-publish:
     name: Build & publish TestFlight IPA
     runs-on: macos-26
-    timeout-minutes: 120
+    timeout-minutes: 180
 
     steps:
       - name: Checkout
@@ -77,6 +77,25 @@ jobs:
           key: godot-${{ env.GODOT_VERSION }}-templates-v1
           restore-keys: |
             godot-${{ env.GODOT_VERSION }}-
+
+      - name: Cache Godot source headers (LevelPlay iOS plugin)
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.ci-godot-src
+          key: godot-src-ios-headers-${{ env.GODOT_VERSION }}-v1
+
+      - name: Cache LevelPlay iOS plugin build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/ios/plugins/RiftstrikeLevelPlay.gdip
+            ${{ github.workspace }}/ios/plugins/riftstrike_levelplay.release.xcframework
+            ${{ github.workspace }}/ios/plugins/riftstrike_levelplay.debug.xcframework
+            ${{ github.workspace }}/build/levelplay-ios-pods
+            ${{ github.workspace }}/build/levelplay-ios-plugin
+          key: levelplay-ios-plugin-${{ hashFiles('native/levelplay/ios/**') }}-${{ env.GODOT_VERSION }}-v1
+          restore-keys: |
+            levelplay-ios-plugin-
 
       - name: Cache Xcode DerivedData
         uses: actions/cache@v4

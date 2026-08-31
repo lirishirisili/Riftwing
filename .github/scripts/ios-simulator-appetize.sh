@@ -28,9 +28,10 @@ APPETIZE_STAGING_DIR="${APPETIZE_STAGING_DIR:-$BUILD_DIR/appetize-staging}"
 APPETIZE_ZIP="${APPETIZE_ZIP:-$BUILD_DIR/${XCODE_SCHEME}-simulator-appetize.zip}"
 
 echo "=== Build iOS Simulator app for Appetize (x86_64 — Godot template arch) ==="
-# Do not require a runnable local simulator; we only need a linked .app for Appetize.
+# Prefer CocoaPods workspace when LevelPlay pods were installed.
+# shellcheck disable=SC2046
 xcodebuild build \
-  -project "$XCODE_PROJECT_ABS" \
+  $(ci_xcode_container_args) \
   -scheme "$XCODE_SCHEME" \
   -configuration Release \
   -sdk iphonesimulator \

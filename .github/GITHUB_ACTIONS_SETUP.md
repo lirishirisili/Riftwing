@@ -31,12 +31,13 @@ Script: `.github/scripts/godot-ios-testflight-run.sh`
 2. Install/cache Godot **4.7-stable** + iOS export templates
 3. Optional probes (`run_probes`, GHA only): `export_validation_probe.gd`, `ads_service_probe.gd`
 4. Resolve unique `CFBundleVersion` (`ios-resolve-versions.sh`, queries App Store Connect)
-5. Godot headless import (bounded) → patch iOS `application/version` → `--export-release` iOS preset → `build/ios/riftwing.xcodeproj`
-6. Stamp `CURRENT_PROJECT_VERSION` on the Xcode project (Godot `GENERATE_INFOPLIST_FILE` ignores a static Info.plist patch)
-7. Fetch signing files → `xcode-project use-profiles` → resolve SPM (if any)
-8. `xcodebuild archive` (passes `CURRENT_PROJECT_VERSION`) → verify archived plist → export IPA
-9. **Publish:** Codemagic YAML `publishing` · GHA `ios-publish-testflight.sh`
-10. Optional: Simulator zip for Appetize (`build_appetize`)
+5. Build iOS LevelPlay plugin (`.github/scripts/build-ios-levelplay-plugin.sh`) → `ios/plugins/`
+6. Godot headless import (bounded) → patch iOS `application/version` → `--export-release` iOS preset → `build/ios/riftwing.xcodeproj`
+7. Stamp `CURRENT_PROJECT_VERSION` on the Xcode project; CocoaPods LevelPlay (`ios-levelplay-pods.sh`)
+8. Fetch signing files → `xcode-project use-profiles` → resolve SPM/Pods
+9. `xcodebuild archive` (workspace when pods present) → verify archived plist → export IPA
+10. **Publish:** Codemagic YAML `publishing` · GHA `ios-publish-testflight.sh`
+11. Optional: Simulator zip for Appetize (`build_appetize`)
 
 On GitHub Actions, publish **does not** pass `--testflight` by default (same reason as Codemagic). After Beta App Information is filled, set repository variable `SUBMIT_TESTFLIGHT_BETA_REVIEW=true` or workflow input **Submit external TestFlight beta review** to `true`.
 

@@ -32,8 +32,11 @@ export ASC_KEY_FILE="${ASC_KEY_FILE:-/tmp/AuthKey.p8}"
 
 export CI_VENV="${CI_VENV:-$REPO_ROOT/.ci-venv}"
 export CI_GODOT_DIR="${CI_GODOT_DIR:-$REPO_ROOT/.ci-godot}"
+export CI_GODOT_SRC="${CI_GODOT_SRC:-$REPO_ROOT/.ci-godot-src}"
 export GODOT_BIN="${GODOT_BIN:-$CI_GODOT_DIR/Godot.app/Contents/MacOS/Godot}"
 export PATH="$CI_VENV/bin:$PATH"
+# Set by ios-levelplay-pods.sh after Godot export (optional).
+export XCODE_WORKSPACE_ABS="${XCODE_WORKSPACE_ABS:-}"
 
 ci_abs_path() {
   local p="$1"
@@ -167,6 +170,27 @@ print('Patched pbxproj CURRENT_PROJECT_VERSION (%d) MARKETING_VERSION (%d) -> %s
 }
 
 ci_discover_xcode_scheme() {
+  if [ -n "${XCODE_WORKSPACE_ABS:-}" ] && [ -d "$XCODE_WORKSPACE_ABS" ]; then
+    local discovered=""
+    discovered=$(xcodebuild -list -workspace "$XCODE_WORKSPACE_ABS" -json 2>/dev/null | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+schemes = data.get('workspace', {}).get('schemes', [])
+# Prefer app scheme over Pods-* 
+for s in schemes:
+    if not str(s).startswith('Pods'):
+        print(s)
+        break
+" 2>/dev/null || true)
+    if [ -n "$discovered" ]; then
+      export XCODE_SCHEME="$discovered"
+      echo "Discovered Xcode scheme (workspace): $XCODE_SCHEME"
+      if [ -n "${GITHUB_ENV:-}" ]; then
+        echo "XCODE_SCHEME=$XCODE_SCHEME" >> "$GITHUB_ENV"
+      fi
+      return 0
+    fi
+  fi
   if [ ! -d "$XCODE_PROJECT_ABS" ]; then
     echo "ERROR: Xcode project not found: $XCODE_PROJECT_ABS" >&2
     exit 1
@@ -197,5 +221,14 @@ if schemes:
   fi
   if [ -n "${GITHUB_ENV:-}" ]; then
     echo "XCODE_SCHEME=$XCODE_SCHEME" >> "$GITHUB_ENV"
+  fi
+}
+
+# Args for xcodebuild that prefer CocoaPods workspace when present.
+ci_xcode_container_args() {
+  if [ -n "${XCODE_WORKSPACE_ABS:-}" ] && [ -d "$XCODE_WORKSPACE_ABS" ]; then
+    echo "-workspace" "$XCODE_WORKSPACE_ABS"
+  else
+    echo "-project" "$XCODE_PROJECT_ABS"
   fi
 }

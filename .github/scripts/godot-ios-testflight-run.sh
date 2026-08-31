@@ -36,6 +36,9 @@ else
   echo "=== Skipping probes (RUN_PROBES=false) ==="
 fi
 
+echo "=== Build / restore iOS LevelPlay Godot plugin ==="
+bash "$SCRIPT_DIR/build-ios-levelplay-plugin.sh"
+
 echo "=== Resolve iOS build & marketing version ==="
 # shellcheck source=ios-resolve-versions.sh
 source "$SCRIPT_DIR/ios-resolve-versions.sh"
@@ -80,6 +83,12 @@ ci_patch_exported_plist_versions() {
 }
 
 ci_patch_exported_plist_versions
+
+ci_discover_xcode_scheme
+
+echo "=== LevelPlay CocoaPods (IronSource + adapters) ==="
+# shellcheck source=ios-levelplay-pods.sh
+source "$SCRIPT_DIR/ios-levelplay-pods.sh"
 
 fetch_signing_files() {
   keychain initialize
@@ -128,11 +137,10 @@ if ! grep -q 'PROVISIONING_PROFILE' "$XCODE_PROJECT_ABS/project.pbxproj"; then
   exit 1
 fi
 
-ci_discover_xcode_scheme
-
-echo "=== Resolve Swift Package dependencies (if any) ==="
+echo "=== Resolve Swift Package / CocoaPods dependencies ==="
+# shellcheck disable=SC2046
 xcodebuild -resolvePackageDependencies \
-  -project "$XCODE_PROJECT_ABS" \
+  $(ci_xcode_container_args) \
   -scheme "$XCODE_SCHEME" \
   -derivedDataPath "$BUILD_DIR/DerivedData" || true
 
@@ -140,8 +148,9 @@ echo "=== Archive ==="
 DERIVED_DATA_PATH="${DERIVED_DATA_PATH:-$BUILD_DIR/DerivedData}"
 mkdir -p "$DERIVED_DATA_PATH"
 set +e
+# shellcheck disable=SC2046
 xcodebuild archive \
-  -project "$XCODE_PROJECT_ABS" \
+  $(ci_xcode_container_args) \
   -scheme "$XCODE_SCHEME" \
   -configuration Release \
   -destination 'generic/platform=iOS' \

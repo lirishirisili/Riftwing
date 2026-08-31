@@ -5,6 +5,9 @@
 # Local export outputs / secrets (never commit)
 build/
 /android/
+.ci-godot/
+.ci-godot-src/
+.ci-venv/
 native/levelplay/android/.gradle/
 native/levelplay/android/.kotlin/
 native/levelplay/android/plugin/build/
@@ -15,6 +18,10 @@ native/levelplay/android/plugin/build/
 *.xcframework
 !ios/plugins/
 !ios/plugins/**
+# CI-built LevelPlay plugin (rebuilt on GitHub Actions; do not commit)
+ios/plugins/RiftstrikeLevelPlay.gdip
+ios/plugins/riftstrike_levelplay.release.xcframework/
+ios/plugins/riftstrike_levelplay.debug.xcframework/
 *.keystore
 *.jks
 .godot/export_credentials.cfg
