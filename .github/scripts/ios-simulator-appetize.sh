@@ -2,6 +2,10 @@
 # Build unsigned iOS Simulator .app from the Godot-exported Xcode project and
 # package it for Appetize.io (PEND / Tohav pattern).
 # Upload the .app (or the flat zip) — Appetize needs Something.app at the zip root.
+#
+# Official Godot iOS export templates ship simulator libgodot as x86_64 only
+# (OSXCross cannot build arm64-simulator). Apple Silicon runners default to
+# arm64 and then fail with undefined _main — force ARCHS=x86_64 for linking.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -23,7 +27,8 @@ SIMULATOR_DERIVED_DATA="${SIMULATOR_DERIVED_DATA:-$BUILD_DIR/DerivedDataSimulato
 APPETIZE_STAGING_DIR="${APPETIZE_STAGING_DIR:-$BUILD_DIR/appetize-staging}"
 APPETIZE_ZIP="${APPETIZE_ZIP:-$BUILD_DIR/${XCODE_SCHEME}-simulator-appetize.zip}"
 
-echo "=== Build iOS Simulator app for Appetize ==="
+echo "=== Build iOS Simulator app for Appetize (x86_64 — Godot template arch) ==="
+# Do not require a runnable local simulator; we only need a linked .app for Appetize.
 xcodebuild build \
   -project "$XCODE_PROJECT_ABS" \
   -scheme "$XCODE_SCHEME" \
@@ -34,7 +39,9 @@ xcodebuild build \
   CODE_SIGNING_ALLOWED=NO \
   CODE_SIGNING_REQUIRED=NO \
   CODE_SIGN_IDENTITY="" \
-  ONLY_ACTIVE_ARCH=NO \
+  ARCHS=x86_64 \
+  ONLY_ACTIVE_ARCH=YES \
+  EXCLUDED_ARCHS=arm64 \
   COMPILER_INDEX_STORE_ENABLE=NO
 
 APP_PATH=$(
@@ -56,6 +63,7 @@ fi
 
 APP_NAME=$(basename "$APP_PATH")
 echo "Simulator app: $APP_PATH"
+file "$APP_PATH/$APP_NAME" 2>/dev/null || file "$APP_PATH"/* 2>/dev/null | head -5 || true
 
 rm -rf "$APPETIZE_STAGING_DIR"
 mkdir -p "$APPETIZE_STAGING_DIR"

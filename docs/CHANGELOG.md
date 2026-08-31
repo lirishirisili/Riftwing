@@ -4,6 +4,7 @@
 - TestFlight upload no longer reuses `CFBundleVersion` 11. CI queries App Store Connect for the latest uploaded build, stamps `CURRENT_PROJECT_VERSION` on the Godot-exported Xcode project / `xcodebuild archive`, and fails the job if the archived plist does not match (Godot `GENERATE_INFOPLIST_FILE` ignores a static Info.plist patch).
 - GitHub Actions **iOS — Godot TestFlight** has an optional **Also build iOS Simulator zip for Appetize** checkbox (off by default), same pattern as PEND.
 - Fix CI: `ci_patch_xcode_project_versions` no longer references `$n_ver` in a bash-expanded Python print (unbound variable under `set -u`).
+- Fix CI: Appetize simulator build forces `ARCHS=x86_64` (official Godot templates lack arm64-simulator `libgodot`, which caused undefined `_main` on Apple Silicon runners). Appetize steps soft-fail so TestFlight success stays green.
 
 ## 0.1.10 (build 11)
 - Production release: Meta Audience Network via LevelPlay mediation (Unity Ads + Meta FAN 6.22.0).

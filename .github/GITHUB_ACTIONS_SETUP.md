@@ -67,6 +67,8 @@ Then download either:
 
 No extra secrets required for Appetize packaging.
 
+**Godot note:** Official iOS export templates only ship an **x86_64** simulator `libgodot` (no arm64-simulator slice). CI therefore links the Appetize `.app` as `ARCHS=x86_64`. Appetize packaging is soft-fail — a Simulator build problem does not fail the TestFlight upload.
+
 ## Secrets (same values on both hosts)
 
 | Variable | GitHub | Codemagic |

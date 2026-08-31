@@ -125,14 +125,17 @@ jobs:
           if-no-files-found: warn
           retention-days: 3
 
-      # Optional — off by default (same toggle as PEND / Tohav). Reuses the Godot-exported Xcode project.
+      # Optional — off by default (same toggle as PEND / Tohav). Soft-fail so a
+      # Simulator/Appetize packaging issue never marks a successful TestFlight upload red.
       - name: Build iOS Simulator zip for Appetize
         if: ${{ inputs.build_appetize }}
+        continue-on-error: true
+        id: appetize_build
         run: bash .github/scripts/ios-simulator-appetize.sh
 
       # Upload .app so GitHub wraps once; Appetize needs riftwing.app at the zip root.
       - name: Upload Appetize simulator .app
-        if: ${{ inputs.build_appetize }}
+        if: ${{ inputs.build_appetize && steps.appetize_build.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: ios-simulator-appetize-${{ github.run_number }}
@@ -142,7 +145,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload Appetize flat zip
-        if: ${{ inputs.build_appetize }}
+        if: ${{ inputs.build_appetize && steps.appetize_build.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: appetize-zip-${{ github.run_number }}
