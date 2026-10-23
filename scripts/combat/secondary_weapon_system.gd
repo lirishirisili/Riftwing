@@ -36,6 +36,11 @@ var _catalog_by_id: Dictionary = {}
 ## id -> {data, timer, damage_mult, rate_mult, bonus_count, proj}
 var _active: Dictionary = {}
 var _enabled: bool = false
+## Run-wide modifiers from "all"-targeted upgrades. Kept separately so weapons
+## acquired AFTER the pick still receive the bonus.
+var _all_damage_mult: float = 1.0
+var _all_rate_mult: float = 1.0
+var _all_count_add: int = 0
 
 
 func _ready() -> void:
@@ -114,17 +119,28 @@ func _register(id: String) -> void:
 # --- Upgrade hooks (called by UpgradeManager) --------------------------------
 
 func add_damage_mult(target: String, mult: float) -> void:
+	if target == "all":
+		_all_damage_mult *= mult
+		for id in _active:
+			_rebuild_projectile(_active[id])
+		return
 	for entry in _entries_for(target):
 		entry["damage_mult"] = float(entry["damage_mult"]) * mult
 		_rebuild_projectile(entry)
 
 
 func add_rate_mult(target: String, mult: float) -> void:
+	if target == "all":
+		_all_rate_mult *= mult
+		return
 	for entry in _entries_for(target):
 		entry["rate_mult"] = float(entry["rate_mult"]) * mult
 
 
 func add_count(target: String, amount: int) -> void:
+	if target == "all":
+		_all_count_add += amount
+		return
 	for entry in _entries_for(target):
 		entry["bonus_count"] = int(entry["bonus_count"]) + amount
 
@@ -134,7 +150,7 @@ func shots_per_volley(id: String) -> int:
 	if not _active.has(id):
 		return 0
 	var e: Dictionary = _active[id]
-	return (e["data"] as SecondaryWeaponData).projectiles_per_shot + int(e["bonus_count"])
+	return (e["data"] as SecondaryWeaponData).projectiles_per_shot + int(e["bonus_count"]) + _all_count_add
 
 
 ## Effective damage of one bolt for a weapon (probe / debug).
@@ -162,19 +178,19 @@ func _rebuild_projectile(entry: Dictionary) -> void:
 		entry["proj"] = null
 		return
 	var proj := data.projectile.duplicate() as ProjectileData
-	proj.damage = data.damage * float(entry["damage_mult"]) * _global_damage_mult
+	proj.damage = data.damage * float(entry["damage_mult"]) * _all_damage_mult * _global_damage_mult
 	entry["proj"] = proj
 
 
 func _process(delta: float) -> void:
 	if not _enabled or pool == null or player == null:
 		return
-	for id in _active.keys():
+	for id in _active:
 		var entry: Dictionary = _active[id]
 		var data := entry["data"] as SecondaryWeaponData
 		if data.is_ability:
 			continue
-		var interval := maxf(_MIN_INTERVAL, data.interval / maxf(0.01, float(entry["rate_mult"])))
+		var interval := maxf(_MIN_INTERVAL, data.interval / maxf(0.01, float(entry["rate_mult"]) * _all_rate_mult))
 		entry["timer"] = float(entry["timer"]) - delta
 		var guard := 0
 		while float(entry["timer"]) <= 0.0 and guard < 8:
@@ -185,6 +201,8 @@ func _process(delta: float) -> void:
 
 ## Fires the ability bound to a HUD button. Returns true when an ability fired.
 func fire_ability(is_left: bool) -> bool:
+	if not _enabled:
+		return false
 	var id := ABILITY_LEFT_ID if is_left else ABILITY_RIGHT_ID
 	if not _active.has(id):
 		return false
@@ -198,7 +216,7 @@ func _fire(entry: Dictionary, is_ability: bool) -> void:
 	if data == null or proj == null:
 		return
 	var origin := _muzzle(data)
-	var count := maxi(1, data.projectiles_per_shot + int(entry["bonus_count"]))
+	var count := maxi(1, data.projectiles_per_shot + int(entry["bonus_count"]) + _all_count_add)
 	var base_dir := _aim_dir(origin) if data.homing else Vector2.UP
 	if count <= 1:
 		pool.spawn(origin, base_dir, proj)
@@ -238,6 +256,13 @@ func _nearest_target(origin: Vector2) -> Vector2:
 		if e != null:
 			best_pos = e.global_position
 			best_d = origin.distance_to(best_pos)
+	if boss != null and is_instance_valid(boss) and boss.has_method("nearest_add"):
+		var add: Node2D = boss.nearest_add(origin)
+		if add != null:
+			var ad := origin.distance_to(add.global_position)
+			if ad < best_d:
+				best_d = ad
+				best_pos = add.global_position
 	if boss != null and is_instance_valid(boss) and boss.has_method("is_active") \
 			and boss.is_active() and boss.get_health() > 0.0:
 		var bd := origin.distance_to(boss.global_position)

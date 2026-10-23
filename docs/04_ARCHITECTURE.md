@@ -81,7 +81,9 @@ project/
 - HangarScreen: production ship bay UI over SaveManager hangar data (select / unlock / `try_purchase_upgrade`); holographic `hangar_pad`, color-coded upgrade rows, and disabled Upgrade All stub remain presentation-only.
 - StageMapScreen: production sector map UI over `StageMapData` + `StageProgress` / SaveManager campaign unlocks; Launch still routes to `SCREEN_RUN`. Mounts `MetaScreenShell` and glow LAUNCH/BACK/HANGAR CTAs; map-node SVGs + path/pulse rings unchanged — no gameplay systems in the map screen.
 - UpgradeScreen / UpgradeCard: production rarity-framed choice overlay; UpgradeManager remains the only apply path.
-- ResultsScreen: production run summary UI; grants remain `RewardCalculator` → `SaveManager.grant_run_rewards` (once per `run_id`). Scrollable summary with sticky CTAs for safe-area phones.
+- RunSettlement: banks a finished run at the moment it ends (score → `RewardCalculator` → `SaveManager.grant_run_rewards`, once per `run_id`) and stores the outcome on `RunStats` (`rewards`, `granted`, `was_first_clear`, `was_new_best`). Daily runs never count as campaign clears.
+- ResultsScreen: production run summary UI; presents the settled outcome (settles only for standalone / probe launches). Re-entering Results reuses the stored numbers and skips the fanfare. The run-break interstitial is offered when the player leaves Results, never over the buttons. Scrollable summary with sticky CTAs for safe-area phones.
+- RunRulesData (`resources/balance/run_rules_default.tres`): run-wide rules (combo window, results delay, rerolls per run, HUD ability charges/cooldowns, boss-kill invulnerability, wave refill threshold).
 - CameraRig: rest position tracks viewport center (shake via offset) so tall 19.5:9 / 20:9 frames stay filled.
 - GlowController: quality-gated WorldEnvironment bloom (LOW off / MED soft / HIGH restrained).
 - Theme: `ButtonPrimary` / `Secondary` / `Tertiary` / `ButtonReward`, `ChipPanel`, `NeonPanel` chamfer neon chrome.
@@ -128,7 +130,8 @@ Prototype implementations are no-op or local on all platforms. Gameplay talks on
 - Use collision layers intentionally.
 - Use MultiMesh or simplified emitters if enemy counts become large.
 - Provide effect budgets by quality level (LOW/MEDIUM/HIGH, persisted).
-- App background flushes the save and ducks audio focus (AppRoot lifecycle).
+- App background flushes the save, ducks audio focus, and calls `on_app_backgrounded()` on the active screen (a run opens its pause overlay) (AppRoot lifecycle).
+- Pooled nodes own private collision shapes (scene sub-resources are shared between instances). `ObjectPool.release` is O(1) (index map + swap-remove); pooled enemies drop their previous owner's `died` / `split_requested` listeners on reacquire because the enemy pool is shared by the WaveDirector and the Boss.
 - Android system Back is owned by AppRoot (`quit_on_go_back=false` + `NOTIFICATION_WM_GO_BACK_REQUEST`): run → HUD pause; meta screens → navigate home; main menu → quit. Screens opt in via `handle_system_back() -> bool`.
 - Profile on real devices, not only desktop.
 - Rendering method: `mobile` (see `project.godot`). Export signing steps: `docs/EXPORT_SIGNING.md`.

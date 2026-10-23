@@ -38,6 +38,16 @@ var rift_energy_collected: int = 0
 ## Remaining HP ratio at run end (0..1). Used for stage star objective 2.
 var hp_ratio_end: float = 0.0
 
+## Settlement outcome (filled once by RunSettlement.settle at run end).
+var settled: bool = false
+var rewards: RunRewards = null
+var granted: bool = false
+var was_first_clear: bool = false
+var was_new_best: bool = false
+## True once the Results screen has played its celebration, so revisiting it
+## (Hangar -> back) does not replay fanfare and confetti.
+var results_presented: bool = false
+
 ## Derived at finalize from the fields above (cached so the results screen and
 ## the reward calculator read one consistent value).
 var score: int = 0

@@ -9,14 +9,19 @@ extends RefCounted
 ## incoming-damage reduction, and movement responsiveness. It never mutates a
 ## shared Resource — callers duplicate their own data and read these values.
 ##
-## All modifiers are RELATIVE to the ship's level-0 baseline: a fully un-upgraded
-## ship yields neutral values (mult 1.0, 0 reduction) so the run keeps its tuned
-## baseline balance and every hangar purchase improves the run from there.
+## All modifiers are RELATIVE to a reference ship (the starter ship): a level-0
+## starter yields neutral values (mult 1.0, 0 reduction) so the run keeps its
+## tuned baseline, every hangar purchase improves the run from there, and a
+## higher-tier ship is genuinely stronger (or trades stats) instead of being
+## normalized back to the starter. Without a reference the ship is its own.
+
 
 ## Added-DEF softening: extra DEF equal to this value yields ~50% reduction.
 const _DEF_SOFTENING := 300.0
 ## Hard cap so defense can never trivialize danger (telegraphs must still matter).
 const _MAX_REDUCTION := 0.6
+## A ship with less DEF than the reference takes up to this much extra damage.
+const _MIN_REDUCTION := -0.2
 ## Crit chance can never exceed this (keeps damage variance readable).
 const _CRIT_CAP := 0.75
 ## Per engine level movement responsiveness bonus.
@@ -38,7 +43,7 @@ var critical: float = 0.0
 
 ## Builds a profile from a ship and its hangar level map. Pure: does not touch
 ## SaveManager or mutate `ship`.
-static func from_hangar(ship: ShipData, levels: Dictionary) -> CombatProfile:
+static func from_hangar(ship: ShipData, levels: Dictionary, reference: ShipData = null) -> CombatProfile:
 	var p := CombatProfile.new()
 	if ship == null:
 		return p
@@ -47,18 +52,22 @@ static func from_hangar(ship: ShipData, levels: Dictionary) -> CombatProfile:
 	p.defense = stats.defense
 	p.hp = stats.hp
 	p.critical = stats.critical
-	# Everything is relative to the ship's level-0 base, so a fresh ship reads
-	# neutral and only upgrades change the run.
-	var base_atk := maxi(1, ship.base_attack)
-	var base_hp := maxi(1, ship.base_hp)
+	# Everything is relative to the reference ship, so a fresh starter reads
+	# neutral and only upgrades (or a stronger hull) change the run.
+	var ref := reference if reference != null else ship
+	var base_atk := maxi(1, ref.base_attack)
+	var base_hp := maxi(1, ref.base_hp)
 	p.weapon_damage_mult = maxf(0.01, float(stats.attack) / float(base_atk))
 	p.hp_mult = maxf(0.01, float(stats.hp) / float(base_hp))
 	# Critical is authored as a percent (e.g. 8.0 => 8%).
 	p.crit_chance = clampf(stats.critical / 100.0, 0.0, _CRIT_CAP)
-	# Only DEF gained above the ship's base grants armor, so a level-0 ship takes
-	# full damage and shield upgrades add real mitigation with diminishing returns.
-	var added_def := maxf(0.0, float(stats.defense - ship.base_defense))
-	p.damage_reduction = clampf(added_def / (added_def + _DEF_SOFTENING), 0.0, _MAX_REDUCTION)
+	# DEF above the reference grants armor with diminishing returns; a lighter
+	# hull (Razor Wing) below the reference takes a little extra damage.
+	var added_def := float(stats.defense - ref.base_defense)
+	if added_def >= 0.0:
+		p.damage_reduction = clampf(added_def / (added_def + _DEF_SOFTENING), 0.0, _MAX_REDUCTION)
+	else:
+		p.damage_reduction = clampf(added_def / _DEF_SOFTENING * 0.5, _MIN_REDUCTION, 0.0)
 	# Engine track drives movement responsiveness on top of its combat deltas.
 	var engine_level := int(levels.get("engine", 0))
 	p.move_speed_mult = clampf(

@@ -17,7 +17,7 @@ var _header_back: HeaderBackButton
 
 
 func _ready() -> void:
-	_challenge = DailyChallenge.build()
+	_challenge = DailyChallenge.build(_launchable_stage_ids(), SaveManager.get_cleared_stage_ids().size())
 	var body := _shell.get_body()
 
 	_header_back = HeaderBackButton.new()
@@ -110,6 +110,20 @@ func _on_launch() -> void:
 		"daily_date": String(_challenge.get("date_key", "")),
 		"daily_reward_core": int(_challenge.get("reward_core", 0)) if unclaimed else 0,
 	})
+
+
+## Stage ids the player can already launch on NORMAL (the daily never offers
+## a locked stage).
+func _launchable_stage_ids() -> Array:
+	var out: Array = []
+	var map := load("res://resources/stages/nova_sector_map.tres") as StageMapData
+	if map == null:
+		return out
+	var cleared := SaveManager.get_cleared_stage_ids()
+	for stage in map.stages:
+		if stage != null and StageProgress.is_unlocked(map, stage, cleared):
+			out.append(stage.id)
+	return out
 
 
 func handle_system_back() -> bool:

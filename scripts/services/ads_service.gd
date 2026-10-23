@@ -47,6 +47,12 @@ func initialize() -> void:
 
 # --- Banner (main menu only) ------------------------------------------------
 
+## True while a banner is showing or still expected to load, so screens can
+## reserve room for it. False once it failed (no empty gap under the menu).
+func expects_banner() -> bool:
+	return false
+
+
 func show_banner() -> void:
 	pass
 

@@ -132,12 +132,8 @@ func _load_prefs() -> void:
 
 
 func _save_prefs() -> void:
-	var qf := FileAccess.open(_QUALITY_CFG, FileAccess.WRITE)
-	if qf != null:
-		qf.store_line(str(quality))
-	var hf := FileAccess.open(_HAPTICS_CFG, FileAccess.WRITE)
-	if hf != null:
-		hf.store_line("1" if haptics_enabled else "0")
+	AtomicFile.write_text(_QUALITY_CFG, str(quality))
+	AtomicFile.write_text(_HAPTICS_CFG, "1" if haptics_enabled else "0")
 
 
 ## Particle count budget for an explosion by current quality.

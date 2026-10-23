@@ -20,6 +20,9 @@ signal attack_started(kind: int, phase: int)
 ## Emitted when a summoned add is destroyed by the player (not on exit-recycle),
 ## so the run host can count enemies destroyed for the results screen.
 signal add_destroyed()
+## Fires the moment HP hits zero (before the ~1.2s death beat ends with
+## `defeated`), so the host can clear hostile fire and protect the player.
+signal dying()
 signal defeated()
 
 enum State { IDLE, WARNING, ENTER, FIGHT, PHASE_TRANSITION, DEFEATED }
@@ -72,6 +75,15 @@ var _flash: float = 0.0
 var _defeated_emitted: bool = false
 ## Per-run HP scaling (difficulty). Applied at begin(); never mutates BossData.
 var _hp_mult: float = 1.0
+## Per-run outgoing damage scaling (laser + body contact). Enemy bolts are scaled
+## by the enemy ProjectilePool instead.
+var _damage_mult: float = 1.0
+## Difficulty applied to summoned adds so they match the wave enemies.
+var _add_hp_mult: float = 1.0
+var _add_contact_mult: float = 1.0
+## Cached safe-gap slots for the current radial pattern (rebuilt per pattern,
+## so firing and telegraph drawing never allocate).
+var _gap_slots: Dictionary = {}
 
 @onready var _sprite: Sprite2D = $Sprite
 @onready var _shape: CollisionShape2D = $CollisionShape2D
@@ -142,8 +154,34 @@ func get_health_fraction() -> float:
 
 
 ## Per-run HP scaling (difficulty). Applied at begin(); never mutates BossData.
-func set_scaling(hp_mult: float) -> void:
+func set_scaling(hp_mult: float, damage_mult: float = 1.0) -> void:
 	_hp_mult = maxf(0.1, hp_mult)
+	_damage_mult = maxf(0.0, damage_mult)
+
+
+## Difficulty for summoned adds (same values the WaveDirector applies).
+func set_add_scaling(hp_mult: float, contact_damage_mult: float) -> void:
+	_add_hp_mult = maxf(0.1, hp_mult)
+	_add_contact_mult = maxf(0.0, contact_damage_mult)
+
+
+## Body-contact damage after difficulty scaling (read by the player on overlap).
+func get_contact_damage() -> float:
+	return data.contact_damage * _damage_mult if data != null else 0.0
+
+
+## Nearest live summoned add to a point, or null (secondary-weapon auto-aim).
+func nearest_add(from: Vector2) -> Enemy:
+	var best: Enemy = null
+	var best_d := INF
+	for e in _summoned:
+		if not is_instance_valid(e):
+			continue
+		var d := from.distance_squared_to(e.global_position)
+		if d < best_d:
+			best_d = d
+			best = e
+	return best
 
 
 ## Scaled maximum health for this run (BossData is never mutated).
@@ -190,7 +228,7 @@ func _process(delta: float) -> void:
 		State.PHASE_TRANSITION:
 			global_position = _hold_pos
 			# Brief invulnerable, dramatic beat before phase-2 patterns start.
-			if _state_time >= 1.1:
+			if _state_time >= data.phase_transition_seconds:
 				_begin_fight(2)
 		State.DEFEATED:
 			_update_defeated(delta)
@@ -223,6 +261,7 @@ func _begin_pattern() -> void:
 	_pattern_spin = 0.0
 	# Laser starts at one edge of its sweep arc (centered on straight-down).
 	_laser_angle = -deg_to_rad(_current.laser_sweep_degrees * 0.5)
+	_gap_slots = _gap_slot_set(_current.radial_bullets) if _current.kind == BossPatternData.Kind.RADIAL_BURST else {}
 
 
 func _update_fight(delta: float) -> void:
@@ -298,10 +337,9 @@ func _fire_radial_ring() -> void:
 	var n: int = _current.radial_bullets
 	# Slots occupied by the safe gaps, so those bullets are skipped and a real
 	# corridor opens up (docs/02_GAMEPLAY_SPEC.md: viable safe route).
-	var gap_slots := _gap_slot_set(n)
 	var step := TAU / float(n)
 	for i in n:
-		if gap_slots.has(i):
+		if _gap_slots.has(i):
 			continue
 		var angle := _pattern_spin + step * float(i)
 		var dir := Vector2.RIGHT.rotated(angle)
@@ -349,7 +387,7 @@ func _apply_laser_damage() -> void:
 	var dist := player.global_position.distance_to(closest)
 	if dist <= _current.laser_half_width + 18.0:  # +core radius
 		if player.has_method("take_damage"):
-			player.call("take_damage", _current.laser_damage)
+			player.call("take_damage", _current.laser_damage * _damage_mult)
 
 
 # --- Attack 3: summon waves --------------------------------------------------
@@ -392,6 +430,7 @@ func _summon_one_wave() -> void:
 		if not enemy.died.is_connected(_on_summoned_died):
 			enemy.died.connect(_on_summoned_died)
 		enemy.spawn(_current.summon_enemy, enter_from, hold, exit_to, 1.0, 3.0, 1.8)
+		enemy.apply_scaling(_add_hp_mult, _add_contact_mult)
 		_summoned.append(enemy)
 
 
@@ -435,7 +474,8 @@ func take_damage(amount: float) -> void:
 	_flash = 1.0
 	_apply_tint()
 	health_changed.emit(_health, _max_health())
-	GameFeel.projectile_hit(global_position, amount, false)
+	# Impact feedback (flash, number, SFX) comes from the projectile that hit us;
+	# emitting it here too doubled every bolt.
 
 	if _health <= 0.0:
 		_enter_defeated()
@@ -462,6 +502,7 @@ func _enter_defeated() -> void:
 	_enter_state(State.DEFEATED)
 	_current = null
 	_laser_hot = false
+	dying.emit()
 	# Deferred: defeat is triggered from take_damage, which runs inside the
 	# player bolt's area_entered signal where toggling monitoring is blocked.
 	set_deferred("monitoring", false)
@@ -510,7 +551,7 @@ func _clear_summoned() -> void:
 func _on_area_entered(area: Area2D) -> void:
 	# Ramming the boss body hurts the player (boss has no body-contact bullet).
 	if area == player and player.has_method("take_damage"):
-		player.call("take_damage", data.contact_damage)
+		player.call("take_damage", get_contact_damage())
 
 
 func _apply_tint() -> void:
@@ -533,7 +574,7 @@ func _draw() -> void:
 		return
 	if _state == State.PHASE_TRANSITION:
 		# Expanding shock ring to sell the phase flip.
-		var pr := clampf(_state_time / 1.1, 0.0, 1.0)
+		var pr := clampf(_state_time / maxf(0.01, data.phase_transition_seconds), 0.0, 1.0)
 		draw_arc(Vector2.ZERO, data.hit_radius * (1.0 + pr * 1.5), 0.0, TAU, 48,
 			Color(1.0, 0.22, 0.95, 1.0 - pr), 6.0, true)
 		return
@@ -563,13 +604,12 @@ func _draw_radial_telegraph(t: float) -> void:
 	draw_arc(Vector2.ZERO, data.hit_radius * 2.2, 0.0, TAU, 64, danger, 3.5 + 3.0 * t, true)
 	# Highlight the safe gaps in cyan so the corridor is obvious.
 	var n: int = _current.radial_bullets
-	var gap_slots := _gap_slot_set(n)
 	var step := TAU / float(n)
 	var safe := Palette.get_color("cyan")
 	safe.a = 0.55 + 0.4 * t
 	var r := data.hit_radius * 2.2
 	for i in n:
-		if not gap_slots.has(i):
+		if not _gap_slots.has(i):
 			continue
 		var a := _pattern_spin + step * float(i)
 		var p := Vector2.RIGHT.rotated(a) * r

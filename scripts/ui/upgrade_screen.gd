@@ -11,9 +11,8 @@ signal closed()
 
 const _CARD_SCENE := preload("res://scenes/ui/upgrade_card.tscn")
 
-## Free rerolls granted per run (no currency cost, per plan). Consumed across the
-## whole run, not per level-up.
-const _REROLLS_PER_RUN := 1
+## Default free rerolls per run when the host supplies no RunRulesData.
+const _DEFAULT_REROLLS := 1
 
 @onready var _veil: ColorRect = $Veil
 @onready var _panel: Control = $Center
@@ -27,7 +26,7 @@ var _manager: UpgradeManager
 var _cards: Array[UpgradeCard] = []
 var _selecting: bool = false
 var _pulse_time := 0.0
-var _rerolls_left := _REROLLS_PER_RUN
+var _rerolls_left := _DEFAULT_REROLLS
 var _current_level := 1
 
 
@@ -79,10 +78,10 @@ func _fit_card_widths() -> void:
 		card.custom_minimum_size = Vector2(width, card.custom_minimum_size.y)
 
 
-func configure(manager: UpgradeManager) -> void:
+func configure(manager: UpgradeManager, rerolls_per_run: int = _DEFAULT_REROLLS) -> void:
 	_manager = manager
-	# One free reroll per run; this screen is rebuilt each run so reset here.
-	_rerolls_left = _REROLLS_PER_RUN
+	# Free rerolls are per run; this screen is rebuilt each run so reset here.
+	_rerolls_left = maxi(0, rerolls_per_run)
 	_refresh_reroll_button()
 
 

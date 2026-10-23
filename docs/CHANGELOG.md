@@ -1,5 +1,33 @@
 # Changelog
 
+## Stability pass (M1)
+Combat
+- Fixed shared hitboxes: every pooled enemy / bolt / pickup used one shared `CircleShape2D`, so all live enemies took the radius of the last one spawned (a Tank made every Scout huge). Each pooled node now owns its shape.
+- Fixed kills counted twice: the enemy pool is shared by waves and boss adds, and old `died` listeners survived reuse. Reacquired enemies now drop previous listeners.
+- The run pauses when the app is backgrounded (home button, call, notification shade); Escape can no longer unpause under the upgrade cards.
+- Boss: removed double impact feedback per bolt; difficulty now scales enemy bolts, boss laser, boss contact, and boss adds (HP + damage); adds are auto-aim targets; enemy fire is cleared and the player is shielded during the boss death beat so a won fight cannot flip into a defeat.
+- Phase clock only advances during waves, so a slow mini-boss no longer skips the mid waves; waves that run dry restart (or jump to the next beat) instead of leaving dead air.
+- Contact damage repeats while overlapping a hostile body; shield feedback is throttled (sweeping laser no longer spams shake/SFX every frame).
+- "All weapons" damage/rate/count upgrades also apply to secondaries acquired later.
+- Energy is pulled to the ship at phase changes instead of being deleted; pickups have a magnet radius (`PlayerCombatData.pickup_magnet_radius`).
+- Plasma catch-up after a hitch is capped (no burst of volleys on resume); abilities cannot fire after the run ends.
+- Combo label tween no longer recreated every frame; score label only reformats when the score changes; per-frame pool stat dictionaries removed; `ObjectPool.release` is O(1).
+- Run balance moved out of code into `RunRulesData` (`resources/balance/run_rules_default.tres`); boss phase transition length is now `BossData.phase_transition_seconds`.
+
+Progression / meta
+- Rewards are banked when the run ends (`RunSettlement`), not when Results opens, so closing the app during the end banner no longer loses the run. Results revisits show the same numbers and skip the fanfare.
+- Results shows stars for the difficulty that was played.
+- Daily Challenge only offers launchable stages, rolls HARD only after a few clears, and never records campaign clears/unlocks.
+- Ships are measured against the starter ship, so higher-tier hulls are actually stronger (Solar Lance was effectively a downgrade).
+- Clock-tamper guard: rolling the device clock back past a time the save has seen withholds Daily / event rewards.
+- Debug hotkeys (hangar `G` +1000 energy, run Q/L/K/F6–F9) only work in debug builds.
+- Added the missing `screenshot_capture` input action (was logging an error on every input event).
+- Ads: init / interstitial / rewarded loads retry with backoff instead of dying for the session; the run-break interstitial shows when leaving Results; the main menu only reserves banner space while a banner is expected.
+- Settings files are written atomically (`AtomicFile`); fixed the save migration ensuring the upgrade entry on the default data instead of the loaded save.
+
+Tests
+- New `tests/stability_probe.gd`; `tests/final_mobile_visual_qa_probe.gd` updated for the glow CTA kit (it had been failing since the glow UI pass).
+
 ## CI: unique iOS build numbers + optional Appetize
 - TestFlight upload no longer reuses `CFBundleVersion` 11. CI queries App Store Connect for the latest uploaded build, stamps `CURRENT_PROJECT_VERSION` on the Godot-exported Xcode project / `xcodebuild archive`, and fails the job if the archived plist does not match (Godot `GENERATE_INFOPLIST_FILE` ignores a static Info.plist patch).
 - GitHub Actions **iOS — Godot TestFlight** has an optional **Also build iOS Simulator zip for Appetize** checkbox (off by default), same pattern as PEND.

@@ -47,6 +47,13 @@ var _paused_by_hud: bool = false
 ## a single mis-tap. Reset whenever the overlay opens/closes.
 var _quit_armed: bool = false
 var _quit_title_default: String = "QUIT"
+## Optional veto set by the run host: returns false while another modal (the
+## upgrade cards) owns the tree pause, so Escape cannot unpause under it.
+var pause_gate: Callable = Callable()
+var _last_combo: int = -1
+var _last_score: int = -1
+var _icon_left: Texture2D
+var _icon_right: Texture2D
 
 
 func _ready() -> void:
@@ -65,8 +72,9 @@ func _ready() -> void:
 	_quit_btn.pressed.connect(_on_quit_pressed)
 	if _quit_btn.title != "":
 		_quit_title_default = _quit_btn.title
-	_ability_left.configure(3, 7.0, load(_ICON_MISSILE) as Texture2D, Palette.get_color("cyan"))
-	_ability_right.configure(2, 9.0, load(_ICON_LASER) as Texture2D, Palette.get_color("purple"))
+	_icon_left = load(_ICON_MISSILE) as Texture2D
+	_icon_right = load(_ICON_LASER) as Texture2D
+	configure_abilities(3, 7.0, 2, 9.0)
 	_ability_left.activated.connect(func() -> void: ability_left_activated.emit())
 	_ability_right.activated.connect(func() -> void: ability_right_activated.emit())
 	_health_bar.set_fill_color(Palette.get_color("cyan"))
@@ -76,6 +84,12 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_apply_safe_area)
 	_apply_safe_area()
 	set_process(true)
+
+
+## Ability charges / recharge seconds come from RunRulesData via the run host.
+func configure_abilities(left_charges: int, left_cooldown: float, right_charges: int, right_cooldown: float) -> void:
+	_ability_left.configure(left_charges, left_cooldown, _icon_left, Palette.get_color("cyan"))
+	_ability_right.configure(right_charges, right_cooldown, _icon_right, Palette.get_color("purple"))
 
 
 func _refresh_currency_pivot() -> void:
@@ -94,6 +108,8 @@ func bind(player: PlayerShip, xp: ExperienceTracker, stats: RunStats) -> void:
 	_player = player
 	_xp = xp
 	_stats = stats
+	_last_score = -1
+	_last_combo = -1
 	if _player != null:
 		_player.health_changed.connect(_on_health_changed)
 		_player.energy_changed.connect(_on_energy_changed)
@@ -115,6 +131,10 @@ func set_boss_bar_visible(active: bool) -> void:
 
 
 func set_combo(combo: int) -> void:
+	if combo == _last_combo:
+		return
+	var rising := combo > _last_combo
+	_last_combo = combo
 	if combo >= 2:
 		_combo_label.text = "x%d" % combo
 		var heat := clampf(float(combo - 2) / 18.0, 0.0, 1.0)
@@ -127,7 +147,7 @@ func set_combo(combo: int) -> void:
 		else:
 			_combo_label.modulate = Color(1, 1, 1, 1)
 		# Brief scale pop on milestone combos.
-		if combo >= 5 and combo % 5 == 0:
+		if rising and combo >= 5 and combo % 5 == 0:
 			_combo_label.pivot_offset = _combo_label.size * 0.5
 			_combo_label.scale = Vector2(1.35 + heat * 0.15, 1.35 + heat * 0.15)
 			var tw := create_tween()
@@ -142,16 +162,23 @@ func is_hud_paused() -> bool:
 	return _paused_by_hud
 
 
-## Opens the pause overlay (no-op if already paused). Used by system Back.
+## Opens the pause overlay (no-op if already paused). Used by system Back and
+## by the run host when the app is backgrounded.
 func request_pause() -> void:
+	if not _pause_allowed():
+		return
 	_on_pause_pressed()
+
+
+func _pause_allowed() -> bool:
+	return not pause_gate.is_valid() or bool(pause_gate.call())
 
 
 ## Toggle pause/resume — Escape / pause action / Android Back while paused.
 func toggle_pause() -> void:
 	if _paused_by_hud:
 		_on_resume_pressed()
-	else:
+	elif _pause_allowed():
 		_on_pause_pressed()
 
 
@@ -182,7 +209,11 @@ func _refresh_score() -> void:
 		return
 	# `_stats.rift_energy_collected` is kept in sync by `_on_energy_changed`, so the
 	# HUD and the results screen read one shared score value.
-	_score_value.text = _format_score(_stats.live_score(_rules))
+	var score := _stats.live_score(_rules)
+	if score == _last_score:
+		return
+	_last_score = score
+	_score_value.text = _format_score(score)
 
 
 func _format_score(value: int) -> String:

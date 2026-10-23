@@ -2,16 +2,34 @@ class_name Pickup
 extends Area2D
 ## Pooled energy pickup. Drifts down, is collected on player overlap, and
 ## returns to its pool on collection or lifetime expiry (never freed at runtime).
+##
+## Magnet: when a target is set and the pickup falls inside the target's magnet
+## radius (or `attract()` is called, e.g. a phase-change vacuum), it homes in on
+## the target with accelerating speed and ignores its lifetime until collected.
 
 var data: PickupData
 ## Called with self to return this node to its pool.
 var release_callback: Callable = Callable()
+## Node that pulls this pickup in (the player). Optional.
+var magnet_target: Node2D = null
+
+const _MAGNET_START_SPEED := 420.0
+const _MAGNET_ACCEL := 2600.0
+const _MAGNET_MAX_SPEED := 2400.0
 
 var _age: float = 0.0
 var _collected: bool = false
 var _bounds: Rect2 = Rect2(-200, -400, 1480, 2720)
+var _attracted: bool = false
+var _magnet_speed: float = 0.0
 
 @onready var _shape: CollisionShape2D = $CollisionShape2D
+
+
+func _ready() -> void:
+	# Private shape per pooled pickup (scene sub-resources are shared).
+	if _shape != null and _shape.shape != null:
+		_shape.shape = _shape.shape.duplicate()
 
 
 ## Activates the pickup at a world position.
@@ -20,6 +38,8 @@ func spawn(world_position: Vector2, pickup_data: PickupData, bounds: Rect2) -> v
 	global_position = world_position
 	_age = 0.0
 	_collected = false
+	_attracted = false
+	_magnet_speed = 0.0
 	_bounds = bounds
 	if _shape != null and _shape.shape is CircleShape2D:
 		(_shape.shape as CircleShape2D).radius = data.radius
@@ -32,11 +52,30 @@ func spawn(world_position: Vector2, pickup_data: PickupData, bounds: Rect2) -> v
 	queue_redraw()
 
 
+## Forces homing toward the magnet target regardless of distance.
+func attract() -> void:
+	if magnet_target != null and is_instance_valid(magnet_target) and not _collected:
+		_attracted = true
+		_magnet_speed = maxf(_magnet_speed, _MAGNET_START_SPEED)
+
+
 func _process(delta: float) -> void:
 	if data == null:
 		return
-	global_position.y += data.fall_speed * delta
 	_age += delta
+	if not _attracted and magnet_target != null and is_instance_valid(magnet_target) \
+			and magnet_target.has_method("get_magnet_radius"):
+		var r: float = magnet_target.get_magnet_radius()
+		if r > 0.0 and global_position.distance_squared_to(magnet_target.global_position) <= r * r:
+			attract()
+	if _attracted and magnet_target != null and is_instance_valid(magnet_target):
+		_magnet_speed = minf(_MAGNET_MAX_SPEED, _magnet_speed + _MAGNET_ACCEL * delta)
+		var goal: Vector2 = magnet_target.get_core_global_position() \
+				if magnet_target.has_method("get_core_global_position") else magnet_target.global_position
+		global_position = global_position.move_toward(goal, _magnet_speed * delta)
+		queue_redraw()
+		return
+	global_position.y += data.fall_speed * delta
 	queue_redraw()
 	if _age >= data.lifetime or not _bounds.has_point(global_position):
 		_release()
@@ -67,12 +106,15 @@ func collect() -> int:
 func pool_reset() -> void:
 	_age = 0.0
 	_collected = false
+	_attracted = false
+	_magnet_speed = 0.0
 
 
 func pool_disable() -> void:
 	set_process(false)
 	set_deferred("monitorable", false)
 	visible = false
+	_attracted = false
 
 
 func _release() -> void:

@@ -32,6 +32,7 @@ var _effective_projectile: ProjectileData = null
 var _crit_projectile: ProjectileData = null
 var _rng := RandomNumberGenerator.new()
 var _fire_loop_held: bool = false
+const _MAX_VOLLEYS_PER_FRAME := 4
 
 
 func _process(delta: float) -> void:
@@ -41,11 +42,16 @@ func _process(delta: float) -> void:
 	_ensure_fire_loop()
 	_cooldown -= delta
 	# while-loop keeps fire cadence stable even if a frame is long, without
-	# allocating; each iteration reuses a pooled projectile.
-	var interval := 1.0 / (data.fire_rate * fire_rate_mult)
-	while _cooldown <= 0.0:
+	# allocating; each iteration reuses a pooled projectile. Capped so a long
+	# hitch (resume from background) cannot dump a burst of volleys at once.
+	var interval := 1.0 / maxf(0.01, data.fire_rate * fire_rate_mult)
+	var volleys := 0
+	while _cooldown <= 0.0 and volleys < _MAX_VOLLEYS_PER_FRAME:
 		_fire()
 		_cooldown += interval
+		volleys += 1
+	if _cooldown < 0.0:
+		_cooldown = 0.0
 
 
 func _ensure_fire_loop() -> void:

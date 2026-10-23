@@ -69,16 +69,12 @@ func _ready() -> void:
 		_stats = RunStats.new()
 		_stats.run_id = "standalone_%d" % Time.get_ticks_msec()
 
-	_stats.finalize_score(_rules)
-	var stage := _resolve_stage()
-	# First clear is decided BEFORE granting so the bonus is only offered once.
-	var is_first_clear := _stats.victory and stage != null and not SaveManager.is_stage_cleared(_stats.stage_id, _stats.difficulty)
-	_rewards = RewardCalculator.calculate(_stats, _rules, stage, is_first_clear)
-	var best_before := SaveManager.get_best_score()
-	_was_new_best = _stats.score > best_before
-
-	# Grant exactly once: SaveManager dedupes by run id.
-	_granted_now = SaveManager.grant_run_rewards(_stats.run_id, _rewards, _stats)
+	# The run host already banked this run (RunSettlement); settle here only for
+	# standalone / probe launches. Re-entering Results reuses the stored outcome.
+	RunSettlement.settle(_stats)
+	_rewards = _stats.rewards if _stats.rewards != null else RunRewards.new(0, 0)
+	_was_new_best = _stats.was_new_best
+	_granted_now = _stats.granted
 
 	_ensure_scroll_layout()
 	_mount_meta_shell()
@@ -90,10 +86,9 @@ func _ready() -> void:
 	GameFeel.debug_markers_enabled = false
 	AudioManager.stop_music()
 	set_process(true)
-	# A completed run (victory OR defeat) is a natural break. Report it to the
-	# centralized ads service, which owns the interstitial cadence/cooldown and
-	# decides whether to show one. Deferred so results render first.
-	get_tree().create_timer(0.8).timeout.connect(_maybe_run_break_interstitial)
+	# A completed run is a natural break, but the interstitial is only offered
+	# when the player leaves Results (see _leave_results) so it never pops over
+	# the buttons mid-tap.
 
 
 func _maybe_run_break_interstitial() -> void:
@@ -262,7 +257,7 @@ func _populate() -> void:
 		var map: StageMapData = load("res://resources/stages/nova_sector_map.tres") as StageMapData
 		var stage: StageNodeData = map.find_by_id(_stats.stage_id) if map != null else null
 		if _stats.victory:
-			var stars := SaveManager.get_stage_stars(_stats.stage_id)
+			var stars := SaveManager.get_stage_stars(_stats.stage_id, _stats.difficulty)
 			stars_txt = "\nSTARS  %s" % _star_text(stars)
 			if stage != null:
 				stars_txt += "\n" + "\n".join(StageProgress.star_objective_lines(stage))
@@ -432,6 +427,7 @@ func _on_next_sector() -> void:
 				payload["stage_id"] = nxt.id
 			else:
 				payload["stage_id"] = _stats.stage_id
+	_maybe_run_break_interstitial()
 	SceneRouter.go_to(SceneRouter.SCREEN_STAGE_MAP, payload)
 
 
@@ -450,6 +446,7 @@ func _on_replay() -> void:
 		"stage_id": _stats.stage_id,
 		"difficulty": _stats.difficulty,
 	}
+	_maybe_run_break_interstitial()
 	SceneRouter.go_to(SceneRouter.SCREEN_RUN, payload)
 
 
@@ -460,6 +457,7 @@ func handle_system_back() -> bool:
 
 func _on_home() -> void:
 	_click_feedback()
+	_maybe_run_break_interstitial()
 	SceneRouter.go_to(SceneRouter.SCREEN_MAIN_MENU)
 
 
@@ -482,6 +480,10 @@ func _play_intro() -> void:
 		_emblem_panel.modulate.a = 0.0
 		tween.parallel().tween_property(_emblem_panel, "modulate:a", 1.0, 0.4)
 
+	# Revisiting Results (Hangar -> back) keeps the panel but skips the fanfare.
+	if _stats.results_presented:
+		return
+	_stats.results_presented = true
 	if _stats.victory and _confetti != null:
 		_recenter_confetti()
 		_confetti.restart()

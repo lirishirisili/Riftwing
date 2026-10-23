@@ -28,8 +28,10 @@ func _check_static() -> int:
 	if hud.find('text = "ENERGY"') >= 0:
 		printerr("HUD still labels XP bar as ENERGY")
 		return 1
-	if hud.find("ButtonPrimary") < 0 or hud.find("ButtonTertiary") < 0:
-		printerr("HUD pause buttons missing theme variations")
+	# Pause CTAs use the shared glow kit (replaced the ButtonPrimary/Tertiary theme
+	# variations in the glow UI pass).
+	if hud.find("glow_cta_button.tscn") < 0:
+		printerr("HUD pause buttons not on the glow CTA kit")
 		return 1
 	var effects := FileAccess.get_file_as_string("res://scripts/effects/effects_layer.gd")
 	if effects.find("EFFECTS_Z_INDEX := -5") < 0:
@@ -108,8 +110,8 @@ func _check_runtime() -> int:
 				if screen.find_child("Scroll", true, false) == null:
 					printerr("results Scroll missing @ %s" % size)
 					fails += 1
-				var next_btn := screen.find_child("NextSector", true, false) as Button
-				var upgrade_btn := screen.find_child("UpgradeShip", true, false) as Button
+				var next_btn := screen.find_child("NextSector", true, false) as Control
+				var upgrade_btn := screen.find_child("UpgradeShip", true, false) as Control
 				if next_btn == null or upgrade_btn == null:
 					printerr("results CTAs missing @ %s" % size)
 					fails += 1
@@ -154,13 +156,13 @@ func _check_runtime() -> int:
 		if xp_cap == null or xp_cap.text != "XP":
 			printerr("runtime XP caption wrong: %s" % (xp_cap.text if xp_cap else "?"))
 			fails += 1
-		var resume := hud.find_child("ResumeButton", true, false) as Button
-		var quit_btn := hud.find_child("QuitButton", true, false) as Button
-		if resume == null or String(resume.theme_type_variation) != "ButtonPrimary":
-			printerr("Resume missing ButtonPrimary")
+		var resume := hud.find_child("ResumeButton", true, false)
+		var quit_btn := hud.find_child("QuitButton", true, false)
+		if not (resume is GlowCtaButton):
+			printerr("Resume is not a GlowCtaButton")
 			fails += 1
-		if quit_btn == null or String(quit_btn.theme_type_variation) != "ButtonTertiary":
-			printerr("Quit missing ButtonTertiary")
+		if not (quit_btn is GlowCtaButton):
+			printerr("Quit is not a GlowCtaButton")
 			fails += 1
 		var pause_shell := hud.find_child("PauseShell", true, false) as Control
 		var pause := hud.find_child("PauseButton", true, false) as Button

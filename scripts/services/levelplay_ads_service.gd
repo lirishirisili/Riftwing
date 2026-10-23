@@ -27,6 +27,14 @@ var _rewarded_reward_pending: bool = false
 
 var _gate := AdFrequencyGate.new()
 
+## Retry backoff (seconds) after a failed init / load: a single no-fill or an
+## offline start used to disable that ad type for the whole session.
+const _RETRY_DELAYS := [5.0, 15.0, 30.0, 60.0, 120.0]
+var _init_attempts: int = 0
+var _interstitial_attempts: int = 0
+var _rewarded_attempts: int = 0
+var _banner_failed: bool = false
+
 
 func _init() -> void:
 	if Engine.has_singleton(_SINGLETON_NAME):
@@ -93,6 +101,10 @@ func show_banner() -> void:
 		return
 	_log("BANNER", "load + show")
 	_native.call("show_banner")
+
+
+func expects_banner() -> bool:
+	return _native != null and not _banner_failed
 
 
 func hide_banner() -> void:
@@ -221,6 +233,7 @@ func _connect_native_signals() -> void:
 func _on_init_success() -> void:
 	_init_in_progress = false
 	_initialized = true
+	_init_attempts = 0
 	_log("LEVELPLAY", "init success")
 	initialization_finished.emit(true)
 	# Create/prepare ad objects only after init success.
@@ -233,14 +246,18 @@ func _on_init_failed(error: String) -> void:
 	_initialized = false
 	_log("LEVELPLAY", "init failed: %s" % error)
 	initialization_finished.emit(false)
+	_schedule_retry(_init_attempts, initialize)
+	_init_attempts += 1
 
 
 func _on_banner_loaded() -> void:
+	_banner_failed = false
 	_log("BANNER", "loaded / impression")
 	banner_loaded.emit()
 
 
 func _on_banner_failed(error: String) -> void:
+	_banner_failed = true
 	_log("BANNER", "failed: %s" % error)
 	banner_failed.emit(error)
 
@@ -251,6 +268,7 @@ func _on_banner_clicked() -> void:
 
 func _on_interstitial_loaded() -> void:
 	_interstitial_ready = true
+	_interstitial_attempts = 0
 	_log("INTERSTITIAL", "ready")
 	interstitial_ready.emit()
 
@@ -259,6 +277,8 @@ func _on_interstitial_failed(error: String) -> void:
 	_interstitial_ready = false
 	_log("INTERSTITIAL", "load failed: %s" % error)
 	interstitial_failed.emit(error)
+	_schedule_retry(_interstitial_attempts, load_interstitial)
+	_interstitial_attempts += 1
 
 
 func _on_interstitial_displayed() -> void:
@@ -286,6 +306,7 @@ func _on_interstitial_clicked() -> void:
 
 func _on_rewarded_loaded() -> void:
 	_rewarded_ready = true
+	_rewarded_attempts = 0
 	_log("REWARDED", "ready")
 	rewarded_ready.emit()
 
@@ -294,6 +315,8 @@ func _on_rewarded_failed(error: String) -> void:
 	_rewarded_ready = false
 	_log("REWARDED", "load failed: %s" % error)
 	rewarded_failed.emit(error)
+	_schedule_retry(_rewarded_attempts, load_rewarded)
+	_rewarded_attempts += 1
 
 
 func _on_rewarded_displayed() -> void:
@@ -340,6 +363,17 @@ func _reload_interstitial() -> void:
 func _reload_rewarded() -> void:
 	_log("REWARDED", "reload")
 	load_rewarded()
+
+
+## Re-runs `action` after a backoff delay chosen by how many attempts failed.
+## Uses a process-always SceneTree timer (this service is a RefCounted).
+func _schedule_retry(attempt: int, action: Callable) -> void:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		return
+	var delay: float = _RETRY_DELAYS[mini(attempt, _RETRY_DELAYS.size() - 1)]
+	_log("LEVELPLAY", "retry in %.0fs (attempt %d)" % [delay, attempt + 1])
+	tree.create_timer(delay, true).timeout.connect(action)
 
 
 func _now_seconds() -> float:

@@ -14,6 +14,8 @@ var release_callback: Callable = Callable()
 ## True for enemy-fired bolts (masked to the player). Set by the pool owner so
 ## impact feedback can be colored correctly; does not affect movement or damage.
 var hits_player: bool = false
+## Damage multiplier stamped by the owning pool at launch (difficulty scaling).
+var damage_mult: float = 1.0
 
 var _velocity: Vector2 = Vector2.ZERO
 var _age: float = 0.0
@@ -27,6 +29,10 @@ var _trail: PackedVector2Array = PackedVector2Array()
 
 
 func _ready() -> void:
+	# Own a private shape: the scene sub-resource is shared across the pool, so
+	# resizing it per launch would resize every live bolt.
+	if _shape != null and _shape.shape != null:
+		_shape.shape = _shape.shape.duplicate()
 	# Whatever this projectile is masked to hit (enemies or the player) is
 	# damaged on overlap; the collision mask set in the scene decides the target.
 	if not area_entered.is_connected(_on_area_entered):
@@ -84,8 +90,9 @@ func _on_area_entered(area: Area2D) -> void:
 	if area.has_method("take_damage"):
 		_spent = true
 		var hit_pos := global_position
-		area.call("take_damage", data.damage)
-		GameFeel.projectile_hit(hit_pos, data.damage, hits_player)
+		var dmg := data.damage * damage_mult
+		area.call("take_damage", dmg)
+		GameFeel.projectile_hit(hit_pos, dmg, hits_player)
 		_release()
 
 

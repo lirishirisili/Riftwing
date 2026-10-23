@@ -15,6 +15,9 @@ var _scene: PackedScene
 var _holder: Node
 var _free: Array[Node] = []
 var _active: Array[Node] = []
+## node -> index into _active, so release is O(1) (swap-remove) instead of a
+## linear find across hundreds of live bolts every frame.
+var _active_index: Dictionary = {}
 var _peak_active: int = 0
 ## Hard ceiling on active+free nodes. 0 = uncapped (legacy / stress tests).
 var _max_total: int = 0
@@ -55,6 +58,7 @@ func acquire() -> Node:
 		node = _free.pop_back()
 	if node == null:
 		return null
+	_active_index[node] = _active.size()
 	_active.append(node)
 	_peak_active = maxi(_peak_active, _active.size())
 	if node.has_method("pool_reset"):
@@ -64,10 +68,16 @@ func acquire() -> Node:
 
 ## Disables a node and returns it to the free list for reuse.
 func release(node: Node) -> void:
-	var idx := _active.find(node)
+	var idx: int = _active_index.get(node, -1)
 	if idx == -1:
 		return
-	_active.remove_at(idx)
+	_active_index.erase(node)
+	var last := _active.size() - 1
+	if idx != last:
+		var moved: Node = _active[last]
+		_active[idx] = moved
+		_active_index[moved] = idx
+	_active.remove_at(last)
 	if node.has_method("pool_disable"):
 		node.call("pool_disable")
 	else:
@@ -79,6 +89,12 @@ func release(node: Node) -> void:
 func release_all() -> void:
 	for node in _active.duplicate():
 		release(node)
+
+
+## Live active nodes. Read-only by convention: never mutate the returned array
+## (iterate a duplicate if the loop body may release nodes).
+func get_active_nodes() -> Array[Node]:
+	return _active
 
 
 func get_active_count() -> int:

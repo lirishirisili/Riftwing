@@ -144,7 +144,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("screenshot_capture"):
 		_capture_screenshot()
 		get_viewport().set_input_as_handled()
-	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_G:
+	elif OS.is_debug_build() and event is InputEventKey and event.pressed and not event.echo \
+			and event.keycode == KEY_G:
 		# Prototype QA: grant local currency so upgrade purchases can be tested
 		# without forcing a full run first. Not a monetization path.
 		SaveManager.debug_add_currency(1000, 0)
@@ -342,7 +343,8 @@ func _on_equip() -> void:
 		return
 	if SaveManager.select_ship(_viewed_ship_id):
 		_click()
-		_show_feedback("Equipped %s" % _viewed_ship_id, false)
+		var equipped := _catalog.find_by_id(_viewed_ship_id)
+		_show_feedback("Equipped %s" % (equipped.display_name if equipped != null else _viewed_ship_id), false)
 		_refresh_all()
 	else:
 		_show_feedback("Ship is locked", true)

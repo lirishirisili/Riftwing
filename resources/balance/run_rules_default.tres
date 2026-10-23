@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RunRulesData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/run_rules_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+combo_window_seconds = 2.5
+results_delay_seconds = 1.6
+rerolls_per_run = 1
+ability_left_charges = 3
+ability_left_cooldown = 7.0
+ability_right_charges = 2
+ability_right_cooldown = 9.0
+boss_kill_invuln_seconds = 2.5
+wave_refill_min_seconds = 12.0

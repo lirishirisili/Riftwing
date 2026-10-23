@@ -35,6 +35,15 @@ var _damage_reduction: float = 0.0
 ## True once we hold private duplicates so run upgrades never mutate shared .tres.
 var _owns_combat_data: bool = false
 var _owns_move_data: bool = false
+## Rate limit for shield feedback while invulnerable (a sweeping laser calls
+## take_damage every frame; one burst per window keeps shake/audio sane).
+const _SHIELD_FEEDBACK_INTERVAL := 0.25
+var _shield_feedback_cooldown: float = 0.0
+## Sustained-overlap contact damage: area_entered fires once per overlap, so a
+## ship parked on a tank or the boss body re-checks on this cadence.
+const _CONTACT_RECHECK_INTERVAL := 0.1
+var _contact_timer: float = 0.0
+var _magnet_mult: float = 1.0
 
 @onready var _core: CollisionShape2D = $CollisionCore
 @onready var _sprite: Sprite2D = $Sprite
@@ -71,6 +80,9 @@ func _process(delta: float) -> void:
 	var t := 1.0 - exp(-data.follow_smoothing * delta)
 	global_position = global_position.lerp(_target, t)
 	_update_presentation(delta)
+	if _shield_feedback_cooldown > 0.0:
+		_shield_feedback_cooldown -= delta
+	_tick_contact_damage(delta)
 	if _invuln_time > 0.0:
 		_invuln_time = maxf(0.0, _invuln_time - delta)
 		# Blink while invulnerable for readable feedback.
@@ -167,7 +179,7 @@ func apply_combat_profile(profile: CombatProfile) -> void:
 	_owns_combat_data = true
 	combat_data.max_health = maxf(1.0, baseline_hp * profile.hp_mult)
 	_health = combat_data.max_health
-	_damage_reduction = clampf(profile.damage_reduction, 0.0, 0.9)
+	_damage_reduction = clampf(profile.damage_reduction, -0.2, 0.9)
 	if data != null and not is_equal_approx(profile.move_speed_mult, 1.0):
 		data = data.duplicate() as PlayerMovementData
 		_owns_move_data = true
@@ -179,7 +191,7 @@ func apply_combat_profile(profile: CombatProfile) -> void:
 
 ## Adds flat incoming-damage reduction (stacks on hangar armor, hard-capped).
 func add_damage_reduction(amount: float) -> void:
-	_damage_reduction = clampf(_damage_reduction + amount, 0.0, 0.9)
+	_damage_reduction = clampf(_damage_reduction + amount, -0.2, 0.9)
 
 
 ## Multiplies max HP and grants the added headroom as current HP too, so a mid-run
@@ -233,7 +245,9 @@ func take_damage(amount: float) -> void:
 		return
 	if _invuln_time > 0.0:
 		# Invuln window acts as a brief shield: feedback only, no HP change.
-		GameFeel.shield_impact(global_position)
+		if _shield_feedback_cooldown <= 0.0:
+			_shield_feedback_cooldown = _SHIELD_FEEDBACK_INTERVAL
+			GameFeel.shield_impact(global_position)
 		return
 	var mitigated := amount * (1.0 - _damage_reduction)
 	_health = maxf(0.0, _health - maxf(0.0, mitigated))
@@ -243,6 +257,43 @@ func take_damage(amount: float) -> void:
 	if _health <= 0.0:
 		_alive = false
 		died.emit()
+
+
+## Pickup magnet radius (run upgrades scale it through apply_magnet_mult).
+func get_magnet_radius() -> float:
+	return combat_data.pickup_magnet_radius * _magnet_mult if combat_data != null else 0.0
+
+
+## Scales the pickup magnet radius (run upgrade hook).
+func apply_magnet_mult(mult: float) -> void:
+	if mult > 0.0:
+		_magnet_mult *= mult
+
+
+## Grants a protected window (e.g. after a boss dies, or on revive) without
+## shortening one already running.
+func grant_invulnerability(seconds: float) -> void:
+	_invuln_time = maxf(_invuln_time, seconds)
+
+
+## Re-applies body contact while the core keeps overlapping a hostile body.
+func _tick_contact_damage(delta: float) -> void:
+	if not _alive or _invuln_time > 0.0:
+		_contact_timer = 0.0
+		return
+	_contact_timer -= delta
+	if _contact_timer > 0.0:
+		return
+	_contact_timer = _CONTACT_RECHECK_INTERVAL
+	if not monitoring:
+		return
+	for area in get_overlapping_areas():
+		if area is Enemy:
+			take_damage((area as Enemy).get_contact_damage())
+			return
+		if area is Boss and (area as Boss).is_active():
+			take_damage((area as Boss).get_contact_damage())
+			return
 
 
 ## Enemies and pickups overlap the player core.

@@ -470,13 +470,9 @@ func _load_prefs() -> void:
 
 
 func _save_prefs() -> void:
-	var f := FileAccess.open(_PREFS_PATH, FileAccess.WRITE)
-	if f == null:
-		return
-	f.store_string("%s|%.3f|%.3f|%.3f" % [
+	AtomicFile.write_text(_PREFS_PATH, "%s|%.3f|%.3f|%.3f" % [
 		"1" if enabled else "0",
 		master_linear,
 		music_linear,
 		sfx_linear,
 	])
-	f.close()

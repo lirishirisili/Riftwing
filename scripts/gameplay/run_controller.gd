@@ -38,8 +38,10 @@ const _CATALOG_PATH := "res://resources/ships/ship_catalog_default.tres"
 const _DEFAULT_TIMELINE := "res://resources/stages/vertical_slice_timeline.tres"
 const _STAGE_MAP_PATH := "res://resources/stages/nova_sector_map.tres"
 const _DIFFICULTY_DIR := "res://resources/difficulty/"
-const _COMBO_WINDOW := 2.5
-const _RESULTS_DELAY := 1.6
+const _RULES_PATH := "res://resources/balance/run_rules_default.tres"
+## Enemy damage scaling grows at half the rate of the stage durability scalar,
+## so late stages hit harder without one-shotting the player.
+const _STAGE_DAMAGE_SHARE := 0.5
 const _PHASE_NAMES := ["EARLY", "MINI", "MID", "BOSS", "END"]
 
 var _screen := Vector2(1080, 1920)
@@ -71,6 +73,9 @@ var _timing_scale: float = 1.0
 var _is_daily: bool = false
 var _daily_date: String = ""
 var _daily_reward_core: int = 0
+var _rules: RunRulesData
+## Deferred "upgrade landed" beat, played once the card screen has unpaused.
+var _pending_upgrade_tint: Color = Color(0, 0, 0, 0)
 
 
 func receive_payload(payload: Dictionary) -> void:
@@ -93,6 +98,9 @@ func receive_payload(payload: Dictionary) -> void:
 
 
 func _ready() -> void:
+	_rules = load(_RULES_PATH) as RunRulesData
+	if _rules == null:
+		_rules = RunRulesData.new()
 	if timeline == null:
 		timeline = _resolve_stage_timeline()
 	if timeline == null:
@@ -109,6 +117,7 @@ func _ready() -> void:
 	_director.player = _player
 	_director.screen_size = _screen
 	_director.enemy_killed.connect(_on_enemy_killed)
+	_director.wave_finished.connect(_on_wave_finished)
 
 	_boss.enemy_projectile_pool = _enemy_bullet_pool
 	_boss.enemy_pool = _enemy_pool
@@ -121,6 +130,7 @@ func _ready() -> void:
 	_boss.health_changed.connect(_on_boss_health_changed)
 	_boss.phase_changed.connect(_on_boss_phase_changed)
 	_boss.add_destroyed.connect(_on_add_destroyed)
+	_boss.dying.connect(_on_boss_dying)
 	_boss.defeated.connect(_on_boss_defeated)
 	_player.died.connect(_on_player_died)
 
@@ -131,7 +141,7 @@ func _ready() -> void:
 		var dmg_mult := _profile.weapon_damage_mult if _profile != null else 1.0
 		_secondary.configure(_player_bullet_pool, _player, _director, _boss, dmg_mult)
 		_upgrades.bind_combat(_player, _secondary)
-	_upgrade_screen.configure(_upgrades)
+	_upgrade_screen.configure(_upgrades, _rules.rerolls_per_run)
 	_upgrade_screen.upgrade_selected.connect(_on_upgrade_selected)
 	_upgrade_screen.closed.connect(_on_upgrade_screen_closed)
 	_xp.track_player(_player)
@@ -141,6 +151,9 @@ func _ready() -> void:
 	_banner.visible = false
 	_overlay.draw.connect(_on_overlay_draw)
 	_hud.quit_to_menu_requested.connect(_on_hud_quit_to_menu)
+	_hud.pause_gate = _can_pause
+	_hud.configure_abilities(_rules.ability_left_charges, _rules.ability_left_cooldown,
+		_rules.ability_right_charges, _rules.ability_right_cooldown)
 	_hud.ability_left_activated.connect(_on_ability_feedback.bind(true))
 	_hud.ability_right_activated.connect(_on_ability_feedback.bind(false))
 	_begin_run()
@@ -156,7 +169,9 @@ func _apply_hangar_profile() -> void:
 	if ship == null:
 		return
 	var levels := SaveManager.get_upgrade_levels(ship.id)
-	_profile = CombatProfile.from_hangar(ship, levels)
+	# Stats are measured against the starter ship so better hulls really are better.
+	var reference := catalog.find_by_id(catalog.default_ship_id())
+	_profile = CombatProfile.from_hangar(ship, levels, reference)
 	if _player != null:
 		_player.apply_combat_profile(_profile)
 	if _weapon != null:
@@ -178,10 +193,15 @@ func _apply_difficulty() -> void:
 	var scalar := _stage_difficulty_scalar()
 	var enemy_hp := _difficulty.enemy_hp_mult * scalar
 	var boss_hp := _difficulty.boss_hp_mult * scalar
+	# One enemy-damage multiplier drives contact, enemy bolts, and boss attacks.
+	var enemy_dmg := _difficulty.enemy_contact_damage_mult * (1.0 + (scalar - 1.0) * _STAGE_DAMAGE_SHARE)
 	if _director != null:
-		_director.set_difficulty(enemy_hp, _difficulty.enemy_contact_damage_mult, _difficulty.enemy_count_add)
+		_director.set_difficulty(enemy_hp, enemy_dmg, _difficulty.enemy_count_add)
 	if _boss != null:
-		_boss.set_scaling(boss_hp)
+		_boss.set_scaling(boss_hp, enemy_dmg)
+		_boss.set_add_scaling(enemy_hp, enemy_dmg)
+	if _enemy_bullet_pool != null:
+		_enemy_bullet_pool.damage_mult = enemy_dmg
 	_reward_mult = _difficulty.reward_mult
 	_star_score_mult = _difficulty.star_score_mult
 	_timing_scale = clampf(_difficulty.timing_scale, 0.4, 1.0)
@@ -306,6 +326,10 @@ func handle_system_back() -> bool:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# QA hotkeys only exist in debug builds; a store build with a hardware
+	# keyboard (Chromebook, Bluetooth) must not be able to skip or win runs.
+	if not OS.is_debug_build():
+		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
 			KEY_Q:
@@ -387,7 +411,10 @@ func get_pool_snapshot() -> Dictionary:
 
 func _process(delta: float) -> void:
 	if _run_active and not _upgrade_screen.is_open():
-		_run_time += delta
+		# The phase clock only advances while waves run, so a slow mini-boss fight
+		# can never eat the mid waves or trigger the final boss early.
+		if _phase == Phase.EARLY_WAVES or _phase == Phase.MID_WAVES:
+			_run_time += delta
 		_stats.survival_seconds += delta
 		if _combo_timer > 0.0:
 			_combo_timer = maxf(0.0, _combo_timer - delta)
@@ -398,11 +425,10 @@ func _process(delta: float) -> void:
 		_results_timer -= delta
 		if _results_timer <= 0.0:
 			_go_to_results()
-	var eb := _enemy_bullet_pool.get_stats()
-	_peak_enemy_bolts = maxi(_peak_enemy_bolts, int(eb["active"]))
-	var active := _director.get_active_enemy_count()
-	_peak_enemies = maxi(_peak_enemies, active)
-	_overlay.queue_redraw()
+	_peak_enemy_bolts = maxi(_peak_enemy_bolts, _enemy_bullet_pool.get_active_count())
+	_peak_enemies = maxi(_peak_enemies, _director.get_active_enemy_count())
+	if GameFeel.debug_markers_enabled:
+		_overlay.queue_redraw()
 	_update_readout()
 	_update_hud()
 
@@ -465,7 +491,17 @@ func _enter_final_boss() -> void:
 
 func _clear_arena_projectiles() -> void:
 	_enemy_bullet_pool.release_all()
-	_pickup_pool.release_all()
+	_vacuum_pickups()
+
+
+## Pulls every live energy pickup to the ship (phase changes used to delete
+## uncollected energy, silently costing the player XP).
+func _vacuum_pickups() -> void:
+	for node in _pickup_pool.get_active_nodes():
+		var pickup := node as Pickup
+		if pickup != null:
+			pickup.magnet_target = _player
+			pickup.attract()
 
 
 func _show_banner(text: String, seconds: float) -> void:
@@ -505,14 +541,17 @@ func _on_upgrade_selected(upgrade: UpgradeData) -> void:
 	var tint := Palette.get_color("cyan", Color(0.2, 0.95, 1.0))
 	if upgrade != null:
 		tint = Palette.get_color(upgrade.rarity_color_token(), tint)
-	var pos := _player.get_core_global_position() if _player != null else Vector2.ZERO
-	# Deferred so the flash plays after the upgrade screen unpauses the tree.
-	GameFeel.call_deferred("upgrade_applied", pos, tint)
+	# Played from _on_upgrade_screen_closed, i.e. after the card screen has
+	# unpaused the tree (a deferred call here still ran while paused).
+	_pending_upgrade_tint = tint
 
 
 func _on_upgrade_screen_closed() -> void:
 	_level_up_queue = maxi(0, _level_up_queue - 1)
 	_xp.consume_pending_level()
+	if _pending_upgrade_tint.a > 0.0 and _player != null:
+		GameFeel.upgrade_applied(_player.get_core_global_position(), _pending_upgrade_tint)
+	_pending_upgrade_tint = Color(0, 0, 0, 0)
 	# Do not auto-chain another choice here. Banked XP only levels on the next
 	# energy gain so the player always gets combat between picks.
 
@@ -520,7 +559,7 @@ func _on_upgrade_screen_closed() -> void:
 func _register_kill() -> void:
 	_stats.enemies_destroyed += 1
 	_combo += 1
-	_combo_timer = _COMBO_WINDOW
+	_combo_timer = _rules.combo_window_seconds
 	if _combo > _stats.best_combo:
 		_stats.best_combo = _combo
 	# Milestone juice every 5 kills in the chain (feedback only).
@@ -556,6 +595,47 @@ func _on_boss_phase_changed(phase: int) -> void:
 	_health_bar.set_phase(phase)
 
 
+## HP hit zero: the death beat still runs ~1.2s, so clear hostile fire and
+## shield the player so a won fight can never flip into a defeat.
+func _on_boss_dying() -> void:
+	_enemy_bullet_pool.release_all()
+	if _player != null:
+		_player.grant_invulnerability(_rules.boss_kill_invuln_seconds)
+
+
+## Wave ran dry before the phase clock reached its next beat: restart it when
+## enough time remains, otherwise jump the clock forward (no dead air).
+func _on_wave_finished() -> void:
+	if _run_over:
+		return
+	var next_beat := -1.0
+	var wave: WaveData = null
+	if _phase == Phase.EARLY_WAVES:
+		next_beat = _mini_at()
+		wave = timeline.early_wave if timeline != null else null
+	elif _phase == Phase.MID_WAVES:
+		next_beat = _boss_at()
+		wave = timeline.mid_wave if timeline != null else null
+	else:
+		return
+	if wave != null and next_beat - _run_time >= _rules.wave_refill_min_seconds:
+		_director.start_wave(wave)
+	else:
+		_run_time = maxf(_run_time, next_beat)
+
+
+## Pause guard for the HUD: the upgrade cards own the tree pause while open.
+func _can_pause() -> bool:
+	return not _run_over and not _upgrade_screen.is_open()
+
+
+## AppRoot calls this when the app goes to the background (home button, call,
+## notification shade): open the pause overlay so combat never runs unattended.
+func on_app_backgrounded() -> void:
+	if _run_active and not _run_over and _hud != null:
+		_hud.request_pause()
+
+
 func _on_boss_defeated() -> void:
 	if _phase == Phase.MINI_BOSS:
 		_awaiting_boss_outcome = false
@@ -587,14 +667,18 @@ func _end_run(victory: bool) -> void:
 	_hud.force_resume()
 	_hud.set_boss_bar_visible(false)
 	_stats.victory = victory
-	_stats.rift_energy_collected = _player.get_energy()
+	if _player != null:
+		_stats.rift_energy_collected = _player.get_energy()
 	if _player != null and _player.combat_data != null and _player.combat_data.max_health > 0.0:
 		_stats.hp_ratio_end = clampf(
 			float(_player.get_health()) / float(_player.combat_data.max_health), 0.0, 1.0)
 	else:
 		_stats.hp_ratio_end = 0.0
 	_director.stop()
-	_results_timer = _RESULTS_DELAY
+	# Bank the run now (not when Results opens) so closing the app during the
+	# end banner can never lose earned rewards.
+	RunSettlement.settle(_stats)
+	_results_timer = _rules.results_delay_seconds
 	_banner.text = "SECTOR CLEARED" if victory else Brand.DEFEAT_LINE
 	_banner.visible = true
 
@@ -643,6 +727,8 @@ func _on_hud_quit_to_menu() -> void:
 
 
 func _on_ability_feedback(is_left: bool) -> void:
+	if _run_over or not _run_active:
+		return
 	# Real combat: fire the bound ability weapon (Missile Barrage / Arc Burst),
 	# plus the presentation beat. Cooldown/charges are gated by the HUD button.
 	if _secondary != null:

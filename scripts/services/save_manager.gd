@@ -21,6 +21,9 @@ const _TRACK_IDS := ["weapons", "shield", "engine", "drones", "ultimate"]
 const DIFFICULTY_NORMAL := "normal"
 const DIFFICULTY_HARD := "hard"
 const _EVENT_PATH := "res://resources/events/void_invasion.tres"
+## Seconds the device clock may move backwards before time-gated rewards
+## (daily, events) are withheld. Covers NTP corrections and DST quirks.
+const _CLOCK_SLACK_SECONDS := 600
 
 var _data: Dictionary = {}
 
@@ -64,6 +67,11 @@ func _default_data() -> Dictionary:
 			# Progress counters + one-time claim flags keyed by event id.
 			"progress": {},
 			"claimed_event_ids": [],
+		},
+		"clock": {
+			# Highest wall-clock time this save has seen; a clock rolled back past
+			# it means the date was tampered with (see is_clock_trusted).
+			"last_seen_unix": 0,
 		},
 	}
 
@@ -169,6 +177,25 @@ func get_stage_best_score(stage_id: String, difficulty: String = DIFFICULTY_NORM
 
 ## Whether the stage can be launched right now. NORMAL needs the unlock chain;
 ## HARD additionally requires the stage to have been cleared on NORMAL first.
+## --- Clock trust -----------------------------------------------------------
+
+## False when the device clock is earlier than a time this save already saw
+## (minus a small slack): the player moved the date forward to farm a daily or
+## event and then back. Time-gated rewards are withheld until real time catches up.
+func is_clock_trusted() -> bool:
+	var clock: Dictionary = _data.get("clock", {}) if typeof(_data.get("clock")) == TYPE_DICTIONARY else {}
+	var last := int(clock.get("last_seen_unix", 0))
+	return int(Time.get_unix_time_from_system()) >= last - _CLOCK_SLACK_SECONDS
+
+
+func _touch_clock() -> void:
+	if typeof(_data.get("clock")) != TYPE_DICTIONARY:
+		_data["clock"] = {"last_seen_unix": 0}
+	var now := int(Time.get_unix_time_from_system())
+	if now > int(_data["clock"].get("last_seen_unix", 0)):
+		_data["clock"]["last_seen_unix"] = now
+
+
 ## --- Daily Challenge -------------------------------------------------------
 
 func get_daily_last_completed() -> String:
@@ -220,7 +247,7 @@ func add_event_progress(event_id: String, amount: int, goal: int) -> int:
 ## Grants an event's reward exactly once, when its goal has been reached. Returns
 ## true if the reward was banked by this call.
 func claim_event_reward(event_id: String, goal: int, reward_energy: int, reward_core: int) -> bool:
-	if event_id == "" or is_event_claimed(event_id):
+	if event_id == "" or is_event_claimed(event_id) or not is_clock_trusted():
 		return false
 	if get_event_progress(event_id) < maxi(1, goal):
 		return false
@@ -264,14 +291,19 @@ func grant_run_rewards(run_id: String, rewards: RunRewards, stats: RunStats) -> 
 	if stats != null:
 		if stats.score > get_best_score():
 			_data["progression"]["best_score"] = stats.score
-		if stats.stage_id != "":
+		# Daily runs borrow a stage layout but are not campaign progress: they must
+		# never clear, unlock, or star a stage out of order.
+		var campaign_run := stats.stage_id != "" and not stats.is_daily
+		if campaign_run:
 			_update_stage_best_score(stats.stage_id, stats.score, stats.difficulty)
 		if stats.victory:
-			_mark_sector_completed(stats.sector)
-			if stats.stage_id != "":
+			if not stats.is_daily:
+				_mark_sector_completed(stats.sector)
+			if campaign_run:
 				_record_stage_clear_from_stats(stats)
 			# One-time Daily Challenge Rift Core bonus (per local date).
-			if stats.is_daily and stats.daily_date != "" and not is_daily_completed(stats.daily_date):
+			if stats.is_daily and stats.daily_date != "" and not is_daily_completed(stats.daily_date) \
+					and is_clock_trusted():
 				_data["currencies"]["rift_core"] = get_rift_core() + maxi(0, stats.daily_reward_core)
 				_mark_daily_completed(stats.daily_date)
 		# Timed event participation: enemies destroyed count toward the active window.
@@ -477,7 +509,7 @@ func _accrue_event_progress(stats: RunStats) -> void:
 	if kills <= 0:
 		return
 	var event := load(_EVENT_PATH) as EventData
-	if event == null:
+	if event == null or not is_clock_trusted():
 		return
 	var now := int(Time.get_unix_time_from_system())
 	if not event.is_active(now):
@@ -543,6 +575,8 @@ func load_game() -> void:
 	if loaded.is_empty():
 		return
 	_data = _migrate(_merge_defaults(loaded))
+	# Ensure the loaded save (not the defaults) has a level map for its ship.
+	_ensure_upgrade_entry(get_selected_ship_id())
 
 
 ## Reads a save file into a Dictionary, or {} when missing / empty / not JSON.
@@ -560,6 +594,8 @@ func _read_save_dict(path: String) -> Dictionary:
 
 
 func save_game() -> void:
+	if is_clock_trusted():
+		_touch_clock()
 	var text := JSON.stringify(_data, "\t")
 	var f := FileAccess.open(_TEMP_PATH, FileAccess.WRITE)
 	if f == null:
@@ -699,7 +735,6 @@ func _migrate(data: Dictionary) -> Dictionary:
 		version = 6
 	if version < SCHEMA_VERSION:
 		data["schema_version"] = SCHEMA_VERSION
-	_ensure_upgrade_entry(String(data["ships"]["selected_ship_id"]))
 	return data
 
 

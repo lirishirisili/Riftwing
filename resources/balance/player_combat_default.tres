@@ -6,3 +6,4 @@
 script = ExtResource("1")
 max_health = 100.0
 invuln_seconds = 1.0
+pickup_magnet_radius = 170.0

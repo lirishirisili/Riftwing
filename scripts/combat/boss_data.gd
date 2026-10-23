@@ -44,6 +44,9 @@ extends Resource
 ## Fraction of max health at which the fight enters phase 2 (prompt 06: 40%).
 @export_range(0.05, 0.95, 0.01) var phase2_threshold: float = 0.4
 
+## Invulnerable dramatic beat between phases (seconds).
+@export_range(0.3, 4.0, 0.05) var phase_transition_seconds: float = 1.1
+
 ## Ordered attack patterns cycled during phase 1.
 @export var phase1_patterns: Array[BossPatternData] = []
 

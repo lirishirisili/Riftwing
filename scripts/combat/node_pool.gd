@@ -47,6 +47,19 @@ func release_all() -> void:
 		_pool.release_all()
 
 
+## Live active nodes (read-only; iterate a duplicate if releasing in the loop).
+func get_active_nodes() -> Array[Node]:
+	if _pool == null:
+		var empty: Array[Node] = []
+		return empty
+	return _pool.get_active_nodes()
+
+
+## Allocation-free active count for per-frame readouts.
+func get_active_count() -> int:
+	return _pool.get_active_count() if _pool != null else 0
+
+
 func get_stats() -> Dictionary:
 	if _pool == null:
 		return {

@@ -63,6 +63,11 @@ func _handle_system_back() -> void:
 
 
 func _enter_background(flush_save: bool) -> void:
+	# Let the active screen react first (a run opens its pause overlay so combat
+	# never continues while the player is away).
+	var screen := SceneRouter.get_current_screen()
+	if screen != null and screen.has_method("on_app_backgrounded"):
+		screen.call("on_app_backgrounded")
 	if _backgrounded and not flush_save:
 		AudioManager.set_has_focus(false)
 		return

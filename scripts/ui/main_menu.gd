@@ -56,7 +56,7 @@ func _ready() -> void:
 	if _catalog == null:
 		_catalog = ShipCatalogData.new()
 
-	_start_button.configure("START RUN", "ENDLESS MODE", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN)
+	_start_button.configure("START RUN", "CAMPAIGN", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN)
 	_daily_button.configure("DAILY CHALLENGE", "COMPLETE AND EARN REWARDS", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.MAGENTA)
 	_ships_button.configure("SHIPS", "COLLECTION", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 104.0)
 	_upgrades_button.configure("UPGRADES", "POWER UP", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 104.0)
@@ -101,8 +101,23 @@ func _request_banner() -> void:
 	if ads == null or not ads.is_available():
 		return
 	ads.show_banner()
+	# Re-layout when the banner settles so a failed banner leaves no empty gap.
+	if not ads.banner_failed.is_connected(_on_banner_state_changed):
+		ads.banner_failed.connect(_on_banner_state_changed)
+	if not ads.banner_loaded.is_connected(_on_banner_loaded):
+		ads.banner_loaded.connect(_on_banner_loaded)
 	if not ads.initialization_finished.is_connected(_on_ads_initialized):
 		ads.initialization_finished.connect(_on_ads_initialized, CONNECT_ONE_SHOT)
+
+
+func _on_banner_state_changed(_message: String) -> void:
+	if is_inside_tree():
+		_apply_safe_area()
+
+
+func _on_banner_loaded() -> void:
+	if is_inside_tree():
+		_apply_safe_area()
 
 
 func _on_ads_initialized(success: bool) -> void:
@@ -115,6 +130,10 @@ func _exit_tree() -> void:
 	# the hangar, upgrades, or any other screen.
 	var ads: AdsService = PlatformServices.ads
 	if ads != null:
+		if ads.banner_failed.is_connected(_on_banner_state_changed):
+			ads.banner_failed.disconnect(_on_banner_state_changed)
+		if ads.banner_loaded.is_connected(_on_banner_loaded):
+			ads.banner_loaded.disconnect(_on_banner_loaded)
 		ads.hide_banner()
 
 
@@ -285,7 +304,7 @@ func _apply_safe_area() -> void:
 	# banner never overlaps the CTA stack.
 	var banner_reserve := 0.0
 	var ads: AdsService = PlatformServices.ads
-	if ads != null and ads.is_available():
+	if ads != null and ads.expects_banner():
 		banner_reserve = _BANNER_RESERVE
 	_safe.add_theme_constant_override(
 		"margin_bottom",

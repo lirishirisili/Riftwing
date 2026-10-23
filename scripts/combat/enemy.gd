@@ -49,6 +49,13 @@ var _diving: bool = false
 @onready var _shape: CollisionShape2D = $CollisionShape2D
 
 
+func _ready() -> void:
+	# The scene's CircleShape2D sub-resource is shared by every pooled instance;
+	# give each enemy its own copy so per-archetype hit radii never leak.
+	if _shape != null and _shape.shape != null:
+		_shape.shape = _shape.shape.duplicate()
+
+
 ## Configures and activates an enemy for a formation slot.
 func spawn(enemy_data: EnemyData, enter_from: Vector2, hold_pos: Vector2, exit_to: Vector2, entry_s: float, wait_s: float, exit_s: float) -> void:
 	data = enemy_data
@@ -184,6 +191,15 @@ func take_damage(amount: float) -> void:
 func pool_reset() -> void:
 	_phase = Phase.IDLE
 	_health = 0.0
+	# The enemy pool is shared by the WaveDirector and the Boss (adds). Drop the
+	# previous owner's listeners so one kill is never reported to both owners.
+	_disconnect_all(died)
+	_disconnect_all(split_requested)
+
+
+func _disconnect_all(sig: Signal) -> void:
+	for c in sig.get_connections():
+		sig.disconnect(c["callable"])
 
 
 func pool_disable() -> void:
@@ -258,6 +274,7 @@ func _drop_energy() -> void:
 			continue
 		var jitter := Vector2(randf_range(-24.0, 24.0), randf_range(-16.0, 16.0))
 		pickup.release_callback = Callable(pickup_pool, "release")
+		pickup.magnet_target = player
 		pickup.spawn(global_position + jitter, pickup_data, despawn_bounds)
 
 

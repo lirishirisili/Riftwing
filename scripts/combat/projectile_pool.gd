@@ -12,6 +12,9 @@ extends Node
 @export var max_total: int = -1
 @export var despawn_bounds: Rect2 = Rect2(-200.0, -400.0, 1480.0, 2720.0)
 @export var fires_at_player: bool = false
+## Per-run damage scaling stamped on every launched bolt (difficulty for enemy
+## bolts). Shared ProjectileData is never mutated.
+var damage_mult: float = 1.0
 
 var _pool: ObjectPool
 var _release_callable: Callable
@@ -45,12 +48,18 @@ func spawn(spawn_position: Vector2, direction: Vector2, data: ProjectileData) ->
 		return
 	projectile.release_callback = _release_callable
 	projectile.hits_player = fires_at_player
+	projectile.damage_mult = damage_mult
 	projectile.launch(spawn_position, direction, data, despawn_bounds)
 
 
 func release_all() -> void:
 	if _pool != null:
 		_pool.release_all()
+
+
+## Allocation-free active count for per-frame readouts.
+func get_active_count() -> int:
+	return _pool.get_active_count() if _pool != null else 0
 
 
 func get_stats() -> Dictionary:
