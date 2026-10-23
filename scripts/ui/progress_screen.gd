@@ -117,6 +117,14 @@ func _badge_for(tab: int) -> int:
 # --- Missions -----------------------------------------------------------------------
 
 func _build_missions() -> void:
+	if MetaProgress.supply_drop_available() and RewardedAd.is_ready():
+		var cat := MetaProgress.catalog()
+		_content.add_child(_row("DAILY SUPPLY DROP", _reward_text(cat.supply_drop_energy, cat.supply_drop_core), 1.0,
+			"WATCH AD", true, func() -> void:
+				RewardedAd.show("supply_drop", func() -> void:
+					if MetaProgress.claim_supply_drop():
+						_reward_feedback()
+					_rebuild())))
 	_content.add_child(_header("DAILY MISSIONS", "resets in %s" % _fmt_span(MetaProgress.seconds_to_next_day())))
 	for entry in MetaProgress.missions("daily"):
 		_content.add_child(_mission_row("daily", entry))

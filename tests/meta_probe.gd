@@ -215,7 +215,9 @@ func _check_ui() -> int:
 		if String(router.call("get_current_screen_id")) != "progress":
 			printerr("progress screen tab %d failed" % tab)
 			fails += 1
-	# Welcome-back modal appears when patrol income is waiting.
+	# Welcome-back modal appears when patrol income is waiting (after the
+	# one-time privacy choice, which is asked first).
+	_save.call("section", "privacy")["asked"] = true
 	_save.call("section", "patrol")["last_collect_unix"] = int(Time.get_unix_time_from_system()) - 7200
 	router.call("go_to", "main_menu")
 	for i in 4:

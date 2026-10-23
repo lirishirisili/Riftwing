@@ -31,7 +31,7 @@ Included: campaign stages, endless mode, daily challenge shell, ships, permanent
 
 Deferred until retention is proven: PvP, clans, chat, real-time co-op, complex backend, battle pass, more than two currencies, and cloud save.
 
-Monetization: none for now (ads removed). IAP reserved behind `StoreService` for a later milestone.
+Monetization: Unity LevelPlay ads (main-menu banner; interstitial at run breaks with a 3-run new-player grace period and never after a revive offer; opt-in rewarded placements: revive once per run, x2 run rewards, extra card reroll, x2 patrol income, daily supply drop). Rewards are granted only from the SDK reward callback. A first-launch privacy choice (personalized vs non-personalized ads) gates SDK start and is changeable in Settings. IAP stays reserved behind `StoreService` for a later milestone.
 
 ## Prototype success criteria
 - A new player understands movement without instructional text.

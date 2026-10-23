@@ -73,7 +73,7 @@ func _ready() -> void:
 	_ships_button.pressed.connect(_on_ships)
 	_upgrades_button.pressed.connect(_on_upgrades)
 	_build_progress_button()
-	call_deferred("_maybe_show_welcome")
+	call_deferred("_maybe_show_privacy")
 	_settings_button.pressed.connect(_on_settings)
 	_event_banner.gui_input.connect(_on_event_gui_input)
 
@@ -437,6 +437,12 @@ func _maybe_show_welcome() -> void:
 	col.add_child(claim)
 	claim.configure("CLAIM", "", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN, 110.0)
 	claim.pressed.connect(_claim_welcome)
+	if patrol > 0 and RewardedAd.is_ready():
+		var double := _GLOW_CTA.instantiate() as GlowCtaButton
+		col.add_child(double)
+		double.configure("CLAIM ×2 PATROL", "WATCH AN AD", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.MAGENTA, 96.0)
+		double.pressed.connect(func() -> void:
+			RewardedAd.show("patrol_double", func() -> void: _claim_welcome(2)))
 
 
 func _welcome_label(text: String, size: int, color: Color) -> Label:
@@ -458,3 +464,63 @@ func _claim_welcome(patrol_mult: int = 1) -> void:
 		_welcome = null
 	_refresh_currencies()
 	_refresh_progress_badge()
+
+
+# --- First-launch privacy choice ---------------------------------------------------------
+
+## Asked once, before ads start (PlatformServices waits for the answer).
+func _maybe_show_privacy() -> void:
+	if not is_inside_tree():
+		return
+	if PlatformServices.has_privacy_choice():
+		_maybe_show_welcome()
+		return
+	var modal := Control.new()
+	modal.name = "PrivacyChoice"
+	modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	modal.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(modal)
+	var dim := ColorRect.new()
+	dim.color = Color(0.01, 0.02, 0.06, 0.88)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	modal.add_child(dim)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	modal.add_child(center)
+	var panel := PanelContainer.new()
+	panel.theme_type_variation = &"NeonPanel"
+	panel.custom_minimum_size = Vector2(900, 0)
+	center.add_child(panel)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 16)
+	panel.add_child(col)
+	col.add_child(_welcome_label("YOUR PRIVACY", 46, Color(0.96, 0.98, 1)))
+	var body := _welcome_label(
+		"%s is free to play thanks to ads. May our ad partners use your device's advertising ID to show ads that match your interests? You can change this anytime in Settings." % Brand.DISPLAY,
+		26, Color(0.82, 0.88, 1))
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	col.add_child(body)
+	var allow := _GLOW_CTA.instantiate() as GlowCtaButton
+	col.add_child(allow)
+	allow.configure("ALLOW PERSONALIZED ADS", "", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN, 104.0)
+	allow.pressed.connect(_on_privacy_choice.bind(modal, true))
+	var decline := _GLOW_CTA.instantiate() as GlowCtaButton
+	col.add_child(decline)
+	decline.configure("NON-PERSONALIZED ADS ONLY", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 92.0)
+	decline.pressed.connect(_on_privacy_choice.bind(modal, false))
+	var policy := Button.new()
+	policy.text = "Privacy Policy"
+	policy.flat = true
+	policy.custom_minimum_size = Vector2(0, 64)
+	policy.add_theme_font_size_override("font_size", 24)
+	policy.add_theme_color_override("font_color", Palette.get_color("cyan", Color(0.2, 0.9, 1)))
+	policy.pressed.connect(func() -> void: OS.shell_open(Brand.PRIVACY_POLICY_URL))
+	col.add_child(policy)
+
+
+func _on_privacy_choice(modal: Control, consent: bool) -> void:
+	_click()
+	PlatformServices.apply_privacy(consent)
+	modal.queue_free()
+	_request_banner()
+	call_deferred("_maybe_show_welcome")

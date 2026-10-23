@@ -5,6 +5,7 @@
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
 #import <AdSupport/AdSupport.h>
 #import <IronSource/IronSource.h>
+#import <objc/message.h>
 
 #include "core/config/engine.h"
 
@@ -231,6 +232,8 @@ RiftstrikeLevelPlay *RiftstrikeLevelPlay::get_singleton() {
 void RiftstrikeLevelPlay::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("initialize", "app_key", "banner_id", "interstitial_id", "rewarded_id", "development"), &RiftstrikeLevelPlay::initialize);
 	ClassDB::bind_method(D_METHOD("show_banner"), &RiftstrikeLevelPlay::show_banner);
+	ClassDB::bind_method(D_METHOD("set_consent", "consent"), &RiftstrikeLevelPlay::set_consent);
+	ClassDB::bind_method(D_METHOD("set_metadata", "key", "value"), &RiftstrikeLevelPlay::set_metadata);
 	ClassDB::bind_method(D_METHOD("hide_banner"), &RiftstrikeLevelPlay::hide_banner);
 	ClassDB::bind_method(D_METHOD("destroy_banner"), &RiftstrikeLevelPlay::destroy_banner);
 	ClassDB::bind_method(D_METHOD("load_interstitial"), &RiftstrikeLevelPlay::load_interstitial);
@@ -395,6 +398,37 @@ void RiftstrikeLevelPlay::on_pause() {
 
 void RiftstrikeLevelPlay::on_resume() {
 	// See on_pause().
+}
+
+// Resolved at runtime so the bridge builds against any IronSourceSDK 9.x header
+// layout (LevelPlay or the legacy IronSource facade).
+static Class rlp_privacy_target(SEL sel) {
+	if ([LevelPlay respondsToSelector:sel]) {
+		return [LevelPlay class];
+	}
+	if ([IronSource respondsToSelector:sel]) {
+		return [IronSource class];
+	}
+	return nil;
+}
+
+void RiftstrikeLevelPlay::set_consent(bool consent) {
+	SEL sel = NSSelectorFromString(@"setConsent:");
+	Class target = rlp_privacy_target(sel);
+	if (target != nil) {
+		((void (*)(id, SEL, BOOL))objc_msgSend)(target, sel, consent ? YES : NO);
+	}
+}
+
+void RiftstrikeLevelPlay::set_metadata(const String &key, const String &value) {
+	SEL sel = NSSelectorFromString(@"setMetaDataWithKey:value:");
+	Class target = rlp_privacy_target(sel);
+	if (target == nil) {
+		return;
+	}
+	NSString *k = [NSString stringWithUTF8String:key.utf8().get_data()];
+	NSString *v = [NSString stringWithUTF8String:value.utf8().get_data()];
+	((void (*)(id, SEL, NSString *, NSString *))objc_msgSend)(target, sel, k, v);
 }
 
 void RiftstrikeLevelPlay::launch_test_suite() {

@@ -307,6 +307,12 @@ func _finish_close() -> void:
 	closed.emit()
 
 
+## Overrides the subtitle line (first-run onboarding text).
+func set_subtitle(text: String) -> void:
+	if _subtitle != null:
+		_subtitle.text = text
+
+
 ## Live card count for probes (children of Cards row only).
 func get_card_count() -> int:
 	if _card_row == null:
@@ -324,7 +330,13 @@ func _on_reroll_pressed() -> void:
 	if _reveal_mode:
 		_close_reveal()
 		return
-	if _manager == null or _selecting or _rerolls_left <= 0:
+	if _manager == null or _selecting:
+		return
+	if _rerolls_left <= 0:
+		# Out of free rerolls: one more for a rewarded ad (granted on reward only).
+		RewardedAd.show("reroll", func() -> void:
+			_rerolls_left += 1
+			_on_reroll_pressed())
 		return
 	var choices := _manager.roll_choices(3, _current_level)
 	if choices.is_empty():
@@ -348,6 +360,11 @@ func _refresh_reroll_button() -> void:
 	if _rerolls_left > 0:
 		_reroll_button.configure(
 			"REROLL · %d" % _rerolls_left, "",
+			GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.MAGENTA, 96.0)
+		_reroll_button.set_enabled(true)
+	elif RewardedAd.is_ready():
+		_reroll_button.configure(
+			"REROLL · AD", "WATCH AN AD",
 			GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.MAGENTA, 96.0)
 		_reroll_button.set_enabled(true)
 	else:

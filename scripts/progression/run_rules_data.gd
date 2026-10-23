@@ -82,3 +82,12 @@ extends Resource
 ## Boss Rush: breather between bosses and free level-ups granted before each.
 @export_range(1.0, 15.0, 0.5) var rush_breather_seconds: float = 4.0
 @export_range(0, 4) var rush_levels_per_boss: int = 1
+
+# --- Rewarded revive ------------------------------------------------------------
+
+## Revives allowed per run (rewarded ad), HP restored, protection window, and
+## how long the offer stays up.
+@export_range(0, 3) var revives_per_run: int = 1
+@export_range(0.1, 1.0, 0.05) var revive_hp_fraction: float = 0.5
+@export_range(0.5, 6.0, 0.1) var revive_invuln_seconds: float = 3.0
+@export_range(2.0, 15.0, 0.5) var revive_offer_seconds: float = 6.0

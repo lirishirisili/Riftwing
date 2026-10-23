@@ -18,6 +18,8 @@ signal died()
 ## A non-energy pickup (heal / magnet / chest) was collected; the run host
 ## resolves it. `kind` is PickupData.Kind.
 signal special_pickup(kind: int, value: int)
+## The first finger-down of a drag (tutorial hint dismissal).
+signal drag_started()
 
 ## True while a drag is actively steering the ship.
 var _dragging: bool = false
@@ -353,6 +355,18 @@ func _draw() -> void:
 		draw_arc(Vector2.ZERO, 98.0, 0.0, TAU, 48, Color(c, 0.18 * pulse), 8.0, true)
 
 
+## Revive (rewarded ad): back in the fight with `hp_fraction` HP and a long
+## protected window.
+func revive(hp_fraction: float, invuln_seconds: float) -> void:
+	if combat_data == null:
+		return
+	_alive = true
+	visible = true
+	_health = maxf(1.0, combat_data.max_health * clampf(hp_fraction, 0.05, 1.0))
+	_invuln_time = maxf(_invuln_time, invuln_seconds)
+	health_changed.emit(_health, combat_data.max_health)
+
+
 ## Debug / probe: destroys the ship regardless of barrier and invulnerability.
 func force_kill() -> void:
 	if not _alive:
@@ -410,6 +424,8 @@ func _on_area_entered(area: Area2D) -> void:
 
 
 func _begin_drag(index: int, screen_pos: Vector2) -> void:
+	if not _dragging:
+		drag_started.emit()
 	_dragging = true
 	_active_touch = index
 	_update_target(screen_pos)

@@ -27,7 +27,56 @@ func _ready() -> void:
 	achievements = AchievementService.new()
 	ads = _make_ads_service()
 	ads.configure(_load_ads_config())
+	# Ads start only once the player made a privacy choice (consent must be set
+	# before the SDK initializes). SaveManager loads after this autoload, so the
+	# check is deferred.
+	call_deferred("_start_ads_if_consented")
+
+
+var _ads_started: bool = false
+
+
+func _start_ads_if_consented() -> void:
+	var privacy: Dictionary = SaveManager.section("privacy")
+	if bool(privacy.get("asked", false)):
+		_start_ads(bool(privacy.get("consent", false)))
+
+
+## True once the first-launch privacy question has been answered.
+func has_privacy_choice() -> bool:
+	return bool(SaveManager.section("privacy").get("asked", false))
+
+
+func get_ads_consent() -> bool:
+	return bool(SaveManager.section("privacy").get("consent", false))
+
+
+## Stores the player's choice and applies it. Starts ads on the first call; a
+## later change (Settings) updates consent for the running SDK.
+func apply_privacy(consent: bool) -> void:
+	var privacy: Dictionary = SaveManager.section("privacy")
+	privacy["asked"] = true
+	privacy["consent"] = consent
+	SaveManager.save_game()
+	if _ads_started:
+		_apply_consent(consent)
+	else:
+		_start_ads(consent)
+
+
+func _start_ads(consent: bool) -> void:
+	if _ads_started:
+		return
+	_ads_started = true
+	_apply_consent(consent)
 	ads.initialize()
+
+
+func _apply_consent(consent: bool) -> void:
+	ads.set_consent(consent)
+	# CCPA: no consent means "do not sell". The game is not child-directed.
+	ads.set_metadata("do_not_sell", "false" if consent else "true")
+	ads.set_metadata("is_child_directed", "false")
 
 
 ## Selects the Unity LevelPlay adapter when its native plugin is present

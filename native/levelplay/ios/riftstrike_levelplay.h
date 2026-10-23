@@ -43,6 +43,10 @@ public:
 	void on_resume();
 	void launch_test_suite();
 
+	// Privacy: GDPR consent + regulation metadata (call before initialize).
+	void set_consent(bool consent);
+	void set_metadata(const String &key, const String &value);
+
 	// Called from the Objective-C delegates to fan results back to GDScript.
 	void notify_signal(const String &name);
 	void notify_signal_str(const String &name, const String &arg);

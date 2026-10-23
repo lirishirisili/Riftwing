@@ -287,6 +287,26 @@ class RiftstrikeLevelPlayPlugin(godot: Godot) : GodotPlugin(godot) {
         // See on_pause().
     }
 
+    // --- Privacy ------------------------------------------------------------
+
+    /** GDPR consent for personalized ads. Call before initialize(). */
+    @UsedByGodot
+    fun set_consent(consent: Boolean) {
+        try {
+            LevelPlay.setConsent(consent)
+        } catch (_: Throwable) {
+        }
+    }
+
+    /** Regulation flags, e.g. ("do_not_sell", "true") or ("is_child_directed", "false"). */
+    @UsedByGodot
+    fun set_metadata(key: String, value: String) {
+        try {
+            LevelPlay.setMetaData(key, value)
+        } catch (_: Throwable) {
+        }
+    }
+
     @UsedByGodot
     fun launch_test_suite() {
         val activity = activity ?: return

@@ -13,6 +13,7 @@ const _ICON_ENERGY := "res://assets/icons/icon_energy.svg"
 const _ICON_CORE := "res://assets/icons/icon_crystal.svg"
 const _ICON_BOSS := "res://assets/icons/icon_boss.svg"
 const _ICON_MISSILE := "res://assets/icons/icon_missile.svg"
+const _GLOW_DOUBLE := preload("res://scenes/ui/chrome/glow_cta_button.tscn")
 
 @onready var _shell: MetaScreenShell = %Shell
 @onready var _parallax: ParallaxBackground = $Background
@@ -44,6 +45,10 @@ var _rewards: RunRewards
 var _granted_now: bool = false
 var _hero_time := 0.0
 var _was_new_best := false
+## New players see no interstitials during their first few runs.
+const _INTERSTITIAL_GRACE_RUNS := 3
+var _watched_rewarded: bool = false
+var _double_button: GlowCtaButton
 
 
 func receive_payload(payload: Dictionary) -> void:
@@ -90,6 +95,12 @@ func _ready() -> void:
 
 func _maybe_run_break_interstitial() -> void:
 	if not is_inside_tree():
+		return
+	# Retention guard rails: no interstitial in a new player's first runs, after
+	# a revive offer, or right after the player chose to watch a rewarded ad.
+	if int(SaveManager.section("lifetime").get("runs", 0)) <= _INTERSTITIAL_GRACE_RUNS:
+		return
+	if _stats.revive_offered or _watched_rewarded:
 		return
 	var ads: AdsService = PlatformServices.ads
 	if ads == null:
@@ -248,6 +259,7 @@ func _populate() -> void:
 	_append_meta_rows(rows)
 	_set_stat_rows(rows)
 	_set_reward_chips()
+	_build_double_button()
 
 	var claimed := "" if _granted_now else "  ·  already claimed"
 	var stars_txt := ""
@@ -558,3 +570,39 @@ func _append_meta_rows(rows: Array) -> void:
 	var done := int(meta.get("missions_completed", 0))
 	if done > 0:
 		rows.append(["Missions Ready", "%d to claim" % done, _ICON_MISSILE])
+
+
+# --- Rewarded x2 -------------------------------------------------------------------------
+
+func _build_double_button() -> void:
+	if _double_button != null or _reward_box == null:
+		return
+	if not _granted_now or _rewards == null or _rewards.is_empty():
+		return
+	if SaveManager.has_bonus_rewards(_stats.run_id) or not RewardedAd.is_ready():
+		return
+	_double_button = _GLOW_DOUBLE.instantiate() as GlowCtaButton
+	_double_button.name = "DoubleRewards"
+	var parent := _reward_box.get_parent()
+	parent.add_child(_double_button)
+	parent.move_child(_double_button, _reward_box.get_index() + 1)
+	_double_button.configure("×2 REWARDS", "WATCH AN AD", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.MAGENTA, 100.0)
+	_double_button.pressed.connect(func() -> void:
+		_watched_rewarded = true
+		RewardedAd.show("results_double", _on_double_reward, func(_ok: bool) -> void:
+			if _double_button != null and SaveManager.has_bonus_rewards(_stats.run_id):
+				_double_button.queue_free()
+				_double_button = null))
+
+
+func _on_double_reward() -> void:
+	if not SaveManager.grant_bonus_rewards(_stats.run_id, _rewards):
+		return
+	var doubled := RunRewards.new(_rewards.rift_energy * 2, _rewards.rift_core * 2)
+	var original := _rewards
+	_rewards = doubled
+	_set_reward_chips()
+	_rewards = original
+	AudioManager.play_sfx("reward", Vector2.ZERO, AudioManager.PRIORITY_HIGH)
+	if _shell != null:
+		_shell.refresh_currencies()

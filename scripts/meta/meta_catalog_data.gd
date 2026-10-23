@@ -57,3 +57,7 @@ func find_mission(id: String) -> MissionData:
 		if m != null and m.id == id:
 			return m
 	return null
+
+## Daily rewarded "supply drop" (one per local day).
+@export_range(0, 100000) var supply_drop_energy: int = 500
+@export_range(0, 50) var supply_drop_core: int = 1

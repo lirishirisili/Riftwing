@@ -519,3 +519,18 @@ static func _roll_rarity(bonus: int = 0, rng: RandomNumberGenerator = null) -> i
 		if roll <= 0.0:
 			return i
 	return 0
+
+
+# --- Daily rewarded supply drop ---------------------------------------------------------
+
+static func supply_drop_available() -> bool:
+	return SaveManager.is_clock_trusted() and String(SaveManager.section("ads").get("supply_day", "")) != day_key()
+
+
+## Reward callback for the daily rewarded supply drop.
+static func claim_supply_drop() -> bool:
+	if not supply_drop_available():
+		return false
+	SaveManager.section("ads")["supply_day"] = day_key()
+	SaveManager.grant_currency(catalog().supply_drop_energy, catalog().supply_drop_core)
+	return true

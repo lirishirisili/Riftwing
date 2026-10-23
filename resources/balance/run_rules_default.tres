@@ -34,3 +34,7 @@ endless_boss_interval = 75.0
 endless_scale_per_boss = 1.2
 rush_breather_seconds = 4.0
 rush_levels_per_boss = 1
+revives_per_run = 1
+revive_hp_fraction = 0.5
+revive_invuln_seconds = 3.0
+revive_offer_seconds = 6.0

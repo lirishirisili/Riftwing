@@ -13,6 +13,10 @@ var _sfx_btn: GlowCtaButton
 var _quality_btn: GlowCtaButton
 var _haptics_btn: GlowCtaButton
 var _reset_btn: GlowCtaButton
+var _ads_btn: GlowCtaButton
+var _policy_btn: GlowCtaButton
+var _tutorial_btn: GlowCtaButton
+var _version_label: Label
 var _back_btn: GlowCtaButton
 var _reset_hint: Label
 var _reset_armed := false
@@ -57,6 +61,9 @@ func _ready() -> void:
 	_sfx_btn = _make_row(col, "SFX", "", GlowCtaButton.Variant.NAV)
 	_quality_btn = _make_row(col, "EFFECTS", "", GlowCtaButton.Variant.NAV)
 	_haptics_btn = _make_row(col, "HAPTICS", "", GlowCtaButton.Variant.NAV)
+	_ads_btn = _make_row(col, "PERSONALIZED ADS", "", GlowCtaButton.Variant.NAV)
+	_policy_btn = _make_row(col, "PRIVACY POLICY", "", GlowCtaButton.Variant.NAV)
+	_tutorial_btn = _make_row(col, "REPLAY TUTORIAL", "", GlowCtaButton.Variant.NAV)
 	_reset_btn = _make_row(col, "RESET PROGRESS", "", GlowCtaButton.Variant.SECONDARY)
 
 	_reset_hint = Label.new()
@@ -75,6 +82,17 @@ func _ready() -> void:
 	_quality_btn.pressed.connect(_on_quality)
 	_haptics_btn.pressed.connect(_on_haptics)
 	_reset_btn.pressed.connect(_on_reset)
+	_ads_btn.pressed.connect(_on_ads)
+	_policy_btn.pressed.connect(func() -> void:
+		_click()
+		OS.shell_open(Brand.PRIVACY_POLICY_URL))
+	_tutorial_btn.pressed.connect(_on_tutorial)
+	_version_label = Label.new()
+	_version_label.text = "%s  v%s" % [Brand.STORE_TITLE, String(ProjectSettings.get_setting("application/config/version", ""))]
+	_version_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_version_label.add_theme_font_size_override("font_size", 20)
+	_version_label.add_theme_color_override("font_color", Color(0.5, 0.6, 0.75, 1))
+	content.add_child(_version_label)
 	_back_btn.pressed.connect(_on_back)
 
 	AudioManager.play_music("menu")
@@ -94,6 +112,7 @@ func _refresh() -> void:
 	_sfx_btn.configure("SFX:  %d%%" % int(round(AudioManager.sfx_linear * 100.0)), "", GlowCtaButton.Variant.NAV)
 	_quality_btn.configure("EFFECTS:  %s" % GameFeel.quality_name(), "", GlowCtaButton.Variant.NAV)
 	_haptics_btn.configure("HAPTICS:  %s" % ("ON" if GameFeel.haptics_enabled else "OFF"), "", GlowCtaButton.Variant.NAV)
+	_ads_btn.configure("PERSONALIZED ADS:  %s" % ("ON" if PlatformServices.get_ads_consent() else "OFF"), "", GlowCtaButton.Variant.NAV)
 	_reset_btn.configure(
 		"RESET PROGRESS?  TAP AGAIN" if _reset_armed else "RESET PROGRESS",
 		"",
@@ -139,6 +158,21 @@ func _on_haptics() -> void:
 	GameFeel.set_haptics_enabled(not GameFeel.haptics_enabled)
 	_click()
 	_refresh()
+
+
+func _on_ads() -> void:
+	_click()
+	PlatformServices.apply_privacy(not PlatformServices.get_ads_consent())
+	_refresh()
+
+
+func _on_tutorial() -> void:
+	_click()
+	var t := SaveManager.section("tutorial")
+	for key in t.keys():
+		t[key] = false
+	SaveManager.save_game()
+	_tutorial_btn.configure("TUTORIAL WILL REPLAY", "", GlowCtaButton.Variant.NAV)
 
 
 func _on_reset() -> void:

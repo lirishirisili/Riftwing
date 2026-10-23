@@ -194,6 +194,7 @@ func _ready() -> void:
 	_player.died.connect(_on_player_died)
 	_player.health_changed.connect(_on_player_health_changed)
 	_player.special_pickup.connect(_on_special_pickup)
+	_player.drag_started.connect(_on_first_drag)
 	_mount_screen_fx()
 
 	_upgrades.bind_plasma_weapon(_weapon)
@@ -221,6 +222,8 @@ func _ready() -> void:
 	_hud.quit_to_menu_requested.connect(_on_hud_quit_to_menu)
 	_hud.pause_gate = _can_pause
 	_hud.nova_activated.connect(_on_nova_activated)
+	_hud.revive_accepted.connect(_on_revive_accepted)
+	_hud.revive_declined.connect(_finish_death)
 	_hud.configure_abilities(_rules.ability_left_charges, _rules.ability_left_cooldown,
 		_rules.ability_right_charges, _rules.ability_right_cooldown)
 	_hud.ability_left_activated.connect(_on_ability_feedback.bind(true))
@@ -371,6 +374,7 @@ func _begin_run() -> void:
 	_hud.set_boss_bar_visible(false)
 	_hud.set_wave_info(_wave_label_for_phase())
 	_clear_arena_projectiles()
+	_show_tutorial_hint()
 	_pending_chests = 0
 	_boss_cycle = 0
 	_mode_scale = 1.0
@@ -627,6 +631,9 @@ func _try_open_upgrade_screen() -> void:
 	var level := _xp.get_level() - (_level_up_queue - 1)
 	if not _upgrade_screen.open(level):
 		_level_up_queue = 0
+	elif not _tutorial_seen("cards"):
+		_upgrade_screen.set_subtitle("PICK ONE · WEAPONS LEVEL UP AND EVOLVE")
+		_mark_tutorial("cards")
 
 
 func _on_upgrade_selected(upgrade: UpgradeData) -> void:
@@ -747,7 +754,7 @@ func _on_wave_finished() -> void:
 
 ## Pause guard for the HUD: the upgrade cards own the tree pause while open.
 func _can_pause() -> bool:
-	return not _run_over and not _upgrade_screen.is_open()
+	return not _run_over and not _upgrade_screen.is_open() and not _hud.is_revive_offer_open()
 
 
 ## AppRoot calls this when the app goes to the background (home button, call,
@@ -778,7 +785,45 @@ func _on_player_died() -> void:
 		GameFeel.player_death(_player.get_core_global_position())
 		_player.visible = false
 	GameFeel.set_danger(0.0)
+	if _can_offer_revive():
+		_stats.revive_offered = true
+		get_tree().paused = true
+		AudioManager.set_fire_loop_suppressed(true)
+		_hud.show_revive_offer(_rules.revive_offer_seconds, _rules.revive_hp_fraction)
+		return
 	_end_run(false)
+
+
+func _can_offer_revive() -> bool:
+	return not _run_over and _stats.revives_used < _rules.revives_per_run and RewardedAd.is_ready()
+
+
+func _on_revive_accepted() -> void:
+	if not RewardedAd.show("revive", _do_revive, _on_revive_done):
+		_finish_death()
+
+
+## Reward callback: back in the fight with the build intact.
+func _do_revive() -> void:
+	_stats.revives_used += 1
+	get_tree().paused = false
+	AudioManager.set_fire_loop_suppressed(false)
+	_enemy_bullet_pool.release_all()
+	_player.revive(_rules.revive_hp_fraction, _rules.revive_invuln_seconds)
+	GameFeel.revive(_player.get_core_global_position())
+	_hud.show_callout("REVIVED", Palette.get_color("cyan", Color(0.2, 0.95, 1.0)), "", 1.0)
+
+
+func _on_revive_done(rewarded: bool) -> void:
+	if not rewarded:
+		_finish_death()
+
+
+func _finish_death() -> void:
+	get_tree().paused = false
+	AudioManager.set_fire_loop_suppressed(false)
+	if _player != null and not _player.is_alive():
+		_end_run(false)
 
 
 func _end_run(victory: bool) -> void:
@@ -938,6 +983,9 @@ func _add_nova_charge(amount: float) -> void:
 	_hud.set_nova_charge(_nova_charge)
 	if _nova_charge >= 1.0 and _player != null:
 		GameFeel.nova_ready(_player.get_core_global_position())
+		if not _tutorial_seen("nova"):
+			_hud.show_callout("NOVA READY", Palette.get_color("cyan", Color(0.2, 0.95, 1.0)), "TAP THE ORB ▶", 2.2)
+			_mark_tutorial("nova")
 
 
 func _on_nova_activated() -> void:
@@ -1210,3 +1258,25 @@ func _apply_loadout() -> void:
 		_player.apply_magnet_mult(1.0 + float(bonus["magnet"]))
 	if bonus.has("xp"):
 		_xp.xp_mult *= 1.0 + float(bonus["xp"])
+
+
+# --- First-run tutorial ----------------------------------------------------------------------
+
+func _tutorial_seen(key: String) -> bool:
+	return bool(SaveManager.section("tutorial").get(key, false))
+
+
+func _mark_tutorial(key: String) -> void:
+	SaveManager.section("tutorial")[key] = true
+	SaveManager.save_game()
+
+
+func _show_tutorial_hint() -> void:
+	if not _tutorial_seen("drag"):
+		_hud.show_hint("DRAG ANYWHERE TO FLY\n◀  ▶")
+
+
+func _on_first_drag() -> void:
+	_hud.hide_hint()
+	if not _tutorial_seen("drag"):
+		_mark_tutorial("drag")

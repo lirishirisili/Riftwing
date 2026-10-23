@@ -12,6 +12,8 @@ signal quit_to_menu_requested()
 signal ability_left_activated()
 signal ability_right_activated()
 signal nova_activated()
+signal revive_accepted()
+signal revive_declined()
 
 const _RULES_PATH := "res://resources/progression/reward_rules_default.tres"
 const _ICON_MISSILE := "res://assets/icons/icon_missile.svg"
@@ -58,6 +60,12 @@ var _icon_right: Texture2D
 var _nova: NovaButton
 var _callout: Label
 var _callout_tween: Tween
+var _revive_panel: Control
+var _revive_timer_label: Label
+var _revive_left: float = 0.0
+var _revive_hp_pct: int = 50
+var _hint: Label
+var _hint_time: float = 0.0
 
 
 func _ready() -> void:
@@ -273,6 +281,10 @@ func _layout_overlays(safe: Rect2, full: Vector2) -> void:
 
 
 func _process(delta: float) -> void:
+	_tick_revive(delta)
+	if _hint != null and _hint.visible:
+		_hint_time += delta
+		_hint.modulate.a = 0.6 + 0.4 * sin(_hint_time * 4.0)
 	if _currency_flash > 0.0:
 		_currency_flash = maxf(0.0, _currency_flash - delta * 3.0)
 		var pulse := 1.0 + _currency_flash * 0.08
@@ -383,3 +395,117 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
 		toggle_pause()
 		get_viewport().set_input_as_handled()
+
+
+# --- Revive offer (rewarded ad) -------------------------------------------------------
+
+const _GLOW_SCENE := preload("res://scenes/ui/chrome/glow_cta_button.tscn")
+
+
+## Shows "REVIVE?" with a countdown; runs while the tree is paused. Emits
+## revive_accepted (player chose the ad) or revive_declined (give up / timeout).
+func show_revive_offer(seconds: float, hp_fraction: float = 0.5) -> void:
+	if _revive_panel == null:
+		_build_revive_panel()
+	_revive_left = seconds
+	_revive_hp_pct = int(round(hp_fraction * 100.0))
+	_revive_panel.visible = true
+	_update_revive_label()
+
+
+func hide_revive_offer() -> void:
+	if _revive_panel != null:
+		_revive_panel.visible = false
+	_revive_left = 0.0
+
+
+func is_revive_offer_open() -> bool:
+	return _revive_panel != null and _revive_panel.visible
+
+
+func _build_revive_panel() -> void:
+	_revive_panel = Control.new()
+	_revive_panel.name = "ReviveOffer"
+	_revive_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	_revive_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_revive_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_revive_panel)
+	var dim := ColorRect.new()
+	dim.color = Color(0.04, 0.0, 0.03, 0.72)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_revive_panel.add_child(dim)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_revive_panel.add_child(center)
+	var panel := PanelContainer.new()
+	panel.theme_type_variation = &"NeonPanel"
+	panel.custom_minimum_size = Vector2(820, 0)
+	center.add_child(panel)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 18)
+	panel.add_child(col)
+	var title := Label.new()
+	title.text = "SHIP DESTROYED"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 52)
+	title.add_theme_color_override("font_color", Palette.get_color("danger", Color(1, 0.25, 0.3)))
+	col.add_child(title)
+	_revive_timer_label = Label.new()
+	_revive_timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_revive_timer_label.add_theme_font_size_override("font_size", 30)
+	col.add_child(_revive_timer_label)
+	var revive := _GLOW_SCENE.instantiate() as GlowCtaButton
+	col.add_child(revive)
+	revive.configure("REVIVE", "WATCH AN AD · KEEP YOUR BUILD", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN, 120.0)
+	revive.pressed.connect(func() -> void:
+		hide_revive_offer()
+		revive_accepted.emit())
+	var give_up := _GLOW_SCENE.instantiate() as GlowCtaButton
+	col.add_child(give_up)
+	give_up.configure("GIVE UP", "", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 88.0)
+	give_up.pressed.connect(func() -> void:
+		hide_revive_offer()
+		revive_declined.emit())
+
+
+func _update_revive_label() -> void:
+	if _revive_timer_label != null:
+		_revive_timer_label.text = "Revive with %d%% HP  ·  %d" % [_revive_hp_pct, int(ceilf(_revive_left))]
+
+
+## Called from _process (HUD runs while paused).
+func _tick_revive(delta: float) -> void:
+	if not is_revive_offer_open() or _revive_left <= 0.0:
+		return
+	_revive_left -= delta
+	_update_revive_label()
+	if _revive_left <= 0.0:
+		hide_revive_offer()
+		revive_declined.emit()
+
+
+# --- Tutorial hint ------------------------------------------------------------------------
+
+## Persistent pulsing hint above the vitals (first-run onboarding).
+func show_hint(text: String) -> void:
+	if _hint == null:
+		_hint = Label.new()
+		_hint.name = "TutorialHint"
+		_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_hint.add_theme_font_size_override("font_size", 46)
+		_hint.add_theme_constant_override("outline_size", 10)
+		_hint.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.08, 0.9))
+		_hint.add_theme_color_override("font_color", Palette.get_color("cyan", Color(0.2, 0.9, 1)))
+		add_child(_hint)
+	var full := get_viewport().get_visible_rect().size
+	_hint.position = Vector2(0.0, full.y * 0.62)
+	_hint.size = Vector2(full.x, 140.0)
+	_hint.text = text
+	_hint.visible = true
+	_hint_time = 0.0
+
+
+func hide_hint() -> void:
+	if _hint != null:
+		_hint.visible = false

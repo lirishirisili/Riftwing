@@ -54,6 +54,18 @@ func is_available() -> bool:
 	return _native != null
 
 
+func set_consent(consent: bool) -> void:
+	# Older plugin builds lack the privacy bridge; they keep the SDK default.
+	if _native != null and _native.has_method("set_consent"):
+		_log("LEVELPLAY", "consent=%s" % str(consent))
+		_native.call("set_consent", consent)
+
+
+func set_metadata(key: String, value: String) -> void:
+	if _native != null and _native.has_method("set_metadata"):
+		_native.call("set_metadata", key, value)
+
+
 func configure(config: AdsConfig) -> void:
 	super.configure(config)
 	if config != null:

@@ -84,6 +84,9 @@ func _default_data() -> Dictionary:
 		"patrol": {"last_collect_unix": 0},
 		"achievements": {"claimed": []},
 		"modules": {"owned": [], "equipped": ["", "", ""], "next_uid": 1},
+		"privacy": {"asked": false, "consent": false},
+		"tutorial": {"drag": false, "cards": false, "nova": false},
+		"ads": {"revives": 0, "doubled_runs": [], "supply_day": ""},
 		"clock": {
 			# Highest wall-clock time this save has seen; a clock rolled back past
 			# it means the date was tampered with (see is_clock_trusted).
@@ -557,6 +560,26 @@ func grant_currency(rift_energy: int, rift_core: int) -> void:
 	_data["currencies"]["rift_core"] = get_rift_core() + maxi(0, rift_core)
 	save_game()
 	currencies_changed.emit(get_rift_energy(), get_rift_core())
+
+
+## Rewarded "x2": grants a run's rewards once more, at most once per run id.
+func grant_bonus_rewards(run_id: String, rewards: RunRewards) -> bool:
+	if run_id == "" or rewards == null:
+		return false
+	var ads := section("ads")
+	var done: Array = ads.get("doubled_runs", [])
+	if done.has(run_id):
+		return false
+	done.append(run_id)
+	if done.size() > 64:
+		done = done.slice(done.size() - 64)
+	ads["doubled_runs"] = done
+	grant_currency(rewards.rift_energy, rewards.rift_core)
+	return true
+
+
+func has_bonus_rewards(run_id: String) -> bool:
+	return (section("ads").get("doubled_runs", []) as Array).has(run_id)
 
 
 ## Total stars earned across every stage and difficulty.

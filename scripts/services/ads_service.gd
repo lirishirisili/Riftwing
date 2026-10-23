@@ -40,6 +40,16 @@ func configure(config: AdsConfig) -> void:
 	_config = config
 
 
+## Privacy (call before initialize): GDPR consent for personalized ads.
+func set_consent(_consent: bool) -> void:
+	pass
+
+
+## Regulation metadata, e.g. ("do_not_sell", "true").
+func set_metadata(_key: String, _value: String) -> void:
+	pass
+
+
 ## Initializes the SDK once. Safe to call repeatedly.
 func initialize() -> void:
 	initialization_finished.emit(false)

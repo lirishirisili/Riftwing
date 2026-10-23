@@ -22,6 +22,10 @@ The App does not require you to create an account and does not intentionally col
 
 The App does **not** use Google AdMob as its advertising mediation path.
 
+## 1a. Your Advertising Choice
+
+On first launch the App asks whether advertising partners may use your device's advertising identifier to show personalized ads. If you choose non-personalized ads, the App tells Unity LevelPlay that consent was not given and sets the "do not sell" flag. You can change this choice at any time in **Settings → Personalized Ads**.
+
 ## 2. Information Stored on Your Device
 
 The App stores gameplay information locally on your device, including:

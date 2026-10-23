@@ -41,6 +41,9 @@ var novas_used: int = 0
 var evolutions: int = 0
 ## Meta summary from MetaProgress.record_run (xp, levels, module, missions).
 var meta_summary: Dictionary = {}
+## A revive was offered / used this run (no interstitial after a revive offer).
+var revive_offered: bool = false
+var revives_used: int = 0
 
 ## Live-accumulated statistics.
 var enemies_destroyed: int = 0
