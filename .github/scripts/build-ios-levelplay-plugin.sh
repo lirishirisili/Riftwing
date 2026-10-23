@@ -90,10 +90,26 @@ if [ -z "$IRON_FRAMEWORK_DIR" ]; then
   find "$CI_LP_PODS/Pods" -maxdepth 4 -type d 2>/dev/null | head -40 >&2 || true
   exit 1
 fi
-IRON_INC="$(find "$IRON_FRAMEWORK_DIR" -type d -name 'Headers' 2>/dev/null | head -1 || true)"
-IRON_FW_PARENT="$(dirname "$IRON_FRAMEWORK_DIR")"
 echo "IronSource.xcframework=$IRON_FRAMEWORK_DIR"
-echo "IronSource Headers=$IRON_INC"
+ls -1 "$IRON_FRAMEWORK_DIR"
+
+# An .xcframework holds one folder per platform slice (ios-arm64,
+# ios-arm64_x86_64-simulator); `-F` must point at the slice folder that
+# contains IronSource.framework so <IronSource/IronSource.h> resolves.
+iron_slice_dir() {
+  local sdk="$1"
+  local dir
+  if [ "$sdk" = "iphonesimulator" ]; then
+    dir="$(find "$IRON_FRAMEWORK_DIR" -mindepth 1 -maxdepth 1 -type d -name 'ios-*simulator*' | head -1)"
+  else
+    dir="$(find "$IRON_FRAMEWORK_DIR" -mindepth 1 -maxdepth 1 -type d -name 'ios-*' ! -name '*simulator*' ! -name '*maccatalyst*' | head -1)"
+  fi
+  if [ -z "$dir" ] || [ ! -d "$dir/IronSource.framework/Headers" ]; then
+    echo "ERROR: no IronSource.framework slice for $sdk in $IRON_FRAMEWORK_DIR" >&2
+    return 1
+  fi
+  echo "$dir"
+}
 
 compile_slice() {
   local sdk="$1"
@@ -107,8 +123,10 @@ compile_slice() {
   else
     min_flag="-miphoneos-version-min=15.0"
   fi
+  local iron_slice
+  iron_slice="$(iron_slice_dir "$sdk")"
   local obj="$CI_LP_BUILD/riftstrike_levelplay.${sdk}.${arch}.o"
-  echo "Compiling $sdk/$arch"
+  echo "Compiling $sdk/$arch (IronSource slice: $(basename "$iron_slice"))"
   # shellcheck disable=SC2086
   clang++ -c "$PLUGIN_SRC/riftstrike_levelplay.mm" -o "$obj" \
     -arch "$arch" \
@@ -124,8 +142,8 @@ compile_slice() {
     -DPTRCALL_ENABLED \
     -I"$CI_GODOT_SRC" \
     -I"$CI_GODOT_SRC/platform/ios" \
-    ${IRON_INC:+-I"$IRON_INC"} \
-    -F"$IRON_FW_PARENT" \
+    -F"$iron_slice" \
+    -I"$iron_slice/IronSource.framework/Headers" \
     -iframework "$sdk_path/System/Library/Frameworks"
   rm -f "$out_a"
   libtool -static -o "$out_a" "$obj"
