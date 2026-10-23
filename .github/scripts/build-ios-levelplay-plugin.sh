@@ -17,7 +17,14 @@ JOBS="$(sysctl -n hw.ncpu 2>/dev/null || echo 4)"
 
 export PATH="$HOME/Library/Python/3.13/bin:$HOME/Library/Python/3.12/bin:$HOME/Library/Python/3.11/bin:$HOME/.local/bin:$PATH"
 if ! command -v scons >/dev/null 2>&1; then
-  python3 -m pip install --user scons
+  # ci-env.sh puts $CI_VENV/bin first on PATH, so python3 is usually the venv
+  # interpreter, where `pip install --user` is refused. Install into the venv
+  # when one is active; fall back to a user install otherwise.
+  if python3 -c 'import sys; sys.exit(0 if sys.prefix != sys.base_prefix else 1)'; then
+    python3 -m pip install scons
+  else
+    python3 -m pip install --user scons
+  fi
 fi
 if ! command -v pod >/dev/null 2>&1; then
   gem install cocoapods --no-document
