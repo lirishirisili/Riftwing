@@ -5,7 +5,6 @@
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
 #import <AdSupport/AdSupport.h>
 #import <IronSource/IronSource.h>
-#import <objc/message.h>
 
 #include "core/config/engine.h"
 
@@ -315,10 +314,10 @@ void RiftstrikeLevelPlay::show_banner() {
 		if (bridge.bannerAdView == nil) {
 			bridge.bannerDelegate = [[RLPBannerDelegate alloc] init];
 			LPMAdSize *size = rlp_resolve_banner_ad_size();
-			bridge.bannerAdView = [[LPMBannerAdView alloc] initWithAdUnitId:bridge.bannerAdUnitId];
-			[bridge.bannerAdView setAdSize:size];
-			bridge.bannerAdView.delegate = bridge.bannerDelegate;
-			bridge.bannerAdView.placementName = nil;
+			// IronSourceSDK 9.5: size / placement go through the config at init time.
+			LPMBannerAdViewConfig *config = [[[LPMBannerAdViewConfigBuilder new] setWithAdSize:size] build];
+			bridge.bannerAdView = [[LPMBannerAdView alloc] initWithAdUnitId:bridge.bannerAdUnitId config:config];
+			[bridge.bannerAdView setDelegate:bridge.bannerDelegate];
 		}
 		bridge.bannerAdView.hidden = NO;
 		UIViewController *vc = rlp_root_view_controller();
@@ -338,7 +337,7 @@ void RiftstrikeLevelPlay::destroy_banner() {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		if (bridge.bannerAdView) {
 			[bridge.bannerAdView removeFromSuperview];
-			[bridge.bannerAdView destroyBanner];
+			[bridge.bannerAdView destroy];
 			bridge.bannerAdView = nil;
 		}
 	});
@@ -400,35 +399,16 @@ void RiftstrikeLevelPlay::on_resume() {
 	// See on_pause().
 }
 
-// Resolved at runtime so the bridge builds against any IronSourceSDK 9.x header
-// layout (LevelPlay or the legacy IronSource facade).
-static Class rlp_privacy_target(SEL sel) {
-	if ([LevelPlay respondsToSelector:sel]) {
-		return [LevelPlay class];
-	}
-	if ([IronSource respondsToSelector:sel]) {
-		return [IronSource class];
-	}
-	return nil;
-}
-
 void RiftstrikeLevelPlay::set_consent(bool consent) {
-	SEL sel = NSSelectorFromString(@"setConsent:");
-	Class target = rlp_privacy_target(sel);
-	if (target != nil) {
-		((void (*)(id, SEL, BOOL))objc_msgSend)(target, sel, consent ? YES : NO);
-	}
+	// IronSourceSDK 9.5: GDPR consent lives on LPMPrivacySettings
+	// (LevelPlay setConsent: is deprecated).
+	[LPMPrivacySettings setGDPRConsent:consent ? YES : NO];
 }
 
 void RiftstrikeLevelPlay::set_metadata(const String &key, const String &value) {
-	SEL sel = NSSelectorFromString(@"setMetaDataWithKey:value:");
-	Class target = rlp_privacy_target(sel);
-	if (target == nil) {
-		return;
-	}
 	NSString *k = [NSString stringWithUTF8String:key.utf8().get_data()];
 	NSString *v = [NSString stringWithUTF8String:value.utf8().get_data()];
-	((void (*)(id, SEL, NSString *, NSString *))objc_msgSend)(target, sel, k, v);
+	[LevelPlay setMetaDataWithKey:k value:v];
 }
 
 void RiftstrikeLevelPlay::launch_test_suite() {
