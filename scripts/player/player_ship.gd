@@ -15,6 +15,9 @@ extends Area2D
 signal health_changed(current: float, maximum: float)
 signal energy_changed(total: int)
 signal died()
+## A non-energy pickup (heal / magnet / chest) was collected; the run host
+## resolves it. `kind` is PickupData.Kind.
+signal special_pickup(kind: int, value: int)
 
 ## True while a drag is actively steering the ship.
 var _dragging: bool = false
@@ -379,8 +382,12 @@ func _tick_contact_damage(delta: float) -> void:
 ## Enemies and pickups overlap the player core.
 func _on_area_entered(area: Area2D) -> void:
 	if area is Pickup:
-		var gained := (area as Pickup).collect()
-		if gained > 0:
+		var pickup := area as Pickup
+		var kind := pickup.get_kind()
+		var gained := pickup.collect()
+		if gained > 0 and kind != PickupData.Kind.ENERGY:
+			special_pickup.emit(kind, gained)
+		elif gained > 0:
 			_energy += gained
 			energy_changed.emit(_energy)
 			_pickup_streak += 1

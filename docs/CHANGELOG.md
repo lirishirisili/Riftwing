@@ -1,5 +1,15 @@
 # Changelog
 
+## Combat depth (M3b): enemies, ambient spawning, elites, chests
+- **Ambient spawn director** (`SpawnProfileData`, `resources/spawning/`): each phase earns a threat budget that ramps up over time and spends it on formations of weighted enemies on top of the authored waves — no dead air, and pressure climbs within a run. Stage timelines get `early_ambient` / `mid_ambient` (Nova early → mid → late mixes).
+- **Enemy movement patterns** (`EnemyData.movement`): WEAVE (sine descent), SWOOP (side-to-side arcs in trains), CHARGE (telegraphed dash at the player), STRAFE (slides while firing), plus the original formation / diver / splitter.
+- **Fire patterns** (`EnemyData.fire_pattern`): RING, SPIRAL streams, DOWN_SPREAD, SNIPE (lock-on line, one fast bolt) alongside the aimed fan — every pattern telegraphs first.
+- **9 new archetypes** with procedural neon hulls (`EnemyData.shape`): Weaver, Lancer, Sniper, Spinner, Striker, Swarmling, Bulwark, Carrier (launches drones), Carrier Drone.
+- **Elites**: ambient formations can promote one enemy (x4 HP, gold aura, 3x energy) with an affix — Shielded, Swift, Volatile (bullet ring on death), or Regen — announced with a callout; elites drop a **Rift Chest**. The mini-boss also drops a chest.
+- **Chests** open a reveal (1 / 3 / 5 upgrades, luck-weighted) that installs upgrades instantly; queued safely behind level-up cards.
+- **New pickups**: heal orb (+20% HP) and magnet orb (vacuums the field) as rare drops (`RunRulesData.heal_drop_chance` / `magnet_drop_chance`).
+- New `tests/enemies_probe.gd` (every archetype, ambient + elite + chest drop, heal + chest reveal).
+
 ## Combat depth (M3a): real weapons, levels, evolutions
 - **Secondary weapons now behave like their names** (`SecondaryWeaponData.kind`): Homing Missiles steer and burst; Arc Laser is a pulsing piercing beam; Guardian Drones orbit the ship, ram, and shoot; Chain Lightning arcs between targets; Void Bomb lobs a big area blast (also on expiry). Projectiles support `pierce`, `homing_turn_rate`, `explode_radius`, and multi-pulse vortexes.
 - **Weapon levels 1→5**: picking a weapon card again levels it (damage, rate, and every few levels +1 missile / arc jump / drone / bomb). Cards show level text (`UpgradeData.level_description`).

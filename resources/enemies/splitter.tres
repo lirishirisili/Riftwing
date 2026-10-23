@@ -18,3 +18,4 @@ tint = Color(0.4, 1, 0.6, 1)
 can_shoot = false
 split_into = ExtResource("3")
 split_count = 2
+big_explosion = true

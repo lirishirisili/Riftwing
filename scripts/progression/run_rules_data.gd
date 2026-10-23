@@ -60,3 +60,16 @@ extends Resource
 @export_range(0.0, 0.5, 0.01) var nova_boss_damage_ratio: float = 0.06
 ## Invulnerability granted when the Nova detonates.
 @export_range(0.0, 3.0, 0.1) var nova_invuln_seconds: float = 1.0
+
+# --- Drops / chests -------------------------------------------------------------
+
+## Chance per normal kill to drop a heal orb / magnet orb.
+@export_range(0.0, 0.5, 0.001) var heal_drop_chance: float = 0.012
+@export_range(0.0, 0.5, 0.001) var magnet_drop_chance: float = 0.007
+## Chest reveal sizes and their base weights (same length), e.g. 1 / 3 / 5.
+@export var chest_sizes: PackedInt32Array = PackedInt32Array([1, 3, 5])
+@export var chest_weights: PackedFloat32Array = PackedFloat32Array([0.66, 0.27, 0.07])
+## Per point of luck, multiplies the weight of every chest size above 1.
+@export_range(0.0, 3.0, 0.05) var chest_luck_bonus: float = 0.5
+## The mini-boss drops a chest.
+@export var mini_boss_drops_chest: bool = true

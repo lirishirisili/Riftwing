@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Swarmling"
+max_health = 10.0
+contact_damage = 10.0
+energy_drop = 1
+hit_radius = 30.0
+tint = Color(0.45, 1, 0.75, 1)
+movement = 2
+shape = 5
+threat_cost = 0.5
+
+

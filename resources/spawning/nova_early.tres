@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="SpawnProfileData" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/spawning/spawn_profile_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/enemies/scout.tres" id="2"]
+[ext_resource type="Resource" path="res://resources/enemies/weaver.tres" id="3"]
+[ext_resource type="Resource" path="res://resources/enemies/swarmling.tres" id="4"]
+[ext_resource type="Resource" path="res://resources/enemies/diver.tres" id="5"]
+[ext_resource type="Resource" path="res://resources/enemies/shooter.tres" id="6"]
+
+[resource]
+script = ExtResource("1")
+enemies = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6")])
+weights = PackedFloat32Array(3, 2, 2, 1.5, 1.2)
+budget_per_second_start = 0.7
+budget_per_second_end = 1.8
+ramp_seconds = 60.0
+max_alive = 12
+elite_chance_start = 0.0
+elite_chance_end = 0.06

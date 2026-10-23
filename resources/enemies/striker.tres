@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/enemy_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/weapons/enemy_plasma_projectile.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Striker"
+max_health = 48.0
+contact_damage = 16.0
+energy_drop = 2
+hit_radius = 52.0
+tint = Color(1, 0.62, 0.2, 1)
+movement = 4
+shape = 4
+can_shoot = true
+fire_pattern = 3
+burst_count = 5
+burst_spread_degrees = 50.0
+shoot_telegraph = 0.6
+shoot_rest = 1.4
+move_speed = 260.0
+threat_cost = 2.4
+big_explosion = true
+projectile = ExtResource("2")
+

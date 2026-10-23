@@ -68,7 +68,9 @@ project/
 ## Core systems
 - RunController (`scenes/gameplay/run_scene.tscn`): vertical-slice state machine — early waves → XP/upgrade choices → mini-boss → mid waves → final boss → results. Driven by `StageTimelineData`.
 - StageTimelineData: authored clock + wave/boss refs for a ~3-minute stage (docs/02_GAMEPLAY_SPEC.md).
-- WaveDirector: data-driven timed spawn instructions; supports `stop_and_clear` / `start_wave` for phase handoffs.
+- WaveDirector: data-driven timed spawn instructions; supports `stop_and_clear` / `start_wave` for phase handoffs, plus ambient budget spawning from `SpawnProfileData` (`set_ambient`), elite promotion, and bonus drops (chest from elites, heal / magnet orbs).
+- Enemy: movement (formation / weave / swoop / charge / strafe), fire patterns (aimed fan / ring / spiral / down spread / snipe), procedural hulls, elite affixes; all from `EnemyData`.
+- SecondaryWeaponSystem: BOLT / CHAIN / BEAM / ORBIT weapons, levels, evolutions (`evolves_into`), run-wide damage / rate / count / area modifiers; also the player bolts' `targeter` (homing lookup, area blasts, vortex pulses).
 - PoolManager: pools bullets, enemies, effects, pickups, and damage labels.
 - DamageSystem: hit data, armor, criticals, invulnerability, and death events.
 - UpgradeManager: offered choices (rarity-weighted by run level), application, levels, and synergy hints.

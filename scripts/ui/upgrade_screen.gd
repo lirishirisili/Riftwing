@@ -8,6 +8,8 @@ extends CanvasLayer
 
 signal upgrade_selected(upgrade: UpgradeData)
 signal closed()
+## A chest reveal was dismissed (separate from `closed`, which consumes a level).
+signal reveal_closed()
 
 const _CARD_SCENE := preload("res://scenes/ui/upgrade_card.tscn")
 const _GLOW_SCENE := preload("res://scenes/ui/chrome/glow_cta_button.tscn")
@@ -33,6 +35,8 @@ var _current_level := 1
 var _banishes_left := 0
 var _banish_mode := false
 var _banish_button: GlowCtaButton
+## Chest reveal: cards are shown face-up (already applied); any tap collects.
+var _reveal_mode := false
 
 
 func _ready() -> void:
@@ -126,7 +130,7 @@ func _on_banish_pressed() -> void:
 func _refresh_banish_button() -> void:
 	if _banish_button == null:
 		return
-	_banish_button.visible = _banishes_left > 0 or _banish_mode
+	_banish_button.visible = (_banishes_left > 0 or _banish_mode) and not _reveal_mode
 	if _banish_mode:
 		_banish_button.configure("CANCEL BANISH", "", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.MAGENTA, 84.0)
 	else:
@@ -177,6 +181,53 @@ func open(level: int) -> bool:
 	return true
 
 
+## Shows already-applied upgrades (chest contents). Pauses like a level-up;
+## tapping a card or COLLECT dismisses and emits `reveal_closed`.
+func open_reveal(title: String, subtitle: String, upgrades: Array[UpgradeData]) -> bool:
+	if _manager == null or upgrades.is_empty():
+		return false
+	_selecting = false
+	_reveal_mode = true
+	_banish_mode = false
+	_clear_cards()
+	_title.text = title
+	_subtitle.text = subtitle
+	for upgrade in upgrades:
+		var card := _CARD_SCENE.instantiate() as UpgradeCard
+		_card_row.add_child(card)
+		card.populate(upgrade, maxi(1, _manager.level_of(upgrade.id)), "")
+		card.chosen.connect(_on_card_chosen)
+		_cards.append(card)
+	call_deferred("_fit_card_widths")
+	_refresh_reroll_button()
+	_refresh_banish_button()
+	visible = true
+	get_tree().paused = true
+	AudioManager.set_fire_loop_suppressed(true)
+	_animate_open()
+	GameFeel.haptic("medium")
+	_apply_safe_area()
+	return true
+
+
+func _close_reveal() -> void:
+	if _selecting:
+		return
+	_selecting = true
+	AudioManager.play_sfx("reward", Vector2.ZERO, AudioManager.PRIORITY_HIGH)
+	var close_tween := create_tween().set_ignore_time_scale(true)
+	close_tween.tween_property(_veil, "color:a", 0.0, 0.16)
+	close_tween.tween_callback(func() -> void:
+		_clear_cards()
+		_reveal_mode = false
+		visible = false
+		get_tree().paused = false
+		AudioManager.set_fire_loop_suppressed(false)
+		_refresh_reroll_button()
+		reveal_closed.emit()
+	)
+
+
 ## Immediately removes prior cards so level-ups never stack ghost UI / glow.
 func _clear_cards() -> void:
 	for card in _cards:
@@ -220,6 +271,9 @@ func _animate_open() -> void:
 
 func _on_card_chosen(upgrade: UpgradeData) -> void:
 	if _selecting:
+		return
+	if _reveal_mode:
+		_close_reveal()
 		return
 	if _banish_mode:
 		# Evolutions cannot be banished (they are the payoff of a build).
@@ -267,6 +321,9 @@ func is_open() -> bool:
 ## Re-draws the current level's three choices using one of the run's free
 ## rerolls. No currency involved; disabled once the run's rerolls are spent.
 func _on_reroll_pressed() -> void:
+	if _reveal_mode:
+		_close_reveal()
+		return
 	if _manager == null or _selecting or _rerolls_left <= 0:
 		return
 	var choices := _manager.roll_choices(3, _current_level)
@@ -283,6 +340,10 @@ func _on_reroll_pressed() -> void:
 ## Updates the reroll CTA label + enabled state from the remaining count.
 func _refresh_reroll_button() -> void:
 	if _reroll_button == null:
+		return
+	if _reveal_mode:
+		_reroll_button.configure("COLLECT", "", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN, 96.0)
+		_reroll_button.set_enabled(true)
 		return
 	if _rerolls_left > 0:
 		_reroll_button.configure(

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/enemy_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/weapons/enemy_plasma_projectile.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Spinner"
+max_health = 80.0
+contact_damage = 18.0
+energy_drop = 3
+hit_radius = 62.0
+tint = Color(1, 0.32, 0.9, 1)
+shape = 3
+can_shoot = true
+fire_pattern = 2
+shoot_telegraph = 0.8
+shoot_rest = 1.7
+spiral_rate = 6.0
+spiral_turn_degrees = 19.0
+spiral_arms = 2
+spiral_duration = 2.0
+threat_cost = 3.5
+big_explosion = true
+projectile = ExtResource("2")
+

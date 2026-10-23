@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/enemy_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/weapons/enemy_plasma_projectile.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Bulwark"
+max_health = 160.0
+contact_damage = 20.0
+energy_drop = 5
+hit_radius = 80.0
+tint = Color(0.4, 0.62, 1, 1)
+shape = 3
+can_shoot = true
+fire_pattern = 1
+ring_count = 14
+shoot_telegraph = 0.9
+shoot_rest = 2.3
+threat_cost = 4.0
+big_explosion = true
+projectile = ExtResource("2")
+

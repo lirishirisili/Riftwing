@@ -109,13 +109,60 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	if data == null:
 		return
-	# Hex-adjacent layered disc (green recovery role) — readable at 64–96 px.
 	var pulse := 0.85 + 0.15 * sin(Time.get_ticks_msec() * 0.01 + _age * 4.0)
+	match data.kind:
+		PickupData.Kind.HEAL:
+			_draw_heal(pulse)
+			return
+		PickupData.Kind.MAGNET:
+			_draw_magnet(pulse)
+			return
+		PickupData.Kind.CHEST:
+			_draw_chest(pulse)
+			return
+	# Hex-adjacent layered disc (green recovery role) — readable at 64–96 px.
 	draw_circle(Vector2.ZERO, data.radius * 1.85, Color(data.color, 0.16 * pulse))
 	draw_circle(Vector2.ZERO, data.radius * 1.7, Color(data.color, 0.22))
 	draw_circle(Vector2.ZERO, data.radius * 1.15, Color(data.color, 0.85))
 	draw_circle(Vector2.ZERO, data.radius * 0.55, Color(1.0, 1.0, 1.0, 0.95))
 	draw_arc(Vector2.ZERO, data.radius * 1.3 * pulse, 0.0, TAU, 6, Color(0.7, 1.0, 0.85, 0.75), 3.0, true)
+
+
+func _draw_heal(pulse: float) -> void:
+	var r := data.radius
+	draw_circle(Vector2.ZERO, r * 1.7, Color(data.color, 0.18 * pulse))
+	draw_circle(Vector2.ZERO, r, Color(0.05, 0.2, 0.1, 0.9))
+	draw_arc(Vector2.ZERO, r, 0.0, TAU, 24, data.color, 3.0, true)
+	var w := r * 0.28
+	draw_rect(Rect2(-w, -r * 0.62, w * 2.0, r * 1.24), Color(1, 1, 1, 0.95))
+	draw_rect(Rect2(-r * 0.62, -w, r * 1.24, w * 2.0), Color(1, 1, 1, 0.95))
+
+
+func _draw_magnet(pulse: float) -> void:
+	var r := data.radius
+	draw_circle(Vector2.ZERO, r * 1.7, Color(data.color, 0.18 * pulse))
+	draw_circle(Vector2.ZERO, r, Color(0.04, 0.1, 0.2, 0.9))
+	draw_arc(Vector2.ZERO, r, 0.0, TAU, 24, data.color, 3.0, true)
+	# Horseshoe magnet glyph.
+	draw_arc(Vector2(0, -r * 0.05), r * 0.5, 0.0, PI, 16, Color(1, 1, 1, 0.95), r * 0.22, true)
+	draw_line(Vector2(-r * 0.5, -r * 0.05), Vector2(-r * 0.5, -r * 0.55), Color(1, 0.35, 0.35), r * 0.22)
+	draw_line(Vector2(r * 0.5, -r * 0.05), Vector2(r * 0.5, -r * 0.55), Color(1, 0.35, 0.35), r * 0.22)
+
+
+func _draw_chest(pulse: float) -> void:
+	var r := data.radius
+	# Beacon + glow so a chest reads from across the field.
+	draw_circle(Vector2.ZERO, r * 2.0, Color(data.color, 0.14 * pulse))
+	draw_arc(Vector2.ZERO, r * (1.5 + 0.2 * pulse), 0.0, TAU, 32, Color(data.color, 0.5 * pulse), 3.0, true)
+	var body := Rect2(-r * 0.85, -r * 0.45, r * 1.7, r * 1.05)
+	draw_rect(body, Color(0.25, 0.14, 0.04, 0.95))
+	draw_rect(body, data.color, false, 3.0)
+	draw_rect(Rect2(-r * 0.85, -r * 0.75, r * 1.7, r * 0.34), data.color)
+	draw_rect(Rect2(-r * 0.14, -r * 0.5, r * 0.28, r * 0.4), Color(1, 1, 1, 0.95))
+
+
+func get_kind() -> int:
+	return data.kind if data != null else PickupData.Kind.ENERGY
 
 
 ## Called by the player when this pickup is collected. Returns its value once.

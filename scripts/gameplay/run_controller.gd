@@ -40,6 +40,9 @@ const _STAGE_MAP_PATH := "res://resources/stages/nova_sector_map.tres"
 const _DIFFICULTY_DIR := "res://resources/difficulty/"
 const _RULES_PATH := "res://resources/balance/run_rules_default.tres"
 const _REWARD_RULES_PATH := "res://resources/progression/reward_rules_default.tres"
+const _HEAL_PICKUP_PATH := "res://resources/pickups/heal_orb.tres"
+const _MAGNET_PICKUP_PATH := "res://resources/pickups/magnet_orb.tres"
+const _CHEST_PICKUP_PATH := "res://resources/pickups/rift_chest.tres"
 ## Enemy damage scaling grows at half the rate of the stage durability scalar,
 ## so late stages hit harder without one-shotting the player.
 const _STAGE_DAMAGE_SHARE := 0.5
@@ -85,6 +88,9 @@ var _last_boss_hp: float = -1.0
 var _streak_tier: int = 0
 ## Score weights (kill points feed the combo multiplier bonus).
 var _reward_rules: RewardRulesData
+## Chests collected while another card screen was open (opened in turn).
+var _pending_chests: int = 0
+var _chest_data: PickupData
 
 
 func receive_payload(payload: Dictionary) -> void:
@@ -130,6 +136,13 @@ func _ready() -> void:
 	_director.screen_size = _screen
 	_director.enemy_killed.connect(_on_enemy_killed)
 	_director.wave_finished.connect(_on_wave_finished)
+	_director.elite_spawned.connect(_on_elite_spawned)
+	_chest_data = load(_CHEST_PICKUP_PATH) as PickupData
+	_director.heal_data = load(_HEAL_PICKUP_PATH) as PickupData
+	_director.magnet_data = load(_MAGNET_PICKUP_PATH) as PickupData
+	_director.chest_data = _chest_data
+	_director.heal_drop_chance = _rules.heal_drop_chance
+	_director.magnet_drop_chance = _rules.magnet_drop_chance
 
 	_boss.enemy_projectile_pool = _enemy_bullet_pool
 	_boss.enemy_pool = _enemy_pool
@@ -146,6 +159,7 @@ func _ready() -> void:
 	_boss.defeated.connect(_on_boss_defeated)
 	_player.died.connect(_on_player_died)
 	_player.health_changed.connect(_on_player_health_changed)
+	_player.special_pickup.connect(_on_special_pickup)
 	_mount_screen_fx()
 
 	_upgrades.bind_plasma_weapon(_weapon)
@@ -161,6 +175,7 @@ func _ready() -> void:
 	_upgrade_screen.configure(_upgrades, _rules.rerolls_per_run, _rules.banishes_per_run)
 	_upgrade_screen.upgrade_selected.connect(_on_upgrade_selected)
 	_upgrade_screen.closed.connect(_on_upgrade_screen_closed)
+	_upgrade_screen.reveal_closed.connect(_on_reveal_closed)
 	_xp.track_player(_player)
 	_xp.leveled_up.connect(_on_leveled_up)
 
@@ -325,6 +340,8 @@ func _begin_run() -> void:
 		_director.start_wave(timeline.early_wave)
 	else:
 		_director.start()
+	_director.set_ambient(timeline.early_ambient if timeline != null else null)
+	_pending_chests = 0
 	AudioManager.play_music("run")
 	_show_banner("ENTER THE RIFT", 1.4)
 
@@ -495,6 +512,7 @@ func _enter_mid_waves() -> void:
 	_boss.prepare(timeline.final_boss)
 	if timeline != null and timeline.mid_wave != null:
 		_director.start_wave(timeline.mid_wave)
+	_director.set_ambient(timeline.mid_ambient if timeline != null else null)
 	AudioManager.play_music("run")
 	_show_banner("PUSH FORWARD", 1.0)
 
@@ -579,6 +597,8 @@ func _on_upgrade_screen_closed() -> void:
 	if _pending_upgrade_tint.a > 0.0 and _player != null:
 		GameFeel.upgrade_applied(_player.get_core_global_position(), _pending_upgrade_tint)
 	_pending_upgrade_tint = Color(0, 0, 0, 0)
+	if _pending_chests > 0:
+		call_deferred("_try_open_chest")
 	# Do not auto-chain another choice here. Banked XP only levels on the next
 	# energy gain so the player always gets combat between picks.
 
@@ -649,6 +669,8 @@ func _on_boss_dying() -> void:
 	if _player != null:
 		_player.grant_invulnerability(_rules.boss_kill_invuln_seconds)
 	_spawn_loot_fountain(_boss.global_position, _boss.data.loot_pickups if _boss.data != null else 0)
+	if _phase == Phase.MINI_BOSS and _rules.mini_boss_drops_chest:
+		_drop_pickup(_boss.global_position, _chest_data)
 
 
 ## Wave ran dry before the phase clock reached its next beat: restart it when
@@ -904,7 +926,7 @@ func _pending_pickup_value() -> int:
 	var total := 0
 	for node in _pickup_pool.get_active_nodes():
 		var pickup := node as Pickup
-		if pickup != null and pickup.data != null:
+		if pickup != null and pickup.data != null and pickup.data.kind == PickupData.Kind.ENERGY:
 			total += pickup.data.value
 	return total
 
@@ -920,3 +942,83 @@ func _on_run_effect(kind: int, _target: String, value: float) -> void:
 
 func _on_evolved(upgrade: UpgradeData) -> void:
 	_hud.show_callout("EVOLVED", Palette.get_color("gold", Color(1.0, 0.84, 0.25)), upgrade.title.to_upper(), 1.6)
+
+
+# --- Elites / special pickups / chests --------------------------------------------
+
+func _on_elite_spawned(enemy: Enemy) -> void:
+	GameFeel.elite_spawn(enemy.global_position)
+	_hud.show_callout("ELITE", Palette.get_color("gold", Color(1.0, 0.84, 0.25)), "DROPS A CHEST", 0.9)
+
+
+func _on_special_pickup(kind: int, value: int) -> void:
+	if _run_over:
+		return
+	match kind:
+		PickupData.Kind.HEAL:
+			_player.heal_fraction(float(value) / 100.0)
+		PickupData.Kind.MAGNET:
+			_vacuum_pickups()
+			GameFeel.heal(_player.get_core_global_position())
+		PickupData.Kind.CHEST:
+			_pending_chests += 1
+			_try_open_chest()
+
+
+## Opens the next pending chest when no other card screen is showing.
+func _try_open_chest() -> void:
+	if _pending_chests <= 0 or _upgrade_screen.is_open() or _run_over:
+		return
+	_pending_chests -= 1
+	var size := _roll_chest_size()
+	var picks := _upgrades.roll_chest(size, _xp.get_level())
+	if picks.is_empty():
+		# Nothing left to give: pay out as healing so the chest never feels empty.
+		_player.heal_fraction(0.35)
+		return
+	_hud.force_resume()
+	GameFeel.chest_open(_player.get_core_global_position())
+	var title := "RIFT CHEST" if picks.size() == 1 else "RIFT CHEST ×%d" % picks.size()
+	_upgrade_screen.open_reveal(title, "UPGRADES INSTALLED", picks)
+
+
+func _roll_chest_size() -> int:
+	var sizes := _rules.chest_sizes
+	var weights := _rules.chest_weights
+	if sizes.is_empty():
+		return 1
+	var luck := _upgrades.get_luck()
+	var total := 0.0
+	for i in sizes.size():
+		total += _chest_weight(i, sizes, weights, luck)
+	var roll := randf() * total
+	for i in sizes.size():
+		roll -= _chest_weight(i, sizes, weights, luck)
+		if roll <= 0.0:
+			return sizes[i]
+	return sizes[sizes.size() - 1]
+
+
+func _chest_weight(i: int, sizes: PackedInt32Array, weights: PackedFloat32Array, luck: float) -> float:
+	var w := weights[i] if i < weights.size() else 1.0
+	if sizes[i] > 1:
+		w *= 1.0 + luck * _rules.chest_luck_bonus
+	return w
+
+
+func _on_reveal_closed() -> void:
+	if _pending_chests > 0:
+		_try_open_chest()
+	else:
+		_try_open_upgrade_screen()
+
+
+func _drop_pickup(pos: Vector2, data: PickupData) -> void:
+	if data == null:
+		return
+	var pickup := _pickup_pool.acquire() as Pickup
+	if pickup == null:
+		return
+	pickup.release_callback = Callable(_pickup_pool, "release")
+	pickup.magnet_target = _player
+	pickup.spawn(pos, data, PlayfieldBounds.from_screen(_screen))

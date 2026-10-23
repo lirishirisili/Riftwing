@@ -31,3 +31,7 @@ extends Resource
 
 ## XP amount granted at guaranteed_level_up_at (one level on the default curve).
 @export_range(0, 500) var guaranteed_level_up_xp: int = 10
+
+## Ambient spawn profiles layered on the authored waves (null = authored only).
+@export var early_ambient: SpawnProfileData
+@export var mid_ambient: SpawnProfileData

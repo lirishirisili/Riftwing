@@ -16,3 +16,10 @@ extends Resource
 
 ## Seconds before an uncollected pickup despawns.
 @export_range(1.0, 30.0, 0.5) var lifetime: float = 9.0
+
+## ENERGY feeds XP / Rift Energy. HEAL restores `value` percent of max HP.
+## MAGNET pulls every pickup on the field to the ship. CHEST opens an upgrade
+## reveal (1 / 3 / 5 upgrades).
+enum Kind { ENERGY, HEAL, MAGNET, CHEST }
+
+@export var kind: Kind = Kind.ENERGY

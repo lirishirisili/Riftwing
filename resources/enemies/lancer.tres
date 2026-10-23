@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Lancer"
+max_health = 30.0
+contact_damage = 22.0
+energy_drop = 1
+hit_radius = 44.0
+tint = Color(1, 0.35, 0.45, 1)
+movement = 3
+shape = 2
+charge_windup = 0.85
+charge_speed = 1350.0
+threat_cost = 1.4
+
+

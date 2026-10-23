@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/enemy_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/weapons/enemy_snipe_projectile.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Sniper"
+max_health = 36.0
+contact_damage = 14.0
+energy_drop = 2
+hit_radius = 46.0
+tint = Color(1, 0.55, 0.2, 1)
+shape = 2
+can_shoot = true
+fire_pattern = 4
+shoot_telegraph = 1.1
+shoot_rest = 1.8
+threat_cost = 2.2
+projectile = ExtResource("2")
+

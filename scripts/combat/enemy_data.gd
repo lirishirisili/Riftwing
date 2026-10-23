@@ -73,3 +73,52 @@ enum Behavior { STANDARD, DIVER, TANK, SPLITTER }
 
 ## SPLITTER: how many children spawn on death (0 disables splitting).
 @export_range(0, 6) var split_count: int = 0
+
+# --- Movement / fire / hull (combat depth pass) -------------------------------
+
+## FORMATION: enter -> hold (bob) -> exit (the original behavior, incl. DIVER).
+## WEAVE: descends through the field on a sine path.
+## SWOOP: arcs in from one side to the other through its hold point.
+## CHARGE: holds, telegraphs, then dashes at where the player was.
+## STRAFE: holds, then slides side to side while firing, then exits.
+enum Movement { FORMATION, WEAVE, SWOOP, CHARGE, STRAFE }
+
+## AIMED_FAN: telegraphed fan at the player. RING: full ring. SPIRAL: rotating
+## stream. DOWN_SPREAD: fan straight down. SNIPE: long line telegraph, one fast bolt.
+enum FirePattern { AIMED_FAN, RING, SPIRAL, DOWN_SPREAD, SNIPE }
+
+## SPRITE uses `sprite`; the rest are procedural neon hulls (violet hull +
+## warm core, docs/01_VISUAL_DIRECTION.md) for archetypes without final art.
+enum Shape { SPRITE, DART, DIAMOND, HEX, CROSS, ORB, CARRIER }
+
+@export var movement: Movement = Movement.FORMATION
+@export var fire_pattern: FirePattern = FirePattern.AIMED_FAN
+@export var shape: Shape = Shape.SPRITE
+
+## Travel speed for WEAVE (descent) and STRAFE (slide), px/s.
+@export_range(40.0, 1200.0, 10.0) var move_speed: float = 240.0
+## WEAVE sine amplitude (px) and frequency (cycles/s).
+@export_range(0.0, 500.0, 5.0) var weave_amplitude: float = 140.0
+@export_range(0.1, 4.0, 0.05) var weave_frequency: float = 0.7
+## CHARGE wind-up (telegraph) seconds and dash speed px/s.
+@export_range(0.1, 3.0, 0.05) var charge_windup: float = 0.7
+@export_range(300.0, 3000.0, 50.0) var charge_speed: float = 1500.0
+
+## RING bullet count.
+@export_range(4, 48) var ring_count: int = 12
+## SPIRAL: bullets per second per arm, degrees turned per shot, arms, and how
+## long one stream lasts after its telegraph.
+@export_range(1.0, 30.0, 0.5) var spiral_rate: float = 7.0
+@export_range(-90.0, 90.0, 1.0) var spiral_turn_degrees: float = 19.0
+@export_range(1, 6) var spiral_arms: int = 2
+@export_range(0.3, 8.0, 0.1) var spiral_duration: float = 2.2
+
+## CARRIER-style summoning while holding (null disables).
+@export var summon: EnemyData
+@export_range(1, 8) var summon_count: int = 3
+@export_range(0.5, 20.0, 0.5) var summon_interval: float = 4.0
+
+## Spawn-director budget cost (bigger threats cost more).
+@export_range(0.1, 20.0, 0.1) var threat_cost: float = 1.0
+## Large explosion + hit-stop on death (replaces the old HP threshold).
+@export var big_explosion: bool = false

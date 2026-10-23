@@ -6,6 +6,9 @@
 [ext_resource type="Resource" path="res://resources/bosses/void_wisp.tres" id="4"]
 [ext_resource type="Resource" path="res://resources/bosses/void_titan.tres" id="5"]
 
+[ext_resource type="Resource" path="res://resources/spawning/nova_late.tres" id="amb_e"]
+[ext_resource type="Resource" path="res://resources/spawning/nova_late.tres" id="amb_m"]
+
 [resource]
 script = ExtResource("1")
 display_name = "Nova Sector Onslaught"
@@ -17,3 +20,5 @@ mini_boss_at = 50.0
 boss_warning_at = 130.0
 guaranteed_level_up_at = 14.0
 guaranteed_level_up_xp = 10
+early_ambient = ExtResource("amb_e")
+mid_ambient = ExtResource("amb_m")
