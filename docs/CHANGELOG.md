@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.11 (build 12)
+- Bumped the store version so Play and TestFlight can take a new binary that includes the combat, content, meta, and onboarding passes already on `main`.
+
 ## Onboarding, ads placements, privacy (M6)
 - **Rewarded placements** (all opt-in, hidden when no ad is ready, granted only from the SDK reward callback via the new `RewardedOffer` helper):
   - **Revive** once per run (50% HP, 3s protection, hostile bolts cleared; build kept) — a 6s offer pauses combat; a second death ends the run.
