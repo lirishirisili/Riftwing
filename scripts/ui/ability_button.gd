@@ -72,9 +72,7 @@ func _on_pressed() -> void:
 	_press_flash = 1.0
 	_refresh_count()
 	AudioManager.play_sfx("ui_click", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
-	var haptics: HapticsService = PlatformServices.haptics
-	if haptics != null and GameFeel.haptics_enabled:
-		haptics.light()
+	GameFeel.haptic("light")
 	activated.emit()
 
 

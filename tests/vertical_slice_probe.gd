@@ -239,20 +239,20 @@ func _wait_frames(n: int) -> void:
 
 
 func _wait_seconds(seconds: float) -> void:
-	var left := seconds
-	while left > 0.0:
+	# Real time, not frame counts: headless frames are uncapped while hit-stop /
+	# slow-motion windows are measured in real milliseconds.
+	var until := Time.get_ticks_msec() + int(seconds * 1000.0)
+	while Time.get_ticks_msec() < until:
 		await process_frame
-		left -= 1.0 / 60.0
 
 
 func _wait_until(predicate: Callable, timeout_sec: float) -> bool:
-	var left := timeout_sec
-	while left > 0.0:
+	var until := Time.get_ticks_msec() + int(timeout_sec * 1000.0)
+	while Time.get_ticks_msec() < until:
 		if bool(predicate.call()):
 			return true
 		await process_frame
-		left -= 1.0 / 60.0
-	return false
+	return bool(predicate.call())
 
 
 func _capture_if_possible(path: String) -> void:

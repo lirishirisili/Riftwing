@@ -219,9 +219,7 @@ func _on_settings() -> void:
 
 func _click() -> void:
 	AudioManager.play_sfx("ui_confirm", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
-	var haptics: HapticsService = PlatformServices.haptics
-	if haptics != null and GameFeel.haptics_enabled:
-		haptics.light()
+	GameFeel.haptic("light")
 
 
 ## Shows the real remaining time on the event banner (active window or next open).

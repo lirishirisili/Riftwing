@@ -44,6 +44,10 @@ var _shield_feedback_cooldown: float = 0.0
 const _CONTACT_RECHECK_INTERVAL := 0.1
 var _contact_timer: float = 0.0
 var _magnet_mult: float = 1.0
+## Consecutive pickups (raises the chime pitch); resets after a short gap.
+const _PICKUP_STREAK_WINDOW := 0.45
+var _pickup_streak: int = 0
+var _pickup_streak_timer: float = 0.0
 
 @onready var _core: CollisionShape2D = $CollisionCore
 @onready var _sprite: Sprite2D = $Sprite
@@ -82,6 +86,10 @@ func _process(delta: float) -> void:
 	_update_presentation(delta)
 	if _shield_feedback_cooldown > 0.0:
 		_shield_feedback_cooldown -= delta
+	if _pickup_streak_timer > 0.0:
+		_pickup_streak_timer -= delta
+		if _pickup_streak_timer <= 0.0:
+			_pickup_streak = 0
 	_tick_contact_damage(delta)
 	if _invuln_time > 0.0:
 		_invuln_time = maxf(0.0, _invuln_time - delta)
@@ -303,7 +311,9 @@ func _on_area_entered(area: Area2D) -> void:
 		if gained > 0:
 			_energy += gained
 			energy_changed.emit(_energy)
-			GameFeel.pickup_collected(global_position)
+			_pickup_streak += 1
+			_pickup_streak_timer = _PICKUP_STREAK_WINDOW
+			GameFeel.pickup_collected(global_position, _pickup_streak)
 	elif area is Enemy:
 		take_damage((area as Enemy).get_contact_damage())
 

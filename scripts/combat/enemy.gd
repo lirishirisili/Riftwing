@@ -44,6 +44,9 @@ var _flash: float = 0.0
 var _contact_damage_mult: float = 1.0
 ## DIVER: set true once the dive begins so it only re-targets the player once.
 var _diving: bool = false
+## Visual hit kick (squash + nudge) 0..1; presentation only.
+var _hit_kick: float = 0.0
+var _base_sprite_scale: float = 0.12
 
 @onready var _sprite: Sprite2D = $Sprite
 @onready var _shape: CollisionShape2D = $CollisionShape2D
@@ -79,6 +82,9 @@ func spawn(enemy_data: EnemyData, enter_from: Vector2, hold_pos: Vector2, exit_t
 		_sprite.texture = data.sprite
 		_sprite.scale = Vector2(data.sprite_scale, data.sprite_scale)
 		_sprite.modulate = data.tint
+		_sprite.position = Vector2.ZERO
+	_base_sprite_scale = data.sprite_scale
+	_hit_kick = 0.0
 	if _shape != null and _shape.shape is CircleShape2D:
 		(_shape.shape as CircleShape2D).radius = data.hit_radius
 
@@ -96,6 +102,9 @@ func _process(delta: float) -> void:
 	if _flash > 0.0:
 		_flash = maxf(0.0, _flash - delta * 4.0)
 		_apply_tint()
+	if _hit_kick > 0.0:
+		_hit_kick = maxf(0.0, _hit_kick - delta * 7.0)
+		_apply_kick()
 
 	match _phase:
 		Phase.ENTER:
@@ -183,6 +192,7 @@ func take_damage(amount: float) -> void:
 		return
 	_health -= amount
 	_flash = 1.0
+	_hit_kick = 1.0
 	_apply_tint()
 	if _health <= 0.0:
 		_die()
@@ -256,7 +266,10 @@ func _die() -> void:
 	# Feel: tougher enemies (shooters here) get a large explosion + hit-stop.
 	# Reading max_health is read-only; it never changes balance.
 	var is_major := data.is_elite or data.can_shoot or data.max_health >= 40.0
-	GameFeel.enemy_death(global_position, is_major)
+	if data.is_elite:
+		GameFeel.elite_death(global_position)
+	else:
+		GameFeel.enemy_death(global_position, is_major)
 	_drop_energy()
 	if data.behavior == EnemyData.Behavior.SPLITTER and data.split_into != null and data.split_count > 0:
 		split_requested.emit(global_position, data.split_into, data.split_count)
@@ -276,6 +289,15 @@ func _drop_energy() -> void:
 		pickup.release_callback = Callable(pickup_pool, "release")
 		pickup.magnet_target = player
 		pickup.spawn(global_position + jitter, pickup_data, despawn_bounds)
+
+
+## Squash + upward nudge on hit so every bolt visibly connects.
+func _apply_kick() -> void:
+	if _sprite == null:
+		return
+	var k := _hit_kick * _hit_kick
+	_sprite.scale = Vector2(_base_sprite_scale * (1.0 + 0.12 * k), _base_sprite_scale * (1.0 - 0.08 * k))
+	_sprite.position = Vector2(0.0, -6.0 * k)
 
 
 func _apply_tint() -> void:

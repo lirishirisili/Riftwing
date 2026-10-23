@@ -332,9 +332,7 @@ func _on_equip() -> void:
 	if ship != null and not SaveManager.is_ship_unlocked(ship.id):
 		if SaveManager.try_unlock_ship(ship):
 			_click()
-			var haptics: HapticsService = PlatformServices.haptics
-			if haptics != null and GameFeel.haptics_enabled:
-				haptics.medium()
+			GameFeel.haptic("medium")
 			_show_feedback("Unlocked %s" % ship.display_name, false)
 		else:
 			AudioManager.play_sfx("ui_back", Vector2.ZERO, AudioManager.PRIORITY_LOW)
@@ -385,9 +383,7 @@ func _on_upgrade_requested(track_id: String) -> void:
 	_clear_all_arms()
 	if ok:
 		_click()
-		var haptics: HapticsService = PlatformServices.haptics
-		if haptics != null and GameFeel.haptics_enabled:
-			haptics.medium()
+		GameFeel.haptic("medium")
 		_show_feedback("%s upgraded" % track.title, false)
 		_preview_label.text = "Upgrade applied. Stats updated."
 		_preview_label.add_theme_color_override("font_color", Palette.get_color("green", Color(0.21, 0.89, 0.44)))
@@ -451,9 +447,7 @@ func _on_upgrade_all_pressed() -> void:
 		_disarm_upgrade_all()
 		if bought > 0:
 			_click()
-			var haptics: HapticsService = PlatformServices.haptics
-			if haptics != null and GameFeel.haptics_enabled:
-				haptics.medium()
+			GameFeel.haptic("medium")
 			_show_feedback("Upgraded %d tracks" % bought, false)
 			_preview_label.text = "Upgrade All applied. Stats updated."
 			_preview_label.add_theme_color_override("font_color", Palette.get_color("green", Color(0.21, 0.89, 0.44)))
@@ -504,9 +498,7 @@ func _on_hangar_changed(_selected: String) -> void:
 
 func _click() -> void:
 	AudioManager.play_sfx("ui_confirm", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
-	var haptics: HapticsService = PlatformServices.haptics
-	if haptics != null and GameFeel.haptics_enabled:
-		haptics.light()
+	GameFeel.haptic("light")
 
 
 func _show_feedback(text: String, is_error: bool) -> void:

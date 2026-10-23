@@ -101,6 +101,14 @@ func nearest_enemy(from: Vector2) -> Enemy:
 	return best
 
 
+## Damages every live wave enemy (Rift Nova). Iterates a snapshot because a
+## kill releases the enemy and edits the live list.
+func damage_all(amount: float) -> void:
+	for enemy in _active_enemies.duplicate():
+		if is_instance_valid(enemy):
+			enemy.take_damage(amount)
+
+
 func is_running() -> bool:
 	return _running
 

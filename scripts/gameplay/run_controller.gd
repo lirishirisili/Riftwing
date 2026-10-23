@@ -39,6 +39,7 @@ const _DEFAULT_TIMELINE := "res://resources/stages/vertical_slice_timeline.tres"
 const _STAGE_MAP_PATH := "res://resources/stages/nova_sector_map.tres"
 const _DIFFICULTY_DIR := "res://resources/difficulty/"
 const _RULES_PATH := "res://resources/balance/run_rules_default.tres"
+const _REWARD_RULES_PATH := "res://resources/progression/reward_rules_default.tres"
 ## Enemy damage scaling grows at half the rate of the stage durability scalar,
 ## so late stages hit harder without one-shotting the player.
 const _STAGE_DAMAGE_SHARE := 0.5
@@ -76,6 +77,14 @@ var _daily_reward_core: int = 0
 var _rules: RunRulesData
 ## Deferred "upgrade landed" beat, played once the card screen has unpaused.
 var _pending_upgrade_tint: Color = Color(0, 0, 0, 0)
+var _screen_fx: ScreenFX
+## Rift Nova charge 0..1 and the boss HP last seen (boss damage also charges).
+var _nova_charge: float = 0.0
+var _last_boss_hp: float = -1.0
+## Index of the next kill-streak callout tier for the current combo.
+var _streak_tier: int = 0
+## Score weights (kill points feed the combo multiplier bonus).
+var _reward_rules: RewardRulesData
 
 
 func receive_payload(payload: Dictionary) -> void:
@@ -101,6 +110,9 @@ func _ready() -> void:
 	_rules = load(_RULES_PATH) as RunRulesData
 	if _rules == null:
 		_rules = RunRulesData.new()
+	_reward_rules = load(_REWARD_RULES_PATH) as RewardRulesData
+	if _reward_rules == null:
+		_reward_rules = RewardRulesData.new()
 	if timeline == null:
 		timeline = _resolve_stage_timeline()
 	if timeline == null:
@@ -133,6 +145,8 @@ func _ready() -> void:
 	_boss.dying.connect(_on_boss_dying)
 	_boss.defeated.connect(_on_boss_defeated)
 	_player.died.connect(_on_player_died)
+	_player.health_changed.connect(_on_player_health_changed)
+	_mount_screen_fx()
 
 	_upgrades.bind_plasma_weapon(_weapon)
 	_apply_hangar_profile()
@@ -152,6 +166,7 @@ func _ready() -> void:
 	_overlay.draw.connect(_on_overlay_draw)
 	_hud.quit_to_menu_requested.connect(_on_hud_quit_to_menu)
 	_hud.pause_gate = _can_pause
+	_hud.nova_activated.connect(_on_nova_activated)
 	_hud.configure_abilities(_rules.ability_left_charges, _rules.ability_left_cooldown,
 		_rules.ability_right_charges, _rules.ability_right_cooldown)
 	_hud.ability_left_activated.connect(_on_ability_feedback.bind(true))
@@ -280,6 +295,9 @@ func _begin_run() -> void:
 	_stats.daily_reward_core = _daily_reward_core
 	_combo = 0
 	_combo_timer = 0.0
+	_streak_tier = 0
+	_nova_charge = 0.0
+	_last_boss_hp = -1.0
 	_run_time = 0.0
 	_run_over = false
 	_run_active = true
@@ -294,6 +312,8 @@ func _begin_run() -> void:
 	_banner.visible = false
 	_hud.force_resume()
 	_hud.bind(_player, _xp, _stats)
+	_hud.set_nova_charge(0.0)
+	GameFeel.set_danger(0.0)
 	_hud.set_boss_bar_visible(false)
 	_hud.set_wave_info(_wave_label_for_phase())
 	_clear_arena_projectiles()
@@ -420,6 +440,7 @@ func _process(delta: float) -> void:
 			_combo_timer = maxf(0.0, _combo_timer - delta)
 			if _combo_timer == 0.0:
 				_combo = 0
+				_streak_tier = 0
 		_tick_timeline()
 	if _run_over:
 		_results_timer -= delta
@@ -516,7 +537,10 @@ func _show_banner(text: String, seconds: float) -> void:
 		_banner.visible = false
 
 
-func _on_leveled_up(_new_level: int) -> void:
+func _on_leveled_up(new_level: int) -> void:
+	if _player != null and not _run_over:
+		GameFeel.level_up(_player.get_core_global_position())
+		_hud.show_callout("LEVEL %d" % new_level, Palette.get_color("purple", Color(0.7, 0.35, 1.0)), "", 0.8)
 	_level_up_queue += 1
 	_try_open_upgrade_screen()
 
@@ -562,9 +586,24 @@ func _register_kill() -> void:
 	_combo_timer = _rules.combo_window_seconds
 	if _combo > _stats.best_combo:
 		_stats.best_combo = _combo
+	# Combo multiplier: each tier of the chain adds bonus kill points.
+	var tier := _combo / maxi(1, _rules.combo_kills_per_tier)
+	var mult := minf(_rules.combo_max_mult, 1.0 + _rules.combo_bonus_per_tier * float(tier))
+	if mult > 1.0:
+		_stats.bonus_score += int(round(float(_reward_rules.score_per_kill) * (mult - 1.0)))
+	_add_nova_charge(1.0 / float(maxi(1, _rules.nova_kills_to_charge)))
+	if _player == null:
+		return
+	var pos := _player.get_core_global_position()
 	# Milestone juice every 5 kills in the chain (feedback only).
-	if _combo >= 5 and _combo % 5 == 0 and _player != null:
-		GameFeel.combo_peak(_player.get_core_global_position(), _combo)
+	if _combo >= 5 and _combo % 5 == 0:
+		GameFeel.combo_peak(pos, _combo)
+	# Kill-streak callouts (one per threshold per chain).
+	if _streak_tier < _rules.streak_thresholds.size() and _combo >= _rules.streak_thresholds[_streak_tier]:
+		var label := _rules.streak_labels[_streak_tier] if _streak_tier < _rules.streak_labels.size() else "STREAK"
+		_hud.show_callout(label, Palette.get_color("gold", Color(1.0, 0.84, 0.25)), "SCORE x%.2f" % mult)
+		GameFeel.streak(pos, _streak_tier)
+		_streak_tier += 1
 
 
 func _on_enemy_killed(_enemy: Enemy) -> void:
@@ -589,6 +628,11 @@ func _on_boss_entered() -> void:
 
 func _on_boss_health_changed(current: float, maximum: float) -> void:
 	_health_bar.set_health(current, maximum)
+	# Damage dealt to the boss also charges the Rift Nova.
+	if _last_boss_hp >= 0.0 and current < _last_boss_hp and maximum > 0.0:
+		var frac := (_last_boss_hp - current) / maximum
+		_add_nova_charge(frac / maxf(0.01, _rules.nova_boss_damage_to_charge))
+	_last_boss_hp = current
 
 
 func _on_boss_phase_changed(phase: int) -> void:
@@ -601,6 +645,7 @@ func _on_boss_dying() -> void:
 	_enemy_bullet_pool.release_all()
 	if _player != null:
 		_player.grant_invulnerability(_rules.boss_kill_invuln_seconds)
+	_spawn_loot_fountain(_boss.global_position, _boss.data.loot_pickups if _boss.data != null else 0)
 
 
 ## Wave ran dry before the phase clock reached its next beat: restart it when
@@ -648,6 +693,10 @@ func _on_boss_defeated() -> void:
 
 
 func _on_player_died() -> void:
+	if _player != null:
+		GameFeel.player_death(_player.get_core_global_position())
+		_player.visible = false
+	GameFeel.set_danger(0.0)
 	_end_run(false)
 
 
@@ -668,7 +717,8 @@ func _end_run(victory: bool) -> void:
 	_hud.set_boss_bar_visible(false)
 	_stats.victory = victory
 	if _player != null:
-		_stats.rift_energy_collected = _player.get_energy()
+		# Loot still flying to the ship (boss fountain) counts on a victory.
+		_stats.rift_energy_collected = _player.get_energy() + (_pending_pickup_value() if victory else 0)
 	if _player != null and _player.combat_data != null and _player.combat_data.max_health > 0.0:
 		_stats.hp_ratio_end = clampf(
 			float(_player.get_health()) / float(_player.combat_data.max_health), 0.0, 1.0)
@@ -772,3 +822,85 @@ func _on_overlay_draw() -> void:
 		return
 	var core := _player.get_core_global_position()
 	_overlay.draw_circle(core, 6.0, Color(0, 0.84, 1, 0.9))
+
+
+# --- Screen FX / Rift Nova / loot ---------------------------------------------
+
+## Full-screen post layer between the world and the HUD (HUD text never
+## distorts). The HUD CanvasLayer is bumped above it.
+func _mount_screen_fx() -> void:
+	var ui := get_node_or_null("UI") as CanvasLayer
+	if ui != null:
+		ui.layer = 2
+	_screen_fx = ScreenFX.new()
+	_screen_fx.name = "ScreenFX"
+	_screen_fx.layer = 1
+	add_child(_screen_fx)
+
+
+## Low-HP danger vignette (pulses below 35% HP).
+func _on_player_health_changed(current: float, maximum: float) -> void:
+	if maximum <= 0.0 or _run_over:
+		return
+	var ratio := current / maximum
+	GameFeel.set_danger(0.0 if ratio > 0.35 else lerpf(0.35, 0.9, 1.0 - ratio / 0.35))
+
+
+func _add_nova_charge(amount: float) -> void:
+	if _run_over or _nova_charge >= 1.0 or amount <= 0.0:
+		return
+	_nova_charge = minf(1.0, _nova_charge + amount)
+	_hud.set_nova_charge(_nova_charge)
+	if _nova_charge >= 1.0 and _player != null:
+		GameFeel.nova_ready(_player.get_core_global_position())
+
+
+func _on_nova_activated() -> void:
+	if _run_over or not _run_active or _nova_charge < 1.0:
+		return
+	_nova_charge = 0.0
+	_hud.set_nova_charge(0.0)
+	detonate_nova()
+
+
+## Rift Nova: clears every hostile bolt, hammers every enemy on screen, chunks
+## the boss, and briefly shields the ship. Public so probes can trigger it.
+func detonate_nova() -> void:
+	var origin := _player.get_core_global_position() if _player != null else _screen * 0.5
+	GameFeel.nova(origin)
+	_hud.show_callout("RIFT NOVA", Palette.get_color("cyan", Color(0.2, 0.95, 1.0)), "", 0.9)
+	_enemy_bullet_pool.release_all()
+	var dmg := _rules.nova_enemy_damage * (_profile.weapon_damage_mult if _profile != null else 1.0)
+	_director.damage_all(dmg)
+	_boss.damage_adds(dmg)
+	if _boss.is_active():
+		_boss.take_damage(_boss.get_max_health() * _rules.nova_boss_damage_ratio)
+	if _player != null:
+		_player.grant_invulnerability(_rules.nova_invuln_seconds)
+
+
+## Flings energy out of a dying boss; it then homes in on the ship.
+func _spawn_loot_fountain(origin: Vector2, count: int) -> void:
+	var pickup_data: PickupData = _director.pickup_data
+	if pickup_data == null or count <= 0:
+		return
+	var bounds := PlayfieldBounds.from_screen(_screen)
+	for i in count:
+		var pickup := _pickup_pool.acquire() as Pickup
+		if pickup == null:
+			return
+		pickup.release_callback = Callable(_pickup_pool, "release")
+		pickup.magnet_target = _player
+		var ang := TAU * float(i) / float(count) + randf_range(-0.2, 0.2)
+		var vel := Vector2.RIGHT.rotated(ang) * randf_range(420.0, 820.0)
+		pickup.spawn_burst(origin, pickup_data, bounds, vel, randf_range(0.45, 0.8))
+
+
+## Value of energy pickups currently homing in on the ship.
+func _pending_pickup_value() -> int:
+	var total := 0
+	for node in _pickup_pool.get_active_nodes():
+		var pickup := node as Pickup
+		if pickup != null and pickup.data != null:
+			total += pickup.data.value
+	return total

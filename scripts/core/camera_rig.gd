@@ -20,6 +20,10 @@ extends Camera2D
 var _trauma: float = 0.0
 var _noise := FastNoiseLite.new()
 var _time: float = 0.0
+## Zoom punch (big moments): real-time envelope, 0 = rest zoom.
+var _punch_amount: float = 0.0
+var _punch_total: float = 0.0
+var _punch_left: float = 0.0
 
 
 func _ready() -> void:
@@ -42,14 +46,23 @@ func _center_on_viewport() -> void:
 	position = Vector2(vp.x * 0.5, vp.y * 0.5)
 
 
+## Briefly zooms in by `amount` (0.08 = 8%) and eases back over `seconds`.
+func zoom_punch(amount: float, seconds: float) -> void:
+	_punch_amount = clampf(amount, 0.0, 0.2)
+	_punch_total = maxf(0.05, seconds)
+	_punch_left = _punch_total
+
+
 ## Adds trauma (clamped to 1). Small values fade almost immediately.
 func add_trauma(amount: float) -> void:
 	_trauma = clampf(_trauma + amount, 0.0, 1.0)
 
 
 func _process(delta: float) -> void:
+	var real_delta := delta / maxf(Engine.time_scale, 0.001)
+	_update_zoom(real_delta)
 	# Advance on unscaled time so shake reads naturally through hit-stop.
-	_time += delta / maxf(Engine.time_scale, 0.001) * frequency
+	_time += real_delta * frequency
 	if _trauma <= 0.0:
 		offset = Vector2.ZERO
 		rotation = 0.0
@@ -61,6 +74,18 @@ func _process(delta: float) -> void:
 	)
 	rotation = max_roll * shake * _noise.get_noise_2d(_time, 100.0)
 	_trauma = maxf(0.0, _trauma - decay * (delta / maxf(Engine.time_scale, 0.001)))
+
+
+func _update_zoom(real_delta: float) -> void:
+	if _punch_left <= 0.0:
+		if zoom != Vector2.ONE:
+			zoom = Vector2.ONE
+		return
+	_punch_left = maxf(0.0, _punch_left - real_delta)
+	var p := 1.0 - _punch_left / _punch_total
+	# Fast in (first 15%), slow ease out.
+	var env := clampf(p / 0.15, 0.0, 1.0) if p < 0.15 else 1.0 - ease((p - 0.15) / 0.85, 0.6)
+	zoom = Vector2.ONE * (1.0 + _punch_amount * env)
 
 
 func get_trauma() -> float:

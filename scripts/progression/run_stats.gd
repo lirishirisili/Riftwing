@@ -37,6 +37,8 @@ var survival_seconds: float = 0.0
 var rift_energy_collected: int = 0
 ## Remaining HP ratio at run end (0..1). Used for stage star objective 2.
 var hp_ratio_end: float = 0.0
+## Extra kill points from the combo multiplier (accumulated live).
+var bonus_score: int = 0
 
 ## Settlement outcome (filled once by RunSettlement.settle at run end).
 var settled: bool = false
@@ -93,7 +95,7 @@ func live_score(rules: RewardRulesData) -> int:
 		rules.score_per_combo,
 		rules.score_per_second,
 		rules.score_per_energy,
-		rules.score_victory_bonus)
+		rules.score_victory_bonus) + maxi(0, bonus_score)
 
 
 ## Fills `score` from the current statistics using the given rules.
@@ -108,7 +110,7 @@ func finalize_score(rules: RewardRulesData) -> void:
 		rules.score_per_combo,
 		rules.score_per_second,
 		rules.score_per_energy,
-		rules.score_victory_bonus)
+		rules.score_victory_bonus) + maxi(0, bonus_score)
 
 
 ## A plain dictionary for the results screen / debug readout.

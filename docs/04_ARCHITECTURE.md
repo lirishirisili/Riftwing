@@ -75,7 +75,10 @@ project/
 - SaveManager: versioned local save with atomic writes.
 - SceneRouter: transitions between menu, map, hangar, run, and results.
 - AudioManager: named cue catalog with ui/combat/world/music groups, aliases, priorities, SFX player pool, Music/SFX buses, `play_music` crossfade, soft autofire `fire_loop` (not per-shot), focus ducking, and `user://audio_prefs.cfg` (enabled + volumes). Banks under `assets/audio/` are modern sci-fi procedural OGGs (regenerate with `tools/generate_audio_banks.gd`), not chiptune placeholders.
-- GameFeel: feedback intents (`projectile_hit`, `enemy_death`, `player_hit`, `weapon_fire`, `shield_impact`, `pickup_collected`, `ability_activated`) routing to pooled effects, shake, haptics, and AudioManager; owns LOW/MEDIUM/HIGH effect budgets.
+- GameFeel: feedback intents (`projectile_hit` incl. crits, `enemy_death`, `elite_death`, `player_hit`, `player_death`, `weapon_fire`, `shield_impact`, `pickup_collected` with a pitch-climbing streak, `ability_activated`, `level_up`, `streak`, `boss_phase`, `boss_killed`, `nova`, `heal`, `chest_open`, `evolve`, `revive`, `elite_spawn`) routing to pooled effects, shake + zoom punch (CameraRig), ScreenFX, haptics, and AudioManager; owns LOW/MEDIUM/HIGH effect budgets and the single time-scale controller (hit-stop + real-time slow-motion that always eases back to 1.0). `GameFeel.haptic(kind)` is the only haptic entry point (honors the setting + per-strength rate limit).
+- ScreenFX (`scripts/effects/screen_fx.gd`, created by the run host on CanvasLayer 1 with the HUD on layer 2): cheap overlay pass (danger vignette + flash, every profile) and a screen-read distort pass (chromatic aberration + shockwave, only while active, never on LOW). Flash alpha and aberration are hard-capped so bullets stay readable.
+- Rift Nova: kill / boss-damage charged ultimate (`RunRulesData.nova_*`, HUD `NovaButton`): clears hostile bolts, damages every enemy / add, chunks the boss, brief invulnerability.
+- Combo multiplier + kill-streak callouts (`RunRulesData.combo_*` / `streak_*`); bonus kill points accumulate in `RunStats.bonus_score`.
 - `riftwing_theme.tres`: shared UI chrome including `ButtonPrimary` / `ButtonSecondary` / `ButtonTertiary` and empty-style `ButtonChrome` for glow plates.
 - Shared meta UI kit: `scenes/ui/chrome/glow_cta_button.tscn` + `meta_screen_shell.tscn` — all player-facing meta screens compose these instead of undressed flat primary buttons.
 - HangarScreen: production ship bay UI over SaveManager hangar data (select / unlock / `try_purchase_upgrade`); holographic `hangar_pad`, color-coded upgrade rows, and disabled Upgrade All stub remain presentation-only.
@@ -110,7 +113,7 @@ Define interfaces for:
 - CloudSaveService
 - AchievementService
 
-Prototype implementations are no-op or local on all platforms. Gameplay talks only to `AdsService`. `PlatformServices` selects `LevelPlayAdsService` when the native `RiftstrikeLevelPlay` plugin is present (Android/iOS), otherwise the no-op base.
+Prototype implementations are no-op or local on all platforms. Gameplay talks only to `AdsService`. Haptics use `DeviceHapticsService` (built-in `Input.vibrate_handheld`, no SDK) on Android/iOS. `PlatformServices` selects `LevelPlayAdsService` when the native `RiftstrikeLevelPlay` plugin is present (Android/iOS), otherwise the no-op base.
 
 ### Ads (Unity LevelPlay)
 - Single mediation layer: **Riftstrike → Unity LevelPlay → Unity Ads + Meta Audience Network**.

@@ -20,7 +20,9 @@ func _ready() -> void:
 	# during platform bring-up, keeping gameplay code unchanged.
 	store = StoreService.new()
 	analytics = AnalyticsService.new()
-	haptics = HapticsService.new()
+	# Real device haptics on phones; the no-op base everywhere else.
+	var device_haptics := DeviceHapticsService.new()
+	haptics = device_haptics if device_haptics.is_available() else HapticsService.new()
 	cloud_save = CloudSaveService.new()
 	achievements = AchievementService.new()
 	ads = _make_ads_service()

@@ -92,7 +92,7 @@ func _on_area_entered(area: Area2D) -> void:
 		var hit_pos := global_position
 		var dmg := data.damage * damage_mult
 		area.call("take_damage", dmg)
-		GameFeel.projectile_hit(hit_pos, dmg, hits_player)
+		GameFeel.projectile_hit(hit_pos, dmg, hits_player, data.is_crit)
 		_release()
 
 
@@ -126,6 +126,9 @@ func _draw() -> void:
 		draw_line(Vector2(0.0, half * 0.85), Vector2(0.0, -half), Color(data.color, life_f), data.radius * 1.2, true)
 		draw_circle(Vector2(0.0, -half), data.radius * 1.2, Color(data.color, life_f))
 		draw_circle(Vector2(0.0, -half), data.radius * 0.5, Color(1.0, 1.0, 1.0, 0.95 * life_f))
+		if data.is_crit:
+			# Crit volley: gold halo on the head so big hits read in flight.
+			draw_circle(Vector2(0.0, -half), data.radius * 2.2, Color(1.0, 0.8, 0.2, 0.35 * life_f))
 
 
 ## Called by the pool on acquire.

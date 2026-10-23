@@ -574,9 +574,7 @@ func _on_campaign_changed(stage_id: String) -> void:
 
 func _click() -> void:
 	AudioManager.play_sfx("ui_confirm", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
-	var haptics: HapticsService = PlatformServices.haptics
-	if haptics != null and GameFeel.haptics_enabled:
-		haptics.light()
+	GameFeel.haptic("light")
 
 
 func _show_feedback(text: String, is_error: bool) -> void:

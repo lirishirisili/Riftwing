@@ -1,5 +1,22 @@
 # Changelog
 
+## Juice pass (M2)
+- **ScreenFX** layer between world and HUD: danger vignette at low HP, color flashes, chromatic aberration, and shockwave ripples (distortion only while active and never on LOW; alpha/aberration capped so bullets stay readable).
+- **Slow-motion** on boss kills, player death, and the Rift Nova; GameFeel now owns one time-scale controller (hit-stop + real-time slow-mo with an ease-out).
+- **Camera zoom punch** on boss kills and the Nova.
+- **Rift Nova** ultimate: a new HUD orb (above the right ability) charges from kills and boss damage; tapping it clears all enemy bolts, hammers every enemy and add, chunks the boss, and shields the ship briefly.
+- **Combo multiplier**: every 10 kills in a chain adds +25% kill points (up to x3.0); **kill-streak callouts** (KILLING SPREE → RIFT LEGEND) with a center-screen pop.
+- **Crits** read: gold halo on crit bolts, gold "123!" numbers with a pop, and a sharper ping.
+- Damage numbers pop, scatter, and only rewrite theme overrides when their style changes.
+- Explosions throw debris shards; new colored ring bursts for level-ups, streaks, chests, upgrades, the Nova, and boss kills.
+- Enemies squash/kick on every hit; elites get a gold blast + ripple on death.
+- **Level-up fanfare**: burst + chime + "LEVEL N" callout before the cards open.
+- **Boss loot fountain**: energy bursts out of a dying boss and homes in on the ship (counted on a victory even if still in flight).
+- Pickup chime climbs in pitch during a collection streak.
+- **Real haptics** on phones (`DeviceHapticsService`, built-in `Input.vibrate_handheld`); every haptic now goes through `GameFeel.haptic()` so the setting is honored everywhere (the boss used to ignore it) and pulses are rate-limited.
+- 13 new procedural SFX (crit, level_up, streak, nova_ready, nova_blast, slowmo, chest_open, coin, heal, evolve, revive, elite_spawn, reward); the generator now only synthesizes missing cues unless run with `-- --all`.
+- New `tools/capture_run_moments.gd` (windowed) saves combat / nova / boss / boss-kill screenshots; new `tests/juice_probe.gd`; `vertical_slice_probe` waits in real time (frame counting broke under real-time slow-mo).
+
 ## Stability pass (M1)
 Combat
 - Fixed shared hitboxes: every pooled enemy / bolt / pickup used one shared `CircleShape2D`, so all live enemies took the radius of the last one spawned (a Tank made every Scout huge). Each pooled node now owns its shape.

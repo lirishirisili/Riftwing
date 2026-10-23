@@ -89,17 +89,29 @@ func spawn_explosion(world_pos: Vector2, is_major: bool) -> void:
 	if node == null:
 		return
 	node.release_callback = Callable(_explosion_pool, "release")
-	node.spawn(world_pos, is_major, GameFeel.explosion_particles(is_major))
+	node.spawn(world_pos, is_major, GameFeel.explosion_particles(is_major), GameFeel.explosion_debris(is_major))
 
 
-func spawn_damage_number(world_pos: Vector2, amount: int) -> void:
+## Colored ring burst (level-up, streak, chest, nova, boss kill). Shares the
+## explosion pool so effect storms stay inside one hard cap.
+func spawn_burst(world_pos: Vector2, color: Color, radius: float, lifetime: float) -> void:
+	if _explosion_pool == null:
+		return
+	var node := _explosion_pool.acquire() as Explosion
+	if node == null:
+		return
+	node.release_callback = Callable(_explosion_pool, "release")
+	node.spawn_burst(world_pos, color, radius, lifetime)
+
+
+func spawn_damage_number(world_pos: Vector2, amount: int, is_crit: bool = false) -> void:
 	if _damage_pool == null:
 		return
 	var node := _damage_pool.acquire() as DamageNumber
 	if node == null:
 		return
 	node.release_callback = Callable(_damage_pool, "release")
-	node.spawn(world_pos, amount)
+	node.spawn(world_pos, amount, is_crit)
 
 
 ## Live pool stats for the debug readout / pool_stats group.

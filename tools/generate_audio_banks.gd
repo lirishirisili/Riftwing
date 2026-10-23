@@ -122,13 +122,88 @@ func _run() -> void:
 			_tone(82.0, 0.48, 0.18, "sine", 0.05, 0.15, 0.45, 0.4),
 			_tone(110.0, 0.35, 0.08, "triangle", 0.08, 0.25, 0.3, 0.45),
 		])),
+		# --- Juice / progression cues (M2+) ---
+		"crit": _pad(_mix([
+			_tone(1568.0, 0.05, 0.14, "triangle", 0.002, 0.3, 0.2, 0.5),
+			_tone(2349.0, 0.06, 0.08, "sine", 0.002, 0.3, 0.2, 0.5),
+			_noise_filtered(0.04, 0.08, 0.6),
+		])),
+		"level_up": _pad(_mix([
+			_tone(523.25, 0.12, 0.14, "triangle", 0.01, 0.2, 0.5, 0.4),
+			_concat(_silence(0.07), _tone(659.25, 0.12, 0.14, "triangle", 0.01, 0.2, 0.5, 0.4)),
+			_concat(_silence(0.14), _tone(783.99, 0.14, 0.14, "triangle", 0.01, 0.2, 0.5, 0.4)),
+			_concat(_silence(0.21), _tone(1046.5, 0.32, 0.16, "sine", 0.01, 0.15, 0.6, 0.5)),
+			_concat(_silence(0.21), _sweep(400.0, 1600.0, 0.3, 0.06, "sine")),
+		])),
+		"streak": _pad(_mix([
+			_sweep(300.0, 1200.0, 0.14, 0.16, "saw_soft"),
+			_tone(1200.0, 0.2, 0.12, "triangle", 0.01, 0.2, 0.5, 0.45),
+			_tone(1800.0, 0.18, 0.08, "sine", 0.02, 0.2, 0.4, 0.45),
+		])),
+		"nova_ready": _pad(_mix([
+			_tone(880.0, 0.25, 0.1, "sine", 0.02, 0.2, 0.5, 0.5),
+			_concat(_silence(0.06), _tone(1318.5, 0.3, 0.1, "sine", 0.02, 0.2, 0.5, 0.5)),
+			_fm(1760.0, 7.0, 1.2, 0.35, 0.05),
+		])),
+		"nova_blast": _pad(_mix([
+			_sweep(90.0, 30.0, 0.9, 0.3, "sine"),
+			_noise_filtered(0.7, 0.3, 0.15),
+			_sweep(200.0, 2400.0, 0.5, 0.08, "sine"),
+			_tone(55.0, 0.8, 0.2, "sine", 0.01, 0.1, 0.6, 0.5),
+		])),
+		"slowmo": _pad(_mix([
+			_sweep(900.0, 120.0, 0.7, 0.14, "sine"),
+			_noise_filtered(0.6, 0.08, 0.1),
+		])),
+		"chest_open": _pad(_mix([
+			_noise_filtered(0.08, 0.12, 0.3),
+			_concat(_silence(0.06), _tone(987.77, 0.1, 0.12, "triangle", 0.01, 0.2, 0.4, 0.4)),
+			_concat(_silence(0.12), _tone(1318.5, 0.1, 0.12, "triangle", 0.01, 0.2, 0.4, 0.4)),
+			_concat(_silence(0.18), _tone(1975.5, 0.3, 0.12, "sine", 0.01, 0.2, 0.5, 0.5)),
+		])),
+		"coin": _pad(_mix([
+			_tone(1975.5, 0.05, 0.12, "sine", 0.002, 0.3, 0.2, 0.5),
+			_concat(_silence(0.04), _tone(2637.0, 0.1, 0.1, "sine", 0.002, 0.3, 0.3, 0.5)),
+		])),
+		"heal": _pad(_mix([
+			_sweep(440.0, 880.0, 0.3, 0.12, "sine"),
+			_tone(1318.5, 0.3, 0.06, "sine", 0.05, 0.2, 0.5, 0.5),
+		])),
+		"evolve": _pad(_mix([
+			_sweep(220.0, 880.0, 0.5, 0.14, "saw_soft"),
+			_concat(_silence(0.35), _tone(523.25, 0.6, 0.12, "triangle", 0.01, 0.15, 0.6, 0.5)),
+			_concat(_silence(0.35), _tone(659.25, 0.6, 0.1, "triangle", 0.01, 0.15, 0.6, 0.5)),
+			_concat(_silence(0.35), _tone(783.99, 0.6, 0.1, "sine", 0.01, 0.15, 0.6, 0.5)),
+			_concat(_silence(0.35), _noise_filtered(0.3, 0.08, 0.5)),
+		])),
+		"revive": _pad(_mix([
+			_sweep(110.0, 880.0, 0.6, 0.18, "sine"),
+			_fm(440.0, 6.0, 2.0, 0.6, 0.06),
+			_concat(_silence(0.45), _tone(1760.0, 0.3, 0.08, "sine", 0.01, 0.2, 0.5, 0.5)),
+		])),
+		"elite_spawn": _pad(_mix([
+			_tone(220.0, 0.12, 0.16, "square_soft", 0.005, 0.2, 0.4, 0.4),
+			_concat(_silence(0.14), _tone(220.0, 0.12, 0.16, "square_soft", 0.005, 0.2, 0.4, 0.4)),
+			_sweep(600.0, 300.0, 0.3, 0.06, "sine"),
+		])),
+		"reward": _pad(_mix([
+			_tone(783.99, 0.1, 0.12, "triangle", 0.01, 0.2, 0.5, 0.4),
+			_concat(_silence(0.08), _tone(1046.5, 0.12, 0.12, "triangle", 0.01, 0.2, 0.5, 0.4)),
+			_concat(_silence(0.16), _tone(1567.98, 0.3, 0.12, "sine", 0.01, 0.2, 0.5, 0.5)),
+			_noise_filtered(0.05, 0.05, 0.6),
+		])),
 	}
 
 	var abs_tmp := ProjectSettings.globalize_path(TMP_DIR)
 	var abs_sfx := ProjectSettings.globalize_path(SFX_DIR)
 	var abs_music := ProjectSettings.globalize_path(MUSIC_DIR)
 
+	# By default only missing cues are synthesized so existing banks stay byte-stable;
+	# pass `-- --all` to regenerate everything.
+	var regen_all := OS.get_cmdline_user_args().has("--all")
 	for name in sfx.keys():
+		if not regen_all and FileAccess.file_exists(SFX_DIR.path_join("%s.ogg" % name)):
+			continue
 		var wav_path := abs_tmp.path_join("%s.wav" % name)
 		_write_wav(wav_path, sfx[name])
 		var ogg_path := abs_sfx.path_join("%s.ogg" % name)
@@ -139,6 +214,8 @@ func _run() -> void:
 		print("sfx %s" % name)
 
 	for kind in ["menu", "run", "boss"]:
+		if not regen_all and FileAccess.file_exists(MUSIC_DIR.path_join("music_%s.ogg" % kind)):
+			continue
 		var samples := _music(kind, 28.0)
 		var wav_path := abs_tmp.path_join("%s.wav" % kind)
 		_write_wav(wav_path, samples)
@@ -149,6 +226,10 @@ func _run() -> void:
 			return
 		print("music %s" % kind)
 
+	if not regen_all and FileAccess.file_exists(SFX_DIR.path_join("fire_loop.ogg")):
+		print("GENERATE_AUDIO_BANKS_OK")
+		quit(0)
+		return
 	var fire_loop := _fire_loop(3.0)
 	var fl_wav := abs_tmp.path_join("fire_loop.wav")
 	_write_wav(fl_wav, fire_loop)

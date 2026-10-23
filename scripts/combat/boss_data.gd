@@ -47,6 +47,9 @@ extends Resource
 ## Invulnerable dramatic beat between phases (seconds).
 @export_range(0.3, 4.0, 0.05) var phase_transition_seconds: float = 1.1
 
+## Energy pickups flung out in a loot fountain when the boss dies.
+@export_range(0, 80) var loot_pickups: int = 24
+
 ## Ordered attack patterns cycled during phase 1.
 @export var phase1_patterns: Array[BossPatternData] = []
 

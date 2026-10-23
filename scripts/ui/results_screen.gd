@@ -463,9 +463,7 @@ func _on_home() -> void:
 
 func _click_feedback() -> void:
 	AudioManager.play_sfx("ui_confirm", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
-	var haptics: HapticsService = PlatformServices.haptics
-	if haptics != null and GameFeel.haptics_enabled:
-		haptics.light()
+	GameFeel.haptic("light")
 
 
 func _play_intro() -> void:
@@ -493,9 +491,7 @@ func _play_intro() -> void:
 		"victory_fanfare" if _stats.victory else "run_failed",
 		Vector2.ZERO,
 		AudioManager.PRIORITY_HIGH)
-	var haptics: HapticsService = PlatformServices.haptics
-	if haptics != null and GameFeel.haptics_enabled:
-		haptics.medium()
+	GameFeel.haptic("medium")
 
 
 func _star_text(stars: int) -> String:

@@ -11,6 +11,7 @@ signal resume_requested()
 signal quit_to_menu_requested()
 signal ability_left_activated()
 signal ability_right_activated()
+signal nova_activated()
 
 const _RULES_PATH := "res://resources/progression/reward_rules_default.tres"
 const _ICON_MISSILE := "res://assets/icons/icon_missile.svg"
@@ -54,6 +55,9 @@ var _last_combo: int = -1
 var _last_score: int = -1
 var _icon_left: Texture2D
 var _icon_right: Texture2D
+var _nova: NovaButton
+var _callout: Label
+var _callout_tween: Tween
 
 
 func _ready() -> void:
@@ -77,6 +81,8 @@ func _ready() -> void:
 	configure_abilities(3, 7.0, 2, 9.0)
 	_ability_left.activated.connect(func() -> void: ability_left_activated.emit())
 	_ability_right.activated.connect(func() -> void: ability_right_activated.emit())
+	_build_nova_button()
+	_build_callout()
 	_health_bar.set_fill_color(Palette.get_color("cyan"))
 	_energy_bar.set_fill_color(Palette.get_color("purple"))
 	_energy_bar.low_threshold = 0.0
@@ -90,6 +96,57 @@ func _ready() -> void:
 func configure_abilities(left_charges: int, left_cooldown: float, right_charges: int, right_cooldown: float) -> void:
 	_ability_left.configure(left_charges, left_cooldown, _icon_left, Palette.get_color("cyan"))
 	_ability_right.configure(right_charges, right_cooldown, _icon_right, Palette.get_color("purple"))
+
+
+func _build_nova_button() -> void:
+	_nova = NovaButton.new()
+	_nova.name = "NovaButton"
+	_nova.process_mode = Node.PROCESS_MODE_PAUSABLE
+	_nova.ring_color = Palette.get_color("cyan", Color(0.0, 0.84, 1.0))
+	_nova.activated.connect(func() -> void: nova_activated.emit())
+	add_child(_nova)
+
+
+func _build_callout() -> void:
+	_callout = Label.new()
+	_callout.name = "Callout"
+	_callout.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_callout.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_callout.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_callout.add_theme_font_size_override("font_size", 64)
+	_callout.add_theme_constant_override("outline_size", 10)
+	_callout.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.08, 0.9))
+	_callout.visible = false
+	add_child(_callout)
+
+
+## Big center-top text pop for streaks, level-ups, evolutions, Nova, etc.
+## `subtitle` renders on a second line.
+func show_callout(text: String, color: Color, subtitle: String = "", seconds: float = 1.2) -> void:
+	if _callout == null:
+		return
+	_callout.text = text if subtitle == "" else "%s\n%s" % [text, subtitle]
+	_callout.modulate = color
+	_callout.visible = true
+	_callout.pivot_offset = _callout.size * 0.5
+	_callout.scale = Vector2(1.6, 1.6)
+	if _callout_tween != null and _callout_tween.is_valid():
+		_callout_tween.kill()
+	_callout_tween = create_tween()
+	_callout_tween.tween_property(_callout, "scale", Vector2.ONE, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_callout_tween.tween_interval(maxf(0.1, seconds - 0.5))
+	_callout_tween.tween_property(_callout, "modulate:a", 0.0, 0.28)
+	_callout_tween.tween_callback(func() -> void: _callout.visible = false)
+
+
+## Rift Nova charge 0..1 (1 = ready).
+func set_nova_charge(fraction: float) -> void:
+	if _nova != null:
+		_nova.set_charge(fraction)
+
+
+func get_nova_button() -> NovaButton:
+	return _nova
 
 
 func _refresh_currency_pivot() -> void:
@@ -194,6 +251,19 @@ func _apply_safe_area() -> void:
 	_safe.add_theme_constant_override("margin_top", int(maxi(12, int(safe.position.y) + 8)))
 	_safe.add_theme_constant_override("margin_right", int(maxi(16, int(full.x - safe.end.x) + 12)))
 	_safe.add_theme_constant_override("margin_bottom", int(maxi(18, int(full.y - safe.end.y) + 14)))
+	_layout_overlays(safe, full)
+
+
+## Places the Nova orb above the right ability button and the callout under the
+## top chips, both inside the safe area.
+func _layout_overlays(safe: Rect2, full: Vector2) -> void:
+	var right := maxf(16.0, full.x - safe.end.x + 12.0)
+	var bottom := maxf(18.0, full.y - safe.end.y + 14.0)
+	if _nova != null:
+		_nova.position = Vector2(full.x - right - _nova.size.x - 4.0, full.y - bottom - 112.0 - 28.0 - _nova.size.y)
+	if _callout != null:
+		_callout.position = Vector2(0.0, safe.position.y + full.y * 0.2)
+		_callout.size = Vector2(full.x, 200.0)
 
 
 func _process(delta: float) -> void:
@@ -239,7 +309,8 @@ func _on_energy_changed(total: int) -> void:
 	if _last_energy >= 0 and total > _last_energy:
 		_currency_flash = 1.0
 	_last_energy = total
-	if _stats != null:
+	# Settled runs are frozen: loot landing after the end must not edit them.
+	if _stats != null and not _stats.settled:
 		_stats.rift_energy_collected = total
 
 

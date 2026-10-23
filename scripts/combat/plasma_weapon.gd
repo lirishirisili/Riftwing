@@ -145,4 +145,5 @@ func _crit_projectile_for() -> ProjectileData:
 		var base := _current_projectile()
 		_crit_projectile = base.duplicate() as ProjectileData
 		_crit_projectile.damage = base.damage * crit_multiplier
+		_crit_projectile.is_crit = true
 	return _crit_projectile

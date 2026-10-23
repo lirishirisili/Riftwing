@@ -158,9 +158,7 @@ func _on_claim() -> void:
 	if active and progress >= _event.goal and not SaveManager.is_event_claimed(occ):
 		if SaveManager.claim_event_reward(occ, _event.goal, _event.reward_energy, _event.reward_core):
 			AudioManager.play_sfx("upgrade_select", Vector2.ZERO, AudioManager.PRIORITY_HIGH)
-			var haptics: HapticsService = PlatformServices.haptics
-			if haptics != null and GameFeel.haptics_enabled:
-				haptics.medium()
+			GameFeel.haptic("medium")
 			_refresh()
 			return
 	if active:

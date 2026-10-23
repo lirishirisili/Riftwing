@@ -23,3 +23,7 @@ extends Resource
 
 ## Body color. Player bolts are cyan per docs/01_VISUAL_DIRECTION.md.
 @export var color: Color = Color("#00D7FF")
+
+## Runtime-only flag (never authored): set on the cached crit duplicate a
+## weapon builds, so impact feedback can show a crit number.
+var is_crit: bool = false

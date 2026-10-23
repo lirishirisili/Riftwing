@@ -22,6 +22,10 @@ var _collected: bool = false
 var _bounds: Rect2 = Rect2(-200, -400, 1480, 2720)
 var _attracted: bool = false
 var _magnet_speed: float = 0.0
+## Loot-fountain launch: outward velocity with drag, then auto-attract.
+var _burst_vel: Vector2 = Vector2.ZERO
+var _attract_at: float = -1.0
+const _BURST_DRAG := 3.5
 
 @onready var _shape: CollisionShape2D = $CollisionShape2D
 
@@ -40,6 +44,8 @@ func spawn(world_position: Vector2, pickup_data: PickupData, bounds: Rect2) -> v
 	_collected = false
 	_attracted = false
 	_magnet_speed = 0.0
+	_burst_vel = Vector2.ZERO
+	_attract_at = -1.0
 	_bounds = bounds
 	if _shape != null and _shape.shape is CircleShape2D:
 		(_shape.shape as CircleShape2D).radius = data.radius
@@ -50,6 +56,15 @@ func spawn(world_position: Vector2, pickup_data: PickupData, bounds: Rect2) -> v
 	set_deferred("monitorable", true)
 	set_process(true)
 	queue_redraw()
+
+
+## Spawns with an outward launch (boss / chest loot fountain); the pickup
+## flies out, slows, then homes in on the magnet target after `attract_after`.
+func spawn_burst(world_position: Vector2, pickup_data: PickupData, bounds: Rect2,
+		velocity: Vector2, attract_after: float) -> void:
+	spawn(world_position, pickup_data, bounds)
+	_burst_vel = velocity
+	_attract_at = attract_after
 
 
 ## Forces homing toward the magnet target regardless of distance.
@@ -63,6 +78,16 @@ func _process(delta: float) -> void:
 	if data == null:
 		return
 	_age += delta
+	if _attract_at >= 0.0 and _age >= _attract_at:
+		_attract_at = -1.0
+		attract()
+	if not _attracted and _burst_vel != Vector2.ZERO:
+		global_position += _burst_vel * delta
+		_burst_vel *= maxf(0.0, 1.0 - _BURST_DRAG * delta)
+		if _burst_vel.length_squared() < 400.0:
+			_burst_vel = Vector2.ZERO
+		queue_redraw()
+		return
 	if not _attracted and magnet_target != null and is_instance_valid(magnet_target) \
 			and magnet_target.has_method("get_magnet_radius"):
 		var r: float = magnet_target.get_magnet_radius()

@@ -106,9 +106,7 @@ func open(level: int) -> bool:
 	AudioManager.set_fire_loop_suppressed(true)
 	_animate_open()
 	AudioManager.play_sfx("upgrade_open", Vector2.ZERO, AudioManager.PRIORITY_HIGH)
-	var haptics: HapticsService = PlatformServices.haptics
-	if GameFeel.haptics_enabled and haptics != null:
-		haptics.light()
+	GameFeel.haptic("light")
 	_apply_safe_area()
 	return true
 
@@ -165,9 +163,7 @@ func _on_card_chosen(upgrade: UpgradeData) -> void:
 		else:
 			card.play_dismiss()
 	AudioManager.play_sfx("upgrade_select", Vector2.ZERO, AudioManager.PRIORITY_HIGH)
-	var haptics: HapticsService = PlatformServices.haptics
-	if GameFeel.haptics_enabled and haptics != null:
-		haptics.medium()
+	GameFeel.haptic("medium")
 
 	_manager.apply(upgrade)
 	upgrade_selected.emit(upgrade)
@@ -210,9 +206,7 @@ func _on_reroll_pressed() -> void:
 	_animate_cards_in()
 	_refresh_reroll_button()
 	AudioManager.play_sfx("upgrade_open", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
-	var haptics: HapticsService = PlatformServices.haptics
-	if GameFeel.haptics_enabled and haptics != null:
-		haptics.light()
+	GameFeel.haptic("light")
 
 
 ## Updates the reroll CTA label + enabled state from the remaining count.

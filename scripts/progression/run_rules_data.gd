@@ -31,3 +31,29 @@ extends Resource
 ## restarts if at least this many seconds remain (otherwise the clock jumps
 ## straight to the next beat so there is never dead air).
 @export_range(0.0, 60.0, 1.0) var wave_refill_min_seconds: float = 12.0
+
+# --- Combo / streaks ---------------------------------------------------------
+
+## Kills per combo tier; each tier adds `combo_bonus_per_tier` to the score
+## multiplier applied to kill points (x1.0 -> up to `combo_max_mult`).
+@export_range(1, 100) var combo_kills_per_tier: int = 10
+@export_range(0.0, 2.0, 0.05) var combo_bonus_per_tier: float = 0.25
+@export_range(1.0, 10.0, 0.1) var combo_max_mult: float = 3.0
+
+## Kill-streak callouts: combo counts and their labels (same length).
+@export var streak_thresholds: PackedInt32Array = PackedInt32Array([15, 30, 50, 80, 120])
+@export var streak_labels: PackedStringArray = PackedStringArray([
+	"KILLING SPREE", "RAMPAGE", "UNSTOPPABLE", "GODLIKE", "RIFT LEGEND"])
+
+# --- Rift Nova (screen-clear ultimate) ---------------------------------------
+
+## Kills needed to charge the Nova from empty.
+@export_range(5, 500) var nova_kills_to_charge: int = 45
+## Boss damage (fraction of its max HP) that fully charges the Nova.
+@export_range(0.05, 2.0, 0.05) var nova_boss_damage_to_charge: float = 0.6
+## Damage dealt to every wave enemy / boss add on screen.
+@export_range(1.0, 10000.0, 1.0) var nova_enemy_damage: float = 400.0
+## Boss damage as a fraction of the boss's max HP.
+@export_range(0.0, 0.5, 0.01) var nova_boss_damage_ratio: float = 0.06
+## Invulnerability granted when the Nova detonates.
+@export_range(0.0, 3.0, 0.1) var nova_invuln_seconds: float = 1.0

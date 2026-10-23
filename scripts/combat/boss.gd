@@ -139,9 +139,7 @@ func begin() -> void:
 	health_changed.emit(_health, _max_health())
 	warning_started.emit(data.display_name)
 	AudioManager.play_sfx("boss_warning", Vector2.ZERO, AudioManager.PRIORITY_HIGH)
-	var haptics: HapticsService = PlatformServices.haptics
-	if haptics != null:
-		haptics.heavy()
+	GameFeel.haptic("heavy")
 
 
 func get_health() -> float:
@@ -168,6 +166,17 @@ func set_add_scaling(hp_mult: float, contact_damage_mult: float) -> void:
 ## Body-contact damage after difficulty scaling (read by the player on overlap).
 func get_contact_damage() -> float:
 	return data.contact_damage * _damage_mult if data != null else 0.0
+
+
+## Damages every live summoned add (Rift Nova).
+func damage_adds(amount: float) -> void:
+	for e in _summoned.duplicate():
+		if is_instance_valid(e):
+			e.take_damage(amount)
+
+
+func get_max_health() -> float:
+	return _max_health()
 
 
 ## Nearest live summoned add to a point, or null (secondary-weapon auto-aim).
@@ -491,11 +500,10 @@ func _enter_phase_transition() -> void:
 	_apply_tint()
 	phase_changed.emit(2)
 	GameFeel.enemy_death(global_position, true)
+	GameFeel.boss_phase(global_position)
 	GameFeel.request_hitstop(0.08)
 	AudioManager.play_sfx("boss_phase", Vector2.ZERO, AudioManager.PRIORITY_HIGH)
-	var haptics: HapticsService = PlatformServices.haptics
-	if haptics != null:
-		haptics.heavy()
+	GameFeel.haptic("heavy")
 
 
 func _enter_defeated() -> void:
@@ -510,11 +518,9 @@ func _enter_defeated() -> void:
 	# Clear any summoned adds so the arena is clean for the victory beat.
 	_clear_summoned()
 	GameFeel.enemy_death(global_position, true)
-	GameFeel.request_hitstop(0.12)
+	GameFeel.boss_killed(global_position)
 	AudioManager.play_sfx("boss_defeated", Vector2.ZERO, AudioManager.PRIORITY_HIGH)
-	var haptics: HapticsService = PlatformServices.haptics
-	if haptics != null:
-		haptics.heavy()
+	GameFeel.haptic("heavy")
 
 
 func _update_defeated(_delta: float) -> void:

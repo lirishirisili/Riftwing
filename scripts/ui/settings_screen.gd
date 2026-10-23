@@ -165,6 +165,4 @@ func _on_back() -> void:
 
 func _click() -> void:
 	AudioManager.play_sfx("ui_confirm", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
-	var haptics: HapticsService = PlatformServices.haptics
-	if GameFeel.haptics_enabled and haptics != null:
-		haptics.light()
+	GameFeel.haptic("light")
