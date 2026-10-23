@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/upgrade_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/progression/upgrade_effect_data.gd" id="2"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_crystal.svg" id="3"]
+
+[sub_resource type="Resource" id="e1"]
+script = ExtResource("2")
+kind = 17
+target = "run"
+value = 1.0
+
+[sub_resource type="Resource" id="e2"]
+script = ExtResource("2")
+kind = 11
+target = "plasma"
+value = 0.03
+
+[resource]
+script = ExtResource("1")
+id = "lucky_star"
+title = "Lucky Star"
+description = "Rarer cards and better chests. +3% crit."
+icon = ExtResource("3")
+rarity = 1
+max_level = 3
+weight = 1.6
+effects = Array[Resource]([SubResource("e1"), SubResource("e2")])
+

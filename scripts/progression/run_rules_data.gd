@@ -15,6 +15,9 @@ extends Resource
 ## Free card rerolls granted per run.
 @export_range(0, 10) var rerolls_per_run: int = 1
 
+## Card banishes per run (a banished card never returns this run).
+@export_range(0, 10) var banishes_per_run: int = 2
+
 ## Left HUD ability (Missile Barrage): stored charges and recharge seconds.
 @export_range(1, 9) var ability_left_charges: int = 3
 @export_range(0.5, 60.0, 0.5) var ability_left_cooldown: float = 7.0

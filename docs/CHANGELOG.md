@@ -1,5 +1,14 @@
 # Changelog
 
+## Combat depth (M3a): real weapons, levels, evolutions
+- **Secondary weapons now behave like their names** (`SecondaryWeaponData.kind`): Homing Missiles steer and burst; Arc Laser is a pulsing piercing beam; Guardian Drones orbit the ship, ram, and shoot; Chain Lightning arcs between targets; Void Bomb lobs a big area blast (also on expiry). Projectiles support `pierce`, `homing_turn_rate`, `explode_radius`, and multi-pulse vortexes.
+- **Weapon levels 1→5**: picking a weapon card again levels it (damage, rate, and every few levels +1 missile / arc jump / drone / bomb). Cards show level text (`UpgradeData.level_description`).
+- **6 evolutions** (recipe = weapon at max level + a passive; always offered first once met; cards show "EVOLVES…" hints): Hydra Swarm, Prism Lance (permanent wide beam), Aegis Halo (drones erase enemy bullets), Storm Weaver, Singularity (5-pulse vortex), and Nova Cannon (golden piercing plasma).
+- **8 new passives**: Magnet Coil, Rift Lens (+area), Cooldown Matrix, Nano Repair (regen), Lucky Star (luck + crit), Piercing Rounds, XP Siphon, Kinetic Barrier (blocks a hit, recharges).
+- **Banish**: 2 per run (`RunRulesData.banishes_per_run`) — arm, then tap a card to remove it from the run and redraw. Luck tilts rolls toward epic/legendary; early-run rarity bias moved into `UpgradeManager.early_rarity_bias` data.
+- New `GameFeel.area_hit / blast / lightning` (calm feedback for area weapons: numbers + rings, no shake spam); lightning arcs drawn by EffectsLayer in fixed slots.
+- New `tests/combat_depth_probe.gd` (all 6 recipes, levels, forced slot, banish, every weapon behavior, passives).
+
 ## Juice pass (M2)
 - **ScreenFX** layer between world and HUD: danger vignette at low HP, color flashes, chromatic aberration, and shockwave ripples (distortion only while active and never on LOW; alpha/aberration capped so bullets stay readable).
 - **Slow-motion** on boss kills, player death, and the Rift Nova; GameFeel now owns one time-scale controller (hit-stop + real-time slow-mo with an ease-out).

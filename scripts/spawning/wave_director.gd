@@ -82,6 +82,11 @@ func _process(delta: float) -> void:
 		wave_finished.emit()
 
 
+## Live wave enemies (read-only; iterate a duplicate if a hit can kill).
+func get_active_enemies() -> Array[Enemy]:
+	return _active_enemies
+
+
 func get_active_enemy_count() -> int:
 	return _active_enemies.size()
 

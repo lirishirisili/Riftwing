@@ -106,11 +106,14 @@ func populate(upgrade: UpgradeData, next_level: int, synergy_hint: String = "") 
 	_icon.modulate = Color(1, 1, 1, 1)
 	_title.text = upgrade.title
 	_title.add_theme_color_override("font_color", _accent)
+	var body := upgrade.description
+	if next_level > 1 and upgrade.level_description.strip_edges() != "":
+		body = upgrade.level_description
 	if synergy_hint.strip_edges() != "":
-		_description.text = "%s\n◆ %s" % [upgrade.description, synergy_hint]
+		_description.text = "%s\n◆ %s" % [body, synergy_hint]
 		_description.add_theme_color_override("font_color", Palette.get_color("green", Color(0.3, 0.95, 0.55)))
 	else:
-		_description.text = upgrade.description
+		_description.text = body
 		_description.remove_theme_color_override("font_color")
 	var is_new := next_level <= 1
 	_new_badge.visible = is_new

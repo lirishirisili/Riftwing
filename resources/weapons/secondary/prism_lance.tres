@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SecondaryWeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/secondary_weapon_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/weapons/friendly_arc_projectile.tres" id="2"]
+
+
+[resource]
+script = ExtResource("1")
+id = "prism_lance"
+display_name = "Prism Lance"
+kind = 2
+color = Color(1, 0.35, 0.95, 1)
+interval = 1.0
+damage = 10.0
+muzzle_offset = Vector2(0, -80)
+beam_half_width = 46.0
+beam_duration = 99.0
+beam_tick = 0.1
+level_count_every = 0
+projectile = ExtResource("2")
+

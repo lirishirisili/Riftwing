@@ -19,3 +19,9 @@ extends Resource
 
 ## The projectile fired by this weapon.
 @export var projectile: ProjectileData
+
+## Evolved form (NOVA CANNON): replaces `projectile` once the plasma evolution
+## card is taken. Upgrade modifiers keep applying on top.
+@export var evolved_projectile: ProjectileData
+## Fire-rate multiplier applied on evolution.
+@export_range(1.0, 3.0, 0.05) var evolved_fire_rate_mult: float = 1.15

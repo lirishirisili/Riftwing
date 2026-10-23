@@ -168,6 +168,11 @@ func get_contact_damage() -> float:
 	return data.contact_damage * _damage_mult if data != null else 0.0
 
 
+## Live summoned adds (read-only; iterate a duplicate if a hit can kill).
+func get_adds() -> Array[Enemy]:
+	return _summoned
+
+
 ## Damages every live summoned add (Rift Nova).
 func damage_adds(amount: float) -> void:
 	for e in _summoned.duplicate():

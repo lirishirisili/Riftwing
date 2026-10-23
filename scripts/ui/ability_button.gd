@@ -44,6 +44,11 @@ func configure(charges: int, cooldown: float, tex: Texture2D, color: Color) -> v
 	_refresh_count()
 
 
+## Scales the recharge time (Cooldown Matrix: < 1 = faster).
+func scale_cooldown(mult: float) -> void:
+	cooldown_seconds = maxf(0.5, cooldown_seconds * maxf(0.05, mult))
+
+
 func get_charges() -> int:
 	return _charges
 

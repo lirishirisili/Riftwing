@@ -48,6 +48,13 @@ var _magnet_mult: float = 1.0
 const _PICKUP_STREAK_WINDOW := 0.45
 var _pickup_streak: int = 0
 var _pickup_streak_timer: float = 0.0
+## Passive repair (fraction of max HP per second) and its sub-HP accumulator.
+var _regen_per_sec: float = 0.0
+var _regen_accum: float = 0.0
+## Kinetic barrier: absorbs one hit, then recharges (0 = not owned).
+var _barrier_recharge: float = 0.0
+var _barrier_timer: float = 0.0
+var _barrier_ready: bool = false
 
 @onready var _core: CollisionShape2D = $CollisionCore
 @onready var _sprite: Sprite2D = $Sprite
@@ -91,6 +98,7 @@ func _process(delta: float) -> void:
 		if _pickup_streak_timer <= 0.0:
 			_pickup_streak = 0
 	_tick_contact_damage(delta)
+	_tick_sustain(delta)
 	if _invuln_time > 0.0:
 		_invuln_time = maxf(0.0, _invuln_time - delta)
 		# Blink while invulnerable for readable feedback.
@@ -257,6 +265,14 @@ func take_damage(amount: float) -> void:
 			_shield_feedback_cooldown = _SHIELD_FEEDBACK_INTERVAL
 			GameFeel.shield_impact(global_position)
 		return
+	if _barrier_ready:
+		# The barrier eats the whole hit, then recharges.
+		_barrier_ready = false
+		_barrier_timer = _barrier_recharge
+		_invuln_time = maxf(_invuln_time, 0.4)
+		GameFeel.shield_impact(global_position)
+		queue_redraw()
+		return
 	var mitigated := amount * (1.0 - _damage_reduction)
 	_health = maxf(0.0, _health - maxf(0.0, mitigated))
 	_invuln_time = combat_data.invuln_seconds
@@ -276,6 +292,62 @@ func get_magnet_radius() -> float:
 func apply_magnet_mult(mult: float) -> void:
 	if mult > 0.0:
 		_magnet_mult *= mult
+
+
+## Adds passive repair (fraction of max HP per second).
+func add_regen(fraction_per_second: float) -> void:
+	_regen_per_sec = maxf(0.0, _regen_per_sec + fraction_per_second)
+
+
+## Kinetic barrier: first pick sets the recharge time; later picks shorten it.
+func add_barrier(recharge_seconds: float) -> void:
+	if _barrier_recharge <= 0.0:
+		_barrier_recharge = maxf(2.0, recharge_seconds)
+		_barrier_ready = true
+	else:
+		_barrier_recharge = maxf(2.0, _barrier_recharge * 0.8)
+	queue_redraw()
+
+
+func has_barrier_ready() -> bool:
+	return _barrier_ready
+
+
+## Restores a fraction of max HP (health pickups, chests).
+func heal_fraction(fraction: float) -> void:
+	if not _alive or combat_data == null or fraction <= 0.0:
+		return
+	_health = minf(combat_data.max_health, _health + combat_data.max_health * fraction)
+	health_changed.emit(_health, combat_data.max_health)
+	GameFeel.heal(global_position)
+
+
+func _tick_sustain(delta: float) -> void:
+	if not _alive or combat_data == null:
+		return
+	if _regen_per_sec > 0.0 and _health < combat_data.max_health:
+		_regen_accum += combat_data.max_health * _regen_per_sec * delta
+		# Emit in whole-HP steps so the HUD is not rebuilt every frame.
+		if _regen_accum >= 1.0:
+			var gain := floorf(_regen_accum)
+			_regen_accum -= gain
+			_health = minf(combat_data.max_health, _health + gain)
+			health_changed.emit(_health, combat_data.max_health)
+	if _barrier_ready:
+		queue_redraw()
+	if _barrier_recharge > 0.0 and not _barrier_ready:
+		_barrier_timer -= delta
+		if _barrier_timer <= 0.0:
+			_barrier_ready = true
+			queue_redraw()
+
+
+func _draw() -> void:
+	if _barrier_ready and _alive:
+		var pulse := 0.6 + 0.25 * sin(Time.get_ticks_msec() * 0.006)
+		var c := Palette.get_color("cyan", Color(0.2, 0.95, 1.0))
+		draw_arc(Vector2.ZERO, 92.0, 0.0, TAU, 48, Color(c, 0.45 * pulse), 4.0, true)
+		draw_arc(Vector2.ZERO, 98.0, 0.0, TAU, 48, Color(c, 0.18 * pulse), 8.0, true)
 
 
 ## Grants a protected window (e.g. after a boss dies, or on revive) without

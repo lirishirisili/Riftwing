@@ -34,8 +34,13 @@ func _run() -> void:
 
 	# Give the ship a build so the screen fills like a mid-run moment.
 	var mgr = run.get_node("UpgradeManager")
-	for id in ["plasma_twin_array", "plasma_spread_array", "homing_missiles", "arc_laser"]:
+	for id in ["plasma_twin_array", "plasma_spread_array", "homing_missiles", "arc_laser", "guardian_drone"]:
 		mgr.apply(load("res://resources/upgrades/%s.tres" % id))
+	# One evolved weapon so the capture shows an evolution.
+	for i in 4:
+		mgr.apply(load("res://resources/upgrades/guardian_drone.tres"))
+	mgr.apply(load("res://resources/upgrades/kinetic_barrier.tres"))
+	mgr.apply(load("res://resources/upgrades/evo_aegis_halo.tres"))
 	var player = run.get_node("PlayerShip")
 	await _seconds(7.0, run, player)
 	await _snap("combat")

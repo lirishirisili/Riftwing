@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SecondaryWeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/secondary_weapon_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/weapons/friendly_aegis_projectile.tres" id="2"]
+
+
+[resource]
+script = ExtResource("1")
+id = "aegis_halo"
+display_name = "Aegis Halo"
+kind = 3
+color = Color(0.4, 1, 0.85, 1)
+interval = 0.6
+damage = 18.0
+orbit_count = 4
+orbit_radius = 150.0
+orbit_speed = 3.0
+orbit_body_radius = 28.0
+orbit_contact_dps_ratio = 1.6
+orbit_blocks_bullets = true
+level_count_every = 0
+projectile = ExtResource("2")
+

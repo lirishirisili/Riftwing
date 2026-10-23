@@ -15,6 +15,8 @@ extends Node
 ## Per-run damage scaling stamped on every launched bolt (difficulty for enemy
 ## bolts). Shared ProjectileData is never mutated.
 var damage_mult: float = 1.0
+## Homing / area-blast provider for player bolts (null for enemy bolts).
+var targeter: Object = null
 
 var _pool: ObjectPool
 var _release_callable: Callable
@@ -49,6 +51,7 @@ func spawn(spawn_position: Vector2, direction: Vector2, data: ProjectileData) ->
 	projectile.release_callback = _release_callable
 	projectile.hits_player = fires_at_player
 	projectile.damage_mult = damage_mult
+	projectile.targeter = targeter
 	projectile.launch(spawn_position, direction, data, despawn_bounds)
 
 
@@ -60,6 +63,14 @@ func release_all() -> void:
 ## Allocation-free active count for per-frame readouts.
 func get_active_count() -> int:
 	return _pool.get_active_count() if _pool != null else 0
+
+
+## Copy of the live bolts (safe to release while iterating).
+func get_active_nodes_snapshot() -> Array[Node]:
+	if _pool == null:
+		var empty: Array[Node] = []
+		return empty
+	return _pool.get_active_nodes().duplicate()
 
 
 func get_stats() -> Dictionary:

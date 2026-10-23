@@ -22,6 +22,10 @@ var damage_mult: float = 1.0
 ## CombatProfile (hangar CRIT stat). A crit volley fires boosted bolts.
 var crit_chance: float = 0.0
 var crit_multiplier: float = 1.75
+## Extra enemies each bolt passes through (PIERCE_ADD upgrades).
+var bonus_pierce: int = 0
+## True once the NOVA CANNON evolution is taken.
+var evolved: bool = false
 
 var _cooldown: float = 0.0
 ## A private duplicate of the weapon's projectile so a damage multiplier scales
@@ -108,6 +112,26 @@ func add_spread_degrees(degrees: float) -> void:
 	bonus_spread_degrees += degrees
 
 
+## Adds pierce to every bolt (rebuilds the cached projectiles).
+func add_pierce(amount: int) -> void:
+	bonus_pierce = maxi(0, bonus_pierce + amount)
+	_effective_projectile = null
+	_crit_projectile = null
+
+
+## NOVA CANNON: swaps to the authored evolved projectile and speeds up fire.
+## Returns true when the weapon evolved.
+func evolve() -> bool:
+	if evolved or data == null or data.evolved_projectile == null:
+		return false
+	evolved = true
+	fire_rate_mult *= data.evolved_fire_rate_mult
+	_effective_projectile = null
+	_crit_projectile = null
+	GameFeel.evolve(global_position)
+	return true
+
+
 func add_damage_mult(mult: float) -> void:
 	damage_mult *= mult
 	_effective_projectile = null  # rebuilt lazily on next fire
@@ -130,11 +154,13 @@ func add_crit_chance(amount: float) -> void:
 ## The projectile to fire this shot: the shared resource when damage is
 ## unmodified, otherwise a cached scaled duplicate.
 func _current_projectile() -> ProjectileData:
-	if is_equal_approx(damage_mult, 1.0):
-		return data.projectile
+	var base := data.evolved_projectile if evolved and data.evolved_projectile != null else data.projectile
+	if is_equal_approx(damage_mult, 1.0) and bonus_pierce == 0:
+		return base
 	if _effective_projectile == null:
-		_effective_projectile = data.projectile.duplicate() as ProjectileData
-		_effective_projectile.damage = data.projectile.damage * damage_mult
+		_effective_projectile = base.duplicate() as ProjectileData
+		_effective_projectile.damage = base.damage * damage_mult
+		_effective_projectile.pierce = base.pierce + bonus_pierce
 	return _effective_projectile
 
 

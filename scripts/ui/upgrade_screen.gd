@@ -10,6 +10,7 @@ signal upgrade_selected(upgrade: UpgradeData)
 signal closed()
 
 const _CARD_SCENE := preload("res://scenes/ui/upgrade_card.tscn")
+const _GLOW_SCENE := preload("res://scenes/ui/chrome/glow_cta_button.tscn")
 
 ## Default free rerolls per run when the host supplies no RunRulesData.
 const _DEFAULT_REROLLS := 1
@@ -28,6 +29,10 @@ var _selecting: bool = false
 var _pulse_time := 0.0
 var _rerolls_left := _DEFAULT_REROLLS
 var _current_level := 1
+## Banish: arm the mode, then tap a card to remove it from the run (redraws).
+var _banishes_left := 0
+var _banish_mode := false
+var _banish_button: GlowCtaButton
 
 
 func _ready() -> void:
@@ -40,6 +45,7 @@ func _ready() -> void:
 		_reroll_button.chrome_modulate = Color(1.05, 0.9, 0.55, 1)
 		_reroll_button.pressed.connect(_on_reroll_pressed)
 		_refresh_reroll_button()
+	_build_banish_button()
 	set_process(true)
 
 
@@ -78,11 +84,69 @@ func _fit_card_widths() -> void:
 		card.custom_minimum_size = Vector2(width, card.custom_minimum_size.y)
 
 
-func configure(manager: UpgradeManager, rerolls_per_run: int = _DEFAULT_REROLLS) -> void:
+func configure(manager: UpgradeManager, rerolls_per_run: int = _DEFAULT_REROLLS, banishes_per_run: int = 0) -> void:
 	_manager = manager
 	# Free rerolls are per run; this screen is rebuilt each run so reset here.
 	_rerolls_left = maxi(0, rerolls_per_run)
+	_banishes_left = maxi(0, banishes_per_run)
+	_banish_mode = false
 	_refresh_reroll_button()
+	_refresh_banish_button()
+
+
+## Extra reroll granted from outside the card screen (e.g. a rewarded ad).
+func grant_reroll(count: int = 1) -> void:
+	_rerolls_left += maxi(0, count)
+	_refresh_reroll_button()
+
+
+func _build_banish_button() -> void:
+	if _reroll_button == null:
+		return
+	_banish_button = _GLOW_SCENE.instantiate() as GlowCtaButton
+	_banish_button.name = "BanishButton"
+	_banish_button.custom_minimum_size = Vector2(360, 84)
+	_banish_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	var parent := _reroll_button.get_parent()
+	parent.add_child(_banish_button)
+	parent.move_child(_banish_button, _reroll_button.get_index() + 1)
+	_banish_button.pressed.connect(_on_banish_pressed)
+	_refresh_banish_button()
+
+
+func _on_banish_pressed() -> void:
+	if _selecting or _banishes_left <= 0:
+		return
+	_banish_mode = not _banish_mode
+	_subtitle.text = "TAP A CARD TO BANISH IT" if _banish_mode else "CHOOSE AN UPGRADE"
+	AudioManager.play_sfx("ui_click", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
+	_refresh_banish_button()
+
+
+func _refresh_banish_button() -> void:
+	if _banish_button == null:
+		return
+	_banish_button.visible = _banishes_left > 0 or _banish_mode
+	if _banish_mode:
+		_banish_button.configure("CANCEL BANISH", "", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.MAGENTA, 84.0)
+	else:
+		_banish_button.configure("BANISH · %d" % _banishes_left, "", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.NONE, 84.0)
+	_banish_button.chrome_modulate = Color(1.0, 0.55, 0.6, 1)
+
+
+## Removes a card from the run and redraws the choices.
+func _banish(upgrade: UpgradeData) -> void:
+	_banish_mode = false
+	_banishes_left -= 1
+	_manager.banish(upgrade.id)
+	_subtitle.text = "CHOOSE AN UPGRADE"
+	var choices := _manager.roll_choices(3, _current_level)
+	if not choices.is_empty():
+		_build_cards(choices)
+		_animate_cards_in()
+	AudioManager.play_sfx("ui_back", Vector2.ZERO, AudioManager.PRIORITY_MEDIUM)
+	GameFeel.haptic("medium")
+	_refresh_banish_button()
 
 
 ## Rolls three choices, pauses the game, and shows the cards.
@@ -94,6 +158,8 @@ func open(level: int) -> bool:
 		return false
 
 	_selecting = false
+	_banish_mode = false
+	_refresh_banish_button()
 	_current_level = level
 	_clear_cards()
 	_title.text = "LEVEL %d" % level
@@ -154,6 +220,11 @@ func _animate_open() -> void:
 
 func _on_card_chosen(upgrade: UpgradeData) -> void:
 	if _selecting:
+		return
+	if _banish_mode:
+		# Evolutions cannot be banished (they are the payoff of a build).
+		if not upgrade.is_evolution:
+			_banish(upgrade)
 		return
 	_selecting = true
 

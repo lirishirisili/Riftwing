@@ -1,17 +1,24 @@
-[gd_resource type="Resource" script_class="SecondaryWeaponData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="SecondaryWeaponData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/combat/secondary_weapon_data.gd" id="1"]
 [ext_resource type="Resource" path="res://resources/weapons/friendly_drone_projectile.tres" id="2"]
+[ext_resource type="Resource" path="res://resources/weapons/secondary/aegis_halo.tres" id="3"]
 
 [resource]
 script = ExtResource("1")
 id = "guardian_drone"
 display_name = "Guardian Drone"
-interval = 0.7
-projectiles_per_shot = 1
-spread_degrees = 0.0
-homing = true
-is_ability = false
+kind = 3
+color = Color(0.3, 1, 0.7, 1)
+interval = 0.9
 damage = 12.0
-muzzle_offset = Vector2(0, -40)
+orbit_count = 2
+orbit_radius = 130.0
+orbit_speed = 2.6
+orbit_body_radius = 22.0
+orbit_contact_dps_ratio = 1.2
+level_damage_mult = 1.18
+level_rate_mult = 1.06
+level_count_every = 2
 projectile = ExtResource("2")
+evolves_into = ExtResource("3")

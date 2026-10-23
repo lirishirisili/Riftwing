@@ -23,3 +23,4 @@ nova_boss_damage_to_charge = 0.6
 nova_enemy_damage = 400.0
 nova_boss_damage_ratio = 0.06
 nova_invuln_seconds = 1.0
+banishes_per_run = 2

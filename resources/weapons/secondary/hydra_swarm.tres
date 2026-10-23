@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SecondaryWeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/secondary_weapon_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/weapons/friendly_hydra_projectile.tres" id="2"]
+
+
+[resource]
+script = ExtResource("1")
+id = "hydra_swarm"
+display_name = "Hydra Swarm"
+kind = 0
+color = Color(1, 0.78, 0.2, 1)
+interval = 0.8
+projectiles_per_shot = 3
+spread_degrees = 60.0
+homing = true
+damage = 34.0
+muzzle_offset = Vector2(0, -60)
+level_count_every = 0
+projectile = ExtResource("2")
+

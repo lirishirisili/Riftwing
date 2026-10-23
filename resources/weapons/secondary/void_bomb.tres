@@ -1,17 +1,22 @@
-[gd_resource type="Resource" script_class="SecondaryWeaponData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="SecondaryWeaponData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/combat/secondary_weapon_data.gd" id="1"]
 [ext_resource type="Resource" path="res://resources/weapons/friendly_void_projectile.tres" id="2"]
+[ext_resource type="Resource" path="res://resources/weapons/secondary/singularity.tres" id="3"]
 
 [resource]
 script = ExtResource("1")
 id = "void_bomb"
 display_name = "Void Bomb"
+kind = 0
+color = Color(0.55, 0.2, 0.95, 1)
 interval = 2.2
 projectiles_per_shot = 1
-spread_degrees = 0.0
 homing = true
-is_ability = false
 damage = 60.0
 muzzle_offset = Vector2(0, -50)
+level_damage_mult = 1.25
+level_rate_mult = 1.08
+level_count_every = 3
 projectile = ExtResource("2")
+evolves_into = ExtResource("3")

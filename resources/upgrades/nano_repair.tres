@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/upgrade_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/progression/upgrade_effect_data.gd" id="2"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_health.svg" id="3"]
+
+[sub_resource type="Resource" id="e1"]
+script = ExtResource("2")
+kind = 16
+target = "player"
+value = 0.005
+
+[resource]
+script = ExtResource("1")
+id = "nano_repair"
+title = "Nano Repair"
+description = "Repair 0.5% max HP per second."
+icon = ExtResource("3")
+rarity = 1
+max_level = 3
+weight = 1.8
+effects = Array[Resource]([SubResource("e1")])
+

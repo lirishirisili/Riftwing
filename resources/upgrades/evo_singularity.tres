@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/upgrade_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/progression/upgrade_effect_data.gd" id="2"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_event_void.svg" id="3"]
+
+[sub_resource type="Resource" id="e1"]
+script = ExtResource("2")
+kind = 12
+target = "void_bomb"
+value = 1.0
+
+[resource]
+script = ExtResource("1")
+id = "evo_singularity"
+title = "Singularity"
+description = "EVOLUTION: Bombs open a vortex that pulses 5 times."
+icon = ExtResource("3")
+rarity = 2
+max_level = 1
+weight = 1.0
+effects = Array[Resource]([SubResource("e1")])
+is_evolution = true
+requires_max = PackedStringArray("void_bomb")
+requires_owned = PackedStringArray("overcharged_core")

@@ -10,3 +10,6 @@ damage = 26.0
 radius = 12.0
 length = 40.0
 color = Color(1, 0.55, 0.2, 1)
+homing_turn_rate = 5.5
+explode_radius = 60.0
+explode_damage_ratio = 0.5

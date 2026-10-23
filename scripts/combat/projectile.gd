@@ -1,11 +1,12 @@
 class_name Projectile
 extends Area2D
-## Pooled, data-driven projectile (movement + lifetime only this milestone).
+## Pooled, data-driven projectile: straight, homing, piercing, or exploding.
 ##
-## An Area2D so the combat milestone can enable collision without restructuring;
-## monitoring stays off here because there are no enemies yet. On expiry or when
-## it leaves the despawn bounds, the projectile asks its pool to reclaim it via a
-## release callback instead of freeing itself, so no node is destroyed at runtime.
+## On expiry or when it leaves the despawn bounds, the projectile asks its pool
+## to reclaim it via a release callback instead of freeing itself, so no node is
+## destroyed at runtime. Homing / area blasts go through a `targeter` (the
+## player SecondaryWeaponSystem) stamped by the pool: nearest_target_node(pos)
+## and detonate(pos, radius, damage, pulses, interval).
 
 var data: ProjectileData
 ## Set by the pool owner; called with self to return this node to the free list.
@@ -16,6 +17,10 @@ var release_callback: Callable = Callable()
 var hits_player: bool = false
 ## Damage multiplier stamped by the owning pool at launch (difficulty scaling).
 var damage_mult: float = 1.0
+## Targeting / area-damage provider (player bolts only). Stamped by the pool.
+var targeter: Object = null
+
+const _RETARGET_SECONDS := 0.15
 
 var _velocity: Vector2 = Vector2.ZERO
 var _age: float = 0.0
@@ -24,6 +29,11 @@ var _spent: bool = false
 # Recent positions for a short motion trail (game-feel only). Length is driven
 # by the quality budget; empty means no trail.
 var _trail: PackedVector2Array = PackedVector2Array()
+var _pierce_left: int = 0
+## Last body hit, so a piercing bolt never damages the same target twice in a row.
+var _last_hit: Object = null
+var _homing_target: Node2D = null
+var _retarget_timer: float = 0.0
 
 @onready var _shape: CollisionShape2D = $CollisionShape2D
 
@@ -51,6 +61,10 @@ func launch(spawn_position: Vector2, direction: Vector2, projectile_data: Projec
 	_velocity = dir * data.speed
 	_spent = false
 	_trail.clear()
+	_pierce_left = data.pierce
+	_last_hit = null
+	_homing_target = null
+	_retarget_timer = 0.0
 	rotation = dir.angle() + PI * 0.5
 	if _shape != null and _shape.shape is CircleShape2D:
 		(_shape.shape as CircleShape2D).radius = data.radius
@@ -68,6 +82,8 @@ func _process(delta: float) -> void:
 	# A pooled node may exist in the tree before launch(); stay inert until armed.
 	if data == null or _spent:
 		return
+	if data.homing_turn_rate > 0.0 and targeter != null:
+		_steer(delta)
 	global_position += _velocity * delta
 	_age += delta
 	# Record a short trail in local space for the feel pass. The cap comes from
@@ -80,19 +96,53 @@ func _process(delta: float) -> void:
 		queue_redraw()
 	elif _trail.size() > 0:
 		_trail.clear()
-	if _age >= data.lifetime or not _bounds.has_point(global_position):
+	if _age >= data.lifetime:
+		if data.explode_on_expire:
+			_detonate(global_position)
 		_release()
+	elif not _bounds.has_point(global_position):
+		_release()
+
+
+## Turns the velocity toward the tracked target at the data turn rate.
+func _steer(delta: float) -> void:
+	_retarget_timer -= delta
+	if (_retarget_timer <= 0.0 or _homing_target == null or not is_instance_valid(_homing_target)
+			or not _homing_target.visible):
+		_retarget_timer = _RETARGET_SECONDS
+		_homing_target = targeter.nearest_target_node(global_position)
+	if _homing_target == null or not is_instance_valid(_homing_target):
+		return
+	var want := (_homing_target.global_position - global_position).angle()
+	var have := _velocity.angle()
+	var turn := clampf(wrapf(want - have, -PI, PI), -data.homing_turn_rate * delta, data.homing_turn_rate * delta)
+	_velocity = _velocity.rotated(turn)
+	rotation = _velocity.angle() + PI * 0.5
+
+
+func _detonate(pos: Vector2) -> void:
+	if targeter != null and data.explode_radius > 0.0:
+		targeter.detonate(pos, data.explode_radius, data.damage * damage_mult * data.explode_damage_ratio,
+			data.explode_pulses, data.pulse_interval)
 
 
 func _on_area_entered(area: Area2D) -> void:
 	if _spent or data == null:
 		return
+	if area == _last_hit:
+		return
 	if area.has_method("take_damage"):
-		_spent = true
 		var hit_pos := global_position
 		var dmg := data.damage * damage_mult
 		area.call("take_damage", dmg)
 		GameFeel.projectile_hit(hit_pos, dmg, hits_player, data.is_crit)
+		if data.explode_radius > 0.0:
+			_detonate(hit_pos)
+		if _pierce_left > 0:
+			_pierce_left -= 1
+			_last_hit = area
+			return
+		_spent = true
 		_release()
 
 
@@ -129,6 +179,13 @@ func _draw() -> void:
 		if data.is_crit:
 			# Crit volley: gold halo on the head so big hits read in flight.
 			draw_circle(Vector2(0.0, -half), data.radius * 2.2, Color(1.0, 0.8, 0.2, 0.35 * life_f))
+
+
+## Returns this bolt to its pool now (e.g. erased by a shield drone).
+func despawn() -> void:
+	if not _spent:
+		_spent = true
+		_release()
 
 
 ## Called by the pool on acquire.

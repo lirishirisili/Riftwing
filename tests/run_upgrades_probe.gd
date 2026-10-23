@@ -74,8 +74,9 @@ func _check_live_run() -> int:
 	var player = scene.get_node("PlayerShip")
 	var pool = scene.get_node("PlayerProjectilePool")
 
-	if mgr.catalog.size() != 20:
-		printerr("UpgradeManager catalog size %d (want 20)" % mgr.catalog.size())
+	# The 20 launch upgrades must all be present; later passes add more.
+	if mgr.catalog.size() < 20:
+		printerr("UpgradeManager catalog size %d (want >= 20)" % mgr.catalog.size())
 		fails += 1
 
 	# Abilities are always live (bound to the two HUD buttons).

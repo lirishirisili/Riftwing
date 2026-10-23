@@ -1,17 +1,23 @@
-[gd_resource type="Resource" script_class="SecondaryWeaponData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="SecondaryWeaponData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/combat/secondary_weapon_data.gd" id="1"]
 [ext_resource type="Resource" path="res://resources/weapons/friendly_arc_projectile.tres" id="2"]
+[ext_resource type="Resource" path="res://resources/weapons/secondary/prism_lance.tres" id="3"]
 
 [resource]
 script = ExtResource("1")
 id = "arc_laser"
 display_name = "Arc Laser"
-interval = 0.4
-projectiles_per_shot = 1
-spread_degrees = 0.0
-homing = true
-is_ability = false
-damage = 8.0
-muzzle_offset = Vector2(0, -60)
+kind = 2
+color = Color(0.66, 0.4, 1, 1)
+interval = 2.6
+damage = 7.0
+muzzle_offset = Vector2(0, -80)
+beam_half_width = 20.0
+beam_duration = 1.3
+beam_tick = 0.1
+level_damage_mult = 1.22
+level_rate_mult = 1.08
+level_count_every = 0
 projectile = ExtResource("2")
+evolves_into = ExtResource("3")

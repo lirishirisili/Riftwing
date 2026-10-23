@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ProjectileData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/projectile_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+speed = 1250.0
+lifetime = 2.2
+damage = 34.0
+radius = 13.0
+length = 44.0
+color = Color(1, 0.78, 0.2, 1)
+homing_turn_rate = 7.5
+explode_radius = 120.0
+explode_damage_ratio = 0.8

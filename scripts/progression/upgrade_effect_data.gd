@@ -21,6 +21,17 @@ enum Kind {
 	MAX_HP_MULT,           ## Multiplies the run's max HP by `value`.
 	MOVE_SPEED_MULT,       ## Multiplies movement responsiveness by `value`.
 	CRIT_CHANCE_ADD,       ## Adds `value` (0..1) to the plasma crit chance.
+	# --- Appended (keep order: .tres files store the integer) ---
+	EVOLVE_WEAPON,         ## Swaps weapon `target` ("plasma" or a secondary id) for its evolved form.
+	MAGNET_MULT,           ## Multiplies the pickup magnet radius by `value`.
+	AREA_MULT,             ## Multiplies secondary areas (blasts, beams, chains, orbits) by `value`.
+	COOLDOWN_MULT,         ## Multiplies HUD ability cooldowns by `value` (< 1 = faster).
+	REGEN_ADD,             ## Adds `value` (fraction of max HP per second) passive repair.
+	LUCK_ADD,              ## Adds `value` luck (rarer cards, better chests).
+	PIERCE_ADD,            ## Adds `value` (rounded) pierce to the plasma cannon.
+	XP_MULT,               ## Multiplies experience gained by `value`.
+	BARRIER_ADD,           ## Kinetic barrier: blocks one hit; `value` = seconds to recharge (stacks faster).
+	HEAL_PERCENT,          ## Restores `value` (fraction of max HP) immediately.
 }
 
 ## The effect type.

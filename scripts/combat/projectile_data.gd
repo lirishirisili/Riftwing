@@ -24,6 +24,26 @@ extends Resource
 ## Body color. Player bolts are cyan per docs/01_VISUAL_DIRECTION.md.
 @export var color: Color = Color("#00D7FF")
 
+## Enemies a bolt passes through before it is spent (0 = stops on first hit).
+@export_range(0, 20) var pierce: int = 0
+
+## Homing steer rate in radians/second toward the nearest target (0 = straight).
+@export_range(0.0, 30.0, 0.1) var homing_turn_rate: float = 0.0
+
+## Area blast radius on impact (0 = single target).
+@export_range(0.0, 600.0, 5.0) var explode_radius: float = 0.0
+
+## Area blast damage as a fraction of `damage`.
+@export_range(0.0, 3.0, 0.05) var explode_damage_ratio: float = 0.75
+
+## Also detonate when the lifetime runs out (lobbed bombs).
+@export var explode_on_expire: bool = false
+
+## Number of blast pulses (1 = single blast; >1 = a lingering vortex that
+## re-detonates every `pulse_interval` seconds).
+@export_range(1, 12) var explode_pulses: int = 1
+@export_range(0.05, 2.0, 0.05) var pulse_interval: float = 0.35
+
 ## Runtime-only flag (never authored): set on the cached crit duplicate a
 ## weapon builds, so impact feedback can show a crit number.
 var is_crit: bool = false

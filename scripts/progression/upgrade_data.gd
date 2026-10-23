@@ -38,6 +38,15 @@ enum Rarity { RARE, EPIC, LEGENDARY }
 ## Effects applied each time this upgrade is chosen.
 @export var effects: Array[UpgradeEffectData] = []
 
+## Card text when picking this upgrade again (level 2+). Empty = `description`.
+@export_multiline var level_description: String = ""
+
+## Evolution card: offered (and forced into the first slot) once every id in
+## `requires_max` is at its max level and every id in `requires_owned` is owned.
+@export var is_evolution: bool = false
+@export var requires_max: PackedStringArray = PackedStringArray()
+@export var requires_owned: PackedStringArray = PackedStringArray()
+
 ## Owned upgrade / weapon ids that activate the synergy hint on the card.
 @export var synergy_ids: PackedStringArray = PackedStringArray()
 
@@ -55,6 +64,8 @@ func rarity_color_token() -> String:
 
 ## Human-readable rarity label for the card and debug surfaces.
 func rarity_label() -> String:
+	if is_evolution:
+		return "EVOLUTION"
 	match rarity:
 		Rarity.EPIC: return "EPIC"
 		Rarity.LEGENDARY: return "LEGENDARY"

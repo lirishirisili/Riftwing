@@ -155,7 +155,10 @@ func _ready() -> void:
 		var dmg_mult := _profile.weapon_damage_mult if _profile != null else 1.0
 		_secondary.configure(_player_bullet_pool, _player, _director, _boss, dmg_mult)
 		_upgrades.bind_combat(_player, _secondary)
-	_upgrade_screen.configure(_upgrades, _rules.rerolls_per_run)
+		_secondary.enemy_bolts = _enemy_bullet_pool
+	_upgrades.run_effect.connect(_on_run_effect)
+	_upgrades.evolved.connect(_on_evolved)
+	_upgrade_screen.configure(_upgrades, _rules.rerolls_per_run, _rules.banishes_per_run)
 	_upgrade_screen.upgrade_selected.connect(_on_upgrade_selected)
 	_upgrade_screen.closed.connect(_on_upgrade_screen_closed)
 	_xp.track_player(_player)
@@ -904,3 +907,16 @@ func _pending_pickup_value() -> int:
 		if pickup != null and pickup.data != null:
 			total += pickup.data.value
 	return total
+
+
+## Upgrade effects owned by the run host rather than a combat system.
+func _on_run_effect(kind: int, _target: String, value: float) -> void:
+	match kind:
+		UpgradeEffectData.Kind.COOLDOWN_MULT:
+			_hud.scale_ability_cooldowns(value)
+		UpgradeEffectData.Kind.XP_MULT:
+			_xp.xp_mult *= maxf(0.1, value)
+
+
+func _on_evolved(upgrade: UpgradeData) -> void:
+	_hud.show_callout("EVOLVED", Palette.get_color("gold", Color(1.0, 0.84, 0.25)), upgrade.title.to_upper(), 1.6)

@@ -139,6 +139,12 @@ func show_callout(text: String, color: Color, subtitle: String = "", seconds: fl
 	_callout_tween.tween_callback(func() -> void: _callout.visible = false)
 
 
+## Cooldown Matrix: scales both ability recharge times.
+func scale_ability_cooldowns(mult: float) -> void:
+	_ability_left.scale_cooldown(mult)
+	_ability_right.scale_cooldown(mult)
+
+
 ## Rift Nova charge 0..1 (1 = ready).
 func set_nova_charge(fraction: float) -> void:
 	if _nova != null:

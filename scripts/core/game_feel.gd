@@ -234,6 +234,35 @@ func projectile_hit(world_pos: Vector2, damage: float, to_player: bool, is_crit:
 	_haptic("light")
 
 
+## Secondary-weapon damage (chain arcs, beams, blasts, drones): a damage number
+## and a small flash only. No shake / haptic / per-hit SFX so area weapons that
+## touch many targets stay calm.
+func area_hit(world_pos: Vector2, damage: float) -> void:
+	if _effects == null:
+		return
+	if quality == Quality.HIGH:
+		_effects.spawn_hit_flash(world_pos, Palette.get_color("orange"))
+		counters["hit_flash"] += 1
+	if damage_numbers_enabled():
+		_effects.spawn_damage_number(world_pos, int(round(damage)), false)
+		counters["damage_number"] += 1
+
+
+## Area blast ring (missile / bomb / vortex detonation).
+func blast(world_pos: Vector2, radius: float, color: Color) -> void:
+	if _effects != null:
+		_effects.spawn_burst(world_pos, color, radius, 0.35)
+	_add_trauma(0.1 + minf(radius, 300.0) / 1500.0)
+	AudioManager.play_sfx("explosion_small", world_pos, AudioManager.PRIORITY_LOW)
+
+
+## Chain-lightning arc through `points` (ship -> first target -> jumps).
+func lightning(points: PackedVector2Array, color: Color) -> void:
+	if _effects != null and points.size() >= 2:
+		_effects.spawn_lightning(points, color)
+	AudioManager.play_sfx_pitched("crit", 0.6, AudioManager.PRIORITY_LOW)
+
+
 ## An enemy died. `is_major` (tough enemies) gets a large explosion + hit-stop.
 func enemy_death(world_pos: Vector2, is_major: bool) -> void:
 	if _effects != null:

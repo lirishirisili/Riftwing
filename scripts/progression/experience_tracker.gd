@@ -20,6 +20,10 @@ var _level: int = 1
 var _xp_into_level: int = 0
 var _last_energy: int = 0
 var _pending_levels: int = 0
+## Run upgrade multiplier on XP from energy (XP Siphon); the fractional part
+## carries over so small bonuses still add up.
+var xp_mult: float = 1.0
+var _xp_frac: float = 0.0
 
 
 func _ready() -> void:
@@ -66,7 +70,10 @@ func _on_energy_changed(total: int) -> void:
 	var gained := total - _last_energy
 	_last_energy = total
 	if gained > 0:
-		add_experience(gained)
+		var scaled := float(gained) * xp_mult + _xp_frac
+		var whole := int(floor(scaled))
+		_xp_frac = scaled - float(whole)
+		add_experience(whole)
 
 
 ## Adds raw XP and rolls at most one level-up while none is pending.

@@ -26,6 +26,15 @@ var _flash_pool: ObjectPool
 var _explosion_pool: ObjectPool
 var _damage_pool: ObjectPool
 
+## Lightning arcs: fixed slots drawn by this node (jagged polylines that fade).
+const _MAX_ARCS := 10
+const _ARC_LIFETIME := 0.22
+const _ARC_SEGMENT := 34.0
+var _arc_points: Array[PackedVector2Array] = []
+var _arc_color: Array[Color] = []
+var _arc_age := PackedFloat32Array()
+var _arcs_live: int = 0
+
 
 func _ready() -> void:
 	z_index = EFFECTS_Z_INDEX
@@ -39,6 +48,11 @@ func _ready() -> void:
 	if damage_number_scene != null:
 		_damage_pool = ObjectPool.new(damage_number_scene, self, _cap(damage_number_prewarm, damage_number_max))
 		_damage_pool.prewarm(damage_number_prewarm)
+	for i in _MAX_ARCS:
+		_arc_points.append(PackedVector2Array())
+		_arc_color.append(Color.WHITE)
+	_arc_age.resize(_MAX_ARCS)
+	_arc_age.fill(_ARC_LIFETIME)
 	add_to_group("pool_stats")
 	GameFeel.register_effects_layer(self)
 
@@ -102,6 +116,55 @@ func spawn_burst(world_pos: Vector2, color: Color, radius: float, lifetime: floa
 		return
 	node.release_callback = Callable(_explosion_pool, "release")
 	node.spawn_burst(world_pos, color, radius, lifetime)
+
+
+## Jagged lightning through `points` (world space). Reuses the oldest slot.
+func spawn_lightning(points: PackedVector2Array, color: Color) -> void:
+	var slot := 0
+	for i in _MAX_ARCS:
+		if _arc_age[i] > _arc_age[slot]:
+			slot = i
+	var out := _arc_points[slot]
+	out.clear()
+	for i in points.size() - 1:
+		var a := points[i]
+		var b := points[i + 1]
+		var steps := maxi(2, int(a.distance_to(b) / _ARC_SEGMENT))
+		var normal := (b - a).orthogonal().normalized()
+		for s in steps:
+			var t := float(s) / float(steps)
+			var jitter := 0.0 if s == 0 else randf_range(-16.0, 16.0)
+			out.append(a.lerp(b, t) + normal * jitter)
+	out.append(points[points.size() - 1])
+	_arc_points[slot] = out
+	_arc_color[slot] = color
+	_arc_age[slot] = 0.0
+	set_process(true)
+
+
+func _process(delta: float) -> void:
+	var live := 0
+	for i in _MAX_ARCS:
+		if _arc_age[i] < _ARC_LIFETIME:
+			_arc_age[i] += delta
+			live += 1
+	if live > 0 or _arcs_live > 0:
+		queue_redraw()
+	_arcs_live = live
+	if live == 0:
+		set_process(false)
+
+
+func _draw() -> void:
+	for i in _MAX_ARCS:
+		if _arc_age[i] >= _ARC_LIFETIME or _arc_points[i].size() < 2:
+			continue
+		var a := 1.0 - _arc_age[i] / _ARC_LIFETIME
+		var c := _arc_color[i]
+		# Drawn in world space: this layer sits at the world origin.
+		draw_polyline(_arc_points[i], Color(c, 0.35 * a), 12.0, true)
+		draw_polyline(_arc_points[i], Color(c, 0.9 * a), 4.0, true)
+		draw_polyline(_arc_points[i], Color(1, 1, 1, a), 1.5, true)
 
 
 func spawn_damage_number(world_pos: Vector2, amount: int, is_crit: bool = false) -> void:
