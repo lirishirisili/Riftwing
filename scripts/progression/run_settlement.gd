@@ -9,7 +9,6 @@ extends RefCounted
 ## numbers instead of recomputing them as "already claimed".
 
 const _RULES_PATH := "res://resources/progression/reward_rules_default.tres"
-const _MAP_PATH := "res://resources/stages/nova_sector_map.tres"
 
 
 ## Scores the run, computes rewards, and grants them (deduped by run id).
@@ -29,6 +28,9 @@ static func settle(stats: RunStats) -> void:
 		and not SaveManager.is_stage_cleared(stats.stage_id, stats.difficulty)
 	stats.rewards = RewardCalculator.calculate(
 		stats, rules, stage if counts_for_campaign else null, stats.was_first_clear)
+	if stats.mode == "endless" or stats.mode == "boss_rush":
+		stats.rewards.rift_core += maxi(0, stats.bosses_defeated) * rules.rift_core_per_boss
+		SaveManager.record_mode_result(stats.mode, stats.score, stats.survival_seconds, stats.bosses_defeated)
 	stats.was_new_best = stats.score > SaveManager.get_best_score()
 	stats.granted = SaveManager.grant_run_rewards(stats.run_id, stats.rewards, stats)
 	stats.settled = true
@@ -38,5 +40,4 @@ static func settle(stats: RunStats) -> void:
 static func resolve_stage(stats: RunStats) -> StageNodeData:
 	if stats == null or stats.stage_id == "":
 		return null
-	var map := load(_MAP_PATH) as StageMapData
-	return map.find_by_id(stats.stage_id) if map != null else null
+	return Campaign.find_stage(stats.stage_id)

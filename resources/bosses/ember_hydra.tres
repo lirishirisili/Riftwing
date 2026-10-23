@@ -1,0 +1,120 @@
+[gd_resource type="Resource" script_class="BossData" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/boss_pattern_data.gd" id="1_2xmrn"]
+[ext_resource type="Resource" path="res://resources/weapons/boss_radial_projectile.tres" id="2_482a0"]
+[ext_resource type="Resource" path="res://resources/enemies/lancer.tres" id="3_8btcr"]
+[ext_resource type="Resource" path="res://resources/weapons/enemy_wall_projectile.tres" id="4_petg5"]
+[ext_resource type="Script" path="res://scripts/combat/boss_data.gd" id="5_lvx16"]
+[ext_resource type="Texture2D" path="res://assets/art/boss/void_titan.svg" id="6_4ouqq"]
+
+[sub_resource type="Resource" id="Resource_necbo"]
+script = ExtResource("1_2xmrn")
+kind = 3
+display_name = "Ember Spiral"
+active_seconds = 3.0
+recover_seconds = 0.9
+radial_projectile = ExtResource("2_482a0")
+spiral_rate = 6.0
+spiral_turn_degrees = 9.0
+
+[sub_resource type="Resource" id="Resource_jvqf3"]
+script = ExtResource("1_2xmrn")
+kind = 4
+display_name = "Fang Volley"
+telegraph_seconds = 0.9
+active_seconds = 2.2
+radial_projectile = ExtResource("2_482a0")
+volley_spread_degrees = 44.0
+
+[sub_resource type="Resource" id="Resource_i31hc"]
+script = ExtResource("1_2xmrn")
+kind = 2
+display_name = "Lancer Brood"
+active_seconds = 2.4
+recover_seconds = 1.0
+summon_enemy = ExtResource("3_8btcr")
+summon_per_wave = 3
+summon_spacing = 200.0
+
+[sub_resource type="Resource" id="Resource_mcurj"]
+script = ExtResource("1_2xmrn")
+kind = 7
+display_name = "Meteor Rain"
+telegraph_seconds = 1.2
+active_seconds = 2.4
+falling_projectile = ExtResource("4_petg5")
+rain_bullets_per_column = 6
+
+[sub_resource type="Resource" id="Resource_21ay5"]
+script = ExtResource("1_2xmrn")
+display_name = "Nova Ring"
+active_seconds = 1.8
+recover_seconds = 0.9
+radial_bullets = 24
+radial_rings = 2
+radial_spin_degrees = 9.0
+radial_projectile = ExtResource("2_482a0")
+
+[sub_resource type="Resource" id="Resource_2m8sg"]
+script = ExtResource("1_2xmrn")
+kind = 1
+display_name = "Solar Lance"
+telegraph_seconds = 1.3
+active_seconds = 2.4
+recover_seconds = 0.9
+laser_sweep_degrees = 140.0
+laser_damage = 20.0
+
+[sub_resource type="Resource" id="Resource_sophv"]
+script = ExtResource("1_2xmrn")
+kind = 3
+display_name = "Inferno Spiral"
+telegraph_seconds = 0.9
+active_seconds = 3.0
+radial_projectile = ExtResource("2_482a0")
+spiral_arms = 4
+spiral_rate = 9.0
+spiral_turn_degrees = 12.0
+
+[sub_resource type="Resource" id="Resource_t8hr6"]
+script = ExtResource("1_2xmrn")
+kind = 5
+display_name = "Crushing Walls"
+active_seconds = 3.2
+recover_seconds = 0.9
+wall_count = 4
+wall_gap_width = 210.0
+wall_spacing = 68.0
+falling_projectile = ExtResource("4_petg5")
+
+[sub_resource type="Resource" id="Resource_w5hqr"]
+script = ExtResource("1_2xmrn")
+kind = 4
+display_name = "Fang Storm"
+telegraph_seconds = 0.8
+active_seconds = 2.4
+recover_seconds = 0.7
+radial_projectile = ExtResource("2_482a0")
+volley_count = 6
+volley_bullets = 7
+volley_spread_degrees = 60.0
+
+[resource]
+script = ExtResource("5_lvx16")
+display_name = "EMBER HYDRA"
+max_health = 3000.0
+sprite = ExtResource("6_4ouqq")
+sprite_scale = 0.62
+hit_radius = 180.0
+contact_damage = 24.0
+health_segments = 24
+phase2_threshold = 0.6
+phase3_threshold = 0.25
+phase3_patterns = Array[ExtResource("1_2xmrn")]([SubResource("Resource_sophv"), SubResource("Resource_t8hr6"), SubResource("Resource_w5hqr")])
+visual = 1
+tint = Color(1.4, 0.58, 0.32, 1)
+sway_amplitude = 90.0
+sway_speed = 0.2
+loot_pickups = 30
+phase1_patterns = Array[ExtResource("1_2xmrn")]([SubResource("Resource_necbo"), SubResource("Resource_jvqf3"), SubResource("Resource_i31hc")])
+phase2_patterns = Array[ExtResource("1_2xmrn")]([SubResource("Resource_mcurj"), SubResource("Resource_21ay5"), SubResource("Resource_2m8sg")])

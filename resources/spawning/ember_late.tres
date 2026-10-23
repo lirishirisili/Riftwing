@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SpawnProfileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/enemy_data.gd" id="1_bu4ss"]
+[ext_resource type="Resource" path="res://resources/enemies/swarmling.tres" id="2_qf3u1"]
+[ext_resource type="Resource" path="res://resources/enemies/lancer.tres" id="3_f3yci"]
+[ext_resource type="Resource" path="res://resources/enemies/striker.tres" id="4_psfao"]
+[ext_resource type="Resource" path="res://resources/enemies/spinner.tres" id="5_shnqv"]
+[ext_resource type="Resource" path="res://resources/enemies/sniper.tres" id="6_ski4q"]
+[ext_resource type="Resource" path="res://resources/enemies/tank.tres" id="7_mwbte"]
+[ext_resource type="Resource" path="res://resources/enemies/carrier.tres" id="8_biasn"]
+[ext_resource type="Script" path="res://scripts/spawning/spawn_profile_data.gd" id="9_nf6w6"]
+
+[resource]
+script = ExtResource("9_nf6w6")
+enemies = Array[ExtResource("1_bu4ss")]([ExtResource("2_qf3u1"), ExtResource("3_f3yci"), ExtResource("4_psfao"), ExtResource("5_shnqv"), ExtResource("6_ski4q"), ExtResource("7_mwbte"), ExtResource("8_biasn")])
+weights = PackedFloat32Array(1.6, 1.6, 1.5, 1.2, 1, 0.7, 0.5)
+budget_per_second_start = 2.2
+budget_per_second_end = 4.6
+max_alive = 22
+elite_chance_start = 0.1
+elite_chance_end = 0.2

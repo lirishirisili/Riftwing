@@ -213,7 +213,7 @@ func _run() -> void:
 			return
 		print("sfx %s" % name)
 
-	for kind in ["menu", "run", "boss"]:
+	for kind in ["menu", "run", "boss", "run_ember", "boss_ember", "run_abyss", "boss_abyss"]:
 		if not regen_all and FileAccess.file_exists(MUSIC_DIR.path_join("music_%s.ogg" % kind)):
 			continue
 		var samples := _music(kind, 28.0)
@@ -459,6 +459,18 @@ func _music(kind: String, seconds: float) -> PackedFloat32Array:
 		"boss":
 			roots = [55.0, 65.41, 73.42, 82.41]
 			bpm = 118.0
+		"run_ember":
+			roots = [77.78, 87.31, 103.83, 116.54] # Eb / F / Ab / Bb: warmer, brighter
+			bpm = 110.0
+		"boss_ember":
+			roots = [58.27, 69.3, 77.78, 87.31]
+			bpm = 124.0
+		"run_abyss":
+			roots = [61.74, 69.3, 82.41, 92.5] # B / C# / E / F#: colder, lower
+			bpm = 96.0
+		"boss_abyss":
+			roots = [46.25, 55.0, 61.74, 69.3]
+			bpm = 112.0
 		_:
 			roots = [73.42, 82.41, 98.0, 110.0]
 			bpm = 102.0
@@ -494,8 +506,8 @@ func _music(kind: String, seconds: float) -> PackedFloat32Array:
 					m_env = 1.0 - (local - 0.08) * 0.9
 				else:
 					m_env = 0.0
-				motif = sin(TAU_F * m_f * t) * (0.028 if kind == "run" else 0.022) * m_env
-		if kind == "boss":
+				motif = sin(TAU_F * m_f * t) * (0.028 if kind.begins_with("run") else 0.022) * m_env
+		if kind.begins_with("boss"):
 			bass *= 1.15
 			state = (1103515245 * state + 12345) & 0x7FFF
 			var raw := float(state) / 32768.0 - 0.5

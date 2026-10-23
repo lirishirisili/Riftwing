@@ -39,7 +39,7 @@ extends Resource
 
 ## Graded difficulty for this node: multiplies enemy/boss durability on top of the
 ## selected RunDifficultyData so later stages ramp up even on NORMAL. 1.0 = base.
-@export_range(0.5, 3.0, 0.05) var difficulty_scalar: float = 1.0
+@export_range(0.5, 8.0, 0.05) var difficulty_scalar: float = 1.0
 
 ## Optional per-stage clock/wave/boss authoring. When null the RunController falls
 ## back to the shared vertical-slice timeline so early stages keep the baseline.
@@ -51,3 +51,7 @@ extends Resource
 
 ## Legacy combo threshold kept for older map resources; unused when HP ratio is set.
 @export var stars_combo_for_2: int = 5
+
+## Cross-sector unlock: when set, this stage unlocks once that stage id is
+## cleared (e.g. 2-1 requires 1-10) instead of the previous index in its map.
+@export var requires_stage_id: String = ""

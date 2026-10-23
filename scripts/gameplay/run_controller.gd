@@ -36,13 +36,30 @@ enum Phase {
 const _PICKUP_DATA_PATH := "res://resources/pickups/energy_small.tres"
 const _CATALOG_PATH := "res://resources/ships/ship_catalog_default.tres"
 const _DEFAULT_TIMELINE := "res://resources/stages/vertical_slice_timeline.tres"
-const _STAGE_MAP_PATH := "res://resources/stages/nova_sector_map.tres"
 const _DIFFICULTY_DIR := "res://resources/difficulty/"
 const _RULES_PATH := "res://resources/balance/run_rules_default.tres"
 const _REWARD_RULES_PATH := "res://resources/progression/reward_rules_default.tres"
 const _HEAL_PICKUP_PATH := "res://resources/pickups/heal_orb.tres"
 const _MAGNET_PICKUP_PATH := "res://resources/pickups/magnet_orb.tres"
 const _CHEST_PICKUP_PATH := "res://resources/pickups/rift_chest.tres"
+const _ENDLESS_PROFILE_PATH := "res://resources/spawning/endless.tres"
+## Endless boss rotation (cycles; each lap is harder).
+const _ENDLESS_BOSSES := [
+	"res://resources/bosses/void_wisp.tres", "res://resources/bosses/cinder_warden.tres",
+	"res://resources/bosses/void_titan.tres", "res://resources/bosses/abyss_sentinel.tres",
+	"res://resources/bosses/ember_hydra.tres", "res://resources/bosses/rift_leviathan.tres",
+	"res://resources/bosses/void_titan_ascended.tres", "res://resources/bosses/abyss_overmind.tres",
+]
+## Boss Rush roster: [boss path, stage id whose clear unlocks it].
+const _RUSH_ROSTER := [
+	["res://resources/bosses/void_wisp.tres", "1-1"], ["res://resources/bosses/void_titan.tres", "1-1"],
+	["res://resources/bosses/void_titan_ascended.tres", "1-10"], ["res://resources/bosses/cinder_warden.tres", "2-1"],
+	["res://resources/bosses/ember_hydra.tres", "2-1"], ["res://resources/bosses/abyss_sentinel.tres", "3-1"],
+	["res://resources/bosses/rift_leviathan.tres", "3-1"], ["res://resources/bosses/abyss_overmind.tres", "3-8"],
+]
+const MODE_CAMPAIGN := "campaign"
+const MODE_ENDLESS := "endless"
+const MODE_BOSS_RUSH := "boss_rush"
 ## Enemy damage scaling grows at half the rate of the stage durability scalar,
 ## so late stages hit harder without one-shotting the player.
 const _STAGE_DAMAGE_SHARE := 0.5
@@ -88,6 +105,20 @@ var _last_boss_hp: float = -1.0
 var _streak_tier: int = 0
 ## Score weights (kill points feed the combo multiplier bonus).
 var _reward_rules: RewardRulesData
+## Sector presentation (music ids) resolved from the stage map.
+## Game mode: campaign (stage timeline), endless, or boss_rush.
+var _mode: String = MODE_CAMPAIGN
+var _next_boss_at: float = 0.0
+var _boss_cycle: int = 0
+var _mode_scale: float = 1.0
+var _rush_queue: Array[BossData] = []
+var _endless_profile: SpawnProfileData
+## Base difficulty values (before the Endless per-boss scale).
+var _base_enemy_hp: float = 1.0
+var _base_enemy_dmg: float = 1.0
+var _base_boss_hp: float = 1.0
+var _run_music: String = "run"
+var _boss_music: String = "boss"
 ## Chests collected while another card screen was open (opened in turn).
 var _pending_chests: int = 0
 var _chest_data: PickupData
@@ -110,6 +141,8 @@ func receive_payload(payload: Dictionary) -> void:
 		_daily_date = String(payload["daily_date"])
 	if payload.has("daily_reward_core"):
 		_daily_reward_core = int(payload["daily_reward_core"])
+	if payload.has("mode"):
+		_mode = String(payload["mode"])
 
 
 func _ready() -> void:
@@ -165,6 +198,7 @@ func _ready() -> void:
 	_upgrades.bind_plasma_weapon(_weapon)
 	_apply_hangar_profile()
 	_apply_difficulty()
+	_apply_sector_presentation()
 	if _secondary != null:
 		var dmg_mult := _profile.weapon_damage_mult if _profile != null else 1.0
 		_secondary.configure(_player_bullet_pool, _player, _director, _boss, dmg_mult)
@@ -228,6 +262,9 @@ func _apply_difficulty() -> void:
 	var boss_hp := _difficulty.boss_hp_mult * scalar
 	# One enemy-damage multiplier drives contact, enemy bolts, and boss attacks.
 	var enemy_dmg := _difficulty.enemy_contact_damage_mult * (1.0 + (scalar - 1.0) * _STAGE_DAMAGE_SHARE)
+	_base_enemy_hp = enemy_hp
+	_base_enemy_dmg = enemy_dmg
+	_base_boss_hp = boss_hp
 	if _director != null:
 		_director.set_difficulty(enemy_hp, enemy_dmg, _difficulty.enemy_count_add)
 	if _boss != null:
@@ -235,6 +272,7 @@ func _apply_difficulty() -> void:
 		_boss.set_add_scaling(enemy_hp, enemy_dmg)
 	if _enemy_bullet_pool != null:
 		_enemy_bullet_pool.damage_mult = enemy_dmg
+		_enemy_bullet_pool.targeter = PlayerTargeter.new(_player)
 	_reward_mult = _difficulty.reward_mult
 	_star_score_mult = _difficulty.star_score_mult
 	_timing_scale = clampf(_difficulty.timing_scale, 0.4, 1.0)
@@ -244,10 +282,7 @@ func _apply_difficulty() -> void:
 func _stage_difficulty_scalar() -> float:
 	if _stage_id == "":
 		return 1.0
-	var map: StageMapData = load(_STAGE_MAP_PATH) as StageMapData
-	if map == null:
-		return 1.0
-	var stage := map.find_by_id(_stage_id)
+	var stage := Campaign.find_stage(_stage_id)
 	return stage.difficulty_scalar if stage != null else 1.0
 
 
@@ -256,10 +291,7 @@ func _stage_difficulty_scalar() -> float:
 func _resolve_stage_timeline() -> StageTimelineData:
 	if _stage_id == "":
 		return null
-	var map: StageMapData = load(_STAGE_MAP_PATH) as StageMapData
-	if map == null:
-		return null
-	var stage := map.find_by_id(_stage_id)
+	var stage := Campaign.find_stage(_stage_id)
 	return stage.timeline if stage != null else null
 
 
@@ -311,6 +343,7 @@ func _begin_run() -> void:
 	_stats.is_daily = _is_daily
 	_stats.daily_date = _daily_date
 	_stats.daily_reward_core = _daily_reward_core
+	_stats.mode = "daily" if _is_daily else _mode
 	_combo = 0
 	_combo_timer = 0.0
 	_streak_tier = 0
@@ -335,14 +368,23 @@ func _begin_run() -> void:
 	_hud.set_boss_bar_visible(false)
 	_hud.set_wave_info(_wave_label_for_phase())
 	_clear_arena_projectiles()
+	_pending_chests = 0
+	_boss_cycle = 0
+	_mode_scale = 1.0
+	AudioManager.play_music(_run_music)
+	match _mode:
+		MODE_ENDLESS:
+			_begin_endless()
+			return
+		MODE_BOSS_RUSH:
+			_begin_boss_rush()
+			return
 	_boss.prepare(timeline.mini_boss if timeline != null else null)
 	if timeline != null and timeline.early_wave != null:
 		_director.start_wave(timeline.early_wave)
 	else:
 		_director.start()
 	_director.set_ambient(timeline.early_ambient if timeline != null else null)
-	_pending_chests = 0
-	AudioManager.play_music("run")
 	_show_banner("ENTER THE RIFT", 1.4)
 
 
@@ -479,6 +521,10 @@ func _tick_timeline() -> void:
 		_guaranteed_level_done = true
 		if timeline != null:
 			_xp.add_experience(timeline.guaranteed_level_up_xp)
+	if _mode != MODE_CAMPAIGN:
+		if _phase == Phase.EARLY_WAVES and _run_time >= _next_boss_at:
+			_start_mode_boss()
+		return
 	match _phase:
 		Phase.EARLY_WAVES:
 			if _run_time >= _mini_at():
@@ -498,7 +544,7 @@ func _enter_mini_boss() -> void:
 	_hud.set_wave_info(_wave_label_for_phase())
 	_boss.prepare(timeline.mini_boss)
 	_boss.begin()
-	AudioManager.play_music("boss")
+	AudioManager.play_music(_boss_music)
 	_show_banner("MINI-BOSS", 1.2)
 
 
@@ -513,7 +559,7 @@ func _enter_mid_waves() -> void:
 	if timeline != null and timeline.mid_wave != null:
 		_director.start_wave(timeline.mid_wave)
 	_director.set_ambient(timeline.mid_ambient if timeline != null else null)
-	AudioManager.play_music("run")
+	AudioManager.play_music(_run_music)
 	_show_banner("PUSH FORWARD", 1.0)
 
 
@@ -527,7 +573,7 @@ func _enter_final_boss() -> void:
 	_hud.set_wave_info(_wave_label_for_phase())
 	_boss.prepare(timeline.final_boss)
 	_boss.begin()
-	AudioManager.play_music("boss")
+	AudioManager.play_music(_boss_music)
 	_show_banner("BOSS INCOMING", 1.4)
 
 
@@ -669,7 +715,7 @@ func _on_boss_dying() -> void:
 	if _player != null:
 		_player.grant_invulnerability(_rules.boss_kill_invuln_seconds)
 	_spawn_loot_fountain(_boss.global_position, _boss.data.loot_pickups if _boss.data != null else 0)
-	if _phase == Phase.MINI_BOSS and _rules.mini_boss_drops_chest:
+	if (_phase == Phase.MINI_BOSS and _rules.mini_boss_drops_chest) or _mode != MODE_CAMPAIGN:
 		_drop_pickup(_boss.global_position, _chest_data)
 
 
@@ -707,6 +753,9 @@ func on_app_backgrounded() -> void:
 
 
 func _on_boss_defeated() -> void:
+	if _mode != MODE_CAMPAIGN:
+		_on_mode_boss_defeated()
+		return
 	if _phase == Phase.MINI_BOSS:
 		_awaiting_boss_outcome = false
 		_health_bar.visible = false
@@ -777,6 +826,10 @@ func _boss_bar_showing() -> bool:
 
 
 func _wave_label_for_phase() -> String:
+	if _mode == MODE_ENDLESS and _phase == Phase.EARLY_WAVES:
+		return "ENDLESS · %d" % (_boss_cycle + 1)
+	if _mode == MODE_BOSS_RUSH and _phase == Phase.EARLY_WAVES:
+		return "BOSS RUSH %d/%d" % [mini(_boss_cycle + 1, _rush_queue.size()), _rush_queue.size()]
 	match _phase:
 		Phase.EARLY_WAVES:
 			return "WAVE · EARLY"
@@ -1022,3 +1075,101 @@ func _drop_pickup(pos: Vector2, data: PickupData) -> void:
 	pickup.release_callback = Callable(_pickup_pool, "release")
 	pickup.magnet_target = _player
 	pickup.spawn(pos, data, PlayfieldBounds.from_screen(_screen))
+
+
+## Background palette + music for the stage's sector.
+func _apply_sector_presentation() -> void:
+	var map := Campaign.map_for_stage(_stage_id) if _stage_id != "" else null
+	if map == null:
+		return
+	_sector = map.sector_index
+	_run_music = map.run_music
+	_boss_music = map.boss_music
+	var bg := get_node_or_null("SpaceBackground")
+	if bg != null and bg.has_method("apply_sector_palette"):
+		bg.apply_sector_palette(map.background_tint, map.nebula_modulate)
+
+
+# --- Endless / Boss Rush -------------------------------------------------------------
+
+func _begin_endless() -> void:
+	_endless_profile = load(_ENDLESS_PROFILE_PATH) as SpawnProfileData
+	_director.set_ambient(_endless_profile)
+	_next_boss_at = _rules.endless_boss_interval
+	_show_banner("ENDLESS", 1.4)
+
+
+func _begin_boss_rush() -> void:
+	_rush_queue.clear()
+	var cleared := SaveManager.get_cleared_stage_ids()
+	for entry in _RUSH_ROSTER:
+		if cleared.has(String(entry[1])):
+			var data := load(String(entry[0])) as BossData
+			if data != null:
+				_rush_queue.append(data)
+	if _rush_queue.is_empty():
+		_rush_queue.append(load(String(_RUSH_ROSTER[0][0])) as BossData)
+	_director.stop()
+	_next_boss_at = _rules.rush_breather_seconds
+	_grant_free_levels(_rules.rush_levels_per_boss + 1)
+	_show_banner("BOSS RUSH", 1.4)
+
+
+## Pending free level-ups (each opens a card screen in turn).
+func _grant_free_levels(count: int) -> void:
+	for i in count:
+		_xp.add_experience(_xp.get_xp_for_next())
+
+
+## Starts the next Endless / Boss Rush boss (scaled by the mode's progression).
+func _start_mode_boss() -> void:
+	var data: BossData = null
+	if _mode == MODE_ENDLESS:
+		data = load(String(_ENDLESS_BOSSES[_boss_cycle % _ENDLESS_BOSSES.size()])) as BossData
+	elif _boss_cycle < _rush_queue.size():
+		data = _rush_queue[_boss_cycle]
+	if data == null:
+		_end_run(true)
+		return
+	_phase = Phase.FINAL_BOSS
+	_director.stop_and_clear()
+	_clear_arena_projectiles()
+	_awaiting_boss_outcome = true
+	_boss.set_scaling(_base_boss_hp * _mode_scale, _base_enemy_dmg * sqrt(_mode_scale))
+	_boss.set_add_scaling(_base_enemy_hp * _mode_scale, _base_enemy_dmg * sqrt(_mode_scale))
+	_boss.prepare(data)
+	_boss.begin()
+	_hud.set_wave_info(_wave_label_for_phase())
+	AudioManager.play_music(_boss_music)
+	_show_banner("BOSS %d" % (_boss_cycle + 1), 1.2)
+
+
+func _on_mode_boss_defeated() -> void:
+	_stats.bosses_defeated += 1
+	_boss_cycle += 1
+	_awaiting_boss_outcome = false
+	_health_bar.visible = false
+	_hud.set_boss_bar_visible(false)
+	if _mode == MODE_BOSS_RUSH and _boss_cycle >= _rush_queue.size():
+		_end_run(true)
+		return
+	_phase = Phase.EARLY_WAVES
+	AudioManager.play_music(_run_music)
+	if _mode == MODE_ENDLESS:
+		# Every boss makes the next lap harder (enemies, bolts, bosses).
+		_mode_scale *= _rules.endless_scale_per_boss
+		_director.set_difficulty(_base_enemy_hp * _mode_scale, _base_enemy_dmg * sqrt(_mode_scale),
+			_difficulty.enemy_count_add if _difficulty != null else 0)
+		_enemy_bullet_pool.damage_mult = _base_enemy_dmg * sqrt(_mode_scale)
+		_director.set_ambient(_endless_profile, _run_time)
+		_next_boss_at = _run_time + _rules.endless_boss_interval
+		_show_banner("LAP %d" % (_boss_cycle + 1), 1.0)
+	else:
+		_next_boss_at = _run_time + _rules.rush_breather_seconds
+		_grant_free_levels(_rules.rush_levels_per_boss)
+		_show_banner("NEXT TARGET", 1.0)
+	_hud.set_wave_info(_wave_label_for_phase())
+
+
+func get_mode() -> String:
+	return _mode

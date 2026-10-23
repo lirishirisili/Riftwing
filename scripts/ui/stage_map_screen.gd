@@ -7,7 +7,6 @@ extends Control
 ## Launch into a real run. Save / unlock / HARD restrictions unchanged.
 ## Branding reads RIFTSTRIKE only.
 
-const _MAP_PATH := "res://resources/stages/nova_sector_map.tres"
 const _TEX_NODE_ACTIVE: Texture2D = preload("res://assets/ui/chrome/map_node_active.svg")
 const _TEX_NODE_LOCKED: Texture2D = preload("res://assets/ui/chrome/map_node_locked.svg")
 const _NODE_RADIUS := 46.0
@@ -38,6 +37,10 @@ const _ICON_SIZE := 72
 @onready var _feedback_label: Label = %FeedbackLabel
 
 var _map: StageMapData
+## 1-based sector shown (switched with the arrows next to the sector title).
+var _sector_idx: int = 1
+var _prev_sector: Button
+var _next_sector: Button
 var _selected_id: String = ""
 var _node_buttons: Dictionary = {} # stage_id -> Button
 var _feedback_tween: Tween
@@ -57,14 +60,16 @@ func receive_payload(payload: Dictionary) -> void:
 
 
 func _ready() -> void:
-	_map = load(_MAP_PATH) as StageMapData
-	if _map == null:
-		_map = StageMapData.new()
-
 	if _selected_id == "":
 		_selected_id = SaveManager.get_selected_stage_id()
+	var start_map := Campaign.map_for_stage(_selected_id)
+	_sector_idx = start_map.sector_index if start_map != null else 1
+	_map = Campaign.sector(_sector_idx)
+	if _map == null:
+		_map = StageMapData.new()
 	if _map.find_by_id(_selected_id) == null:
 		_selected_id = _map.default_stage_id()
+	_build_sector_switcher()
 
 	_mount_meta_shell()
 	_hangar_button.pressed.connect(_on_hangar)
@@ -74,7 +79,7 @@ func _ready() -> void:
 	SaveManager.campaign_changed.connect(_on_campaign_changed)
 	_map_canvas.draw.connect(_on_map_draw)
 
-	_sector_label.text = "%s  %s" % [_map.sector_code, _map.sector_name]
+	_refresh_sector_header()
 	_ensure_map_scroll_space()
 	_build_nodes()
 	_refresh_all()
@@ -97,8 +102,9 @@ func _ensure_map_scroll_space() -> void:
 		scroll.custom_minimum_size = Vector2(0, 520)
 		scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var width := maxf(_MAP_DESIGN_WIDTH, get_viewport_rect().size.x - 80.0)
-	_map_canvas.custom_minimum_size = Vector2(width, _MAP_HEIGHT)
-	_map_canvas.size = Vector2(width, _MAP_HEIGHT)
+	var height := _map.map_height if _map != null else _MAP_HEIGHT
+	_map_canvas.custom_minimum_size = Vector2(width, height)
+	_map_canvas.size = Vector2(width, height)
 
 
 func _mount_meta_shell() -> void:
@@ -527,7 +533,7 @@ func _on_launch() -> void:
 	_click()
 	SaveManager.select_stage(stage.id)
 	SceneRouter.go_to(SceneRouter.SCREEN_RUN, {
-		"sector": stage.index,
+		"sector": _map.sector_index,
 		"stage_id": stage.id,
 		"difficulty": SaveManager.get_campaign_difficulty(),
 	})
@@ -618,3 +624,57 @@ func _format_int(value: int) -> String:
 			out = "," + out
 	return ("-" if value < 0 else "") + out
 
+
+
+# --- Sectors -----------------------------------------------------------------------
+
+## Arrow buttons around the sector title (48px+ touch targets).
+func _build_sector_switcher() -> void:
+	var row := _sector_label.get_parent()
+	if row == null:
+		return
+	_prev_sector = _make_arrow("◀")
+	_next_sector = _make_arrow("▶")
+	row.add_child(_prev_sector)
+	row.move_child(_prev_sector, _sector_label.get_index())
+	row.add_child(_next_sector)
+	_prev_sector.pressed.connect(func() -> void: _switch_sector(-1))
+	_next_sector.pressed.connect(func() -> void: _switch_sector(1))
+
+
+func _make_arrow(glyph: String) -> Button:
+	var b := Button.new()
+	b.text = glyph
+	b.flat = true
+	b.focus_mode = Control.FOCUS_NONE
+	b.custom_minimum_size = Vector2(72, 64)
+	b.add_theme_font_size_override("font_size", 30)
+	b.add_theme_color_override("font_color", Color(1, 0.69, 0, 1))
+	return b
+
+
+func _switch_sector(step: int) -> void:
+	var next := clampi(_sector_idx + step, 1, Campaign.sectors().size())
+	if next == _sector_idx:
+		return
+	_sector_idx = next
+	_map = Campaign.sector(_sector_idx)
+	var cleared := SaveManager.get_cleared_stage_ids()
+	_selected_id = _next_current_stage_id(cleared)
+	_click()
+	_refresh_sector_header()
+	_ensure_map_scroll_space()
+	_build_nodes()
+	_refresh_all()
+
+
+func _refresh_sector_header() -> void:
+	var locked := _map.find_by_index(1) != null and not StageProgress.is_unlocked(
+		_map, _map.find_by_index(1), SaveManager.get_cleared_stage_ids())
+	_sector_label.text = "%s  %s%s" % [_map.sector_code, _map.sector_name, "  · LOCKED" if locked else ""]
+	if _prev_sector != null:
+		_prev_sector.disabled = _sector_idx <= 1
+		_prev_sector.modulate.a = 0.3 if _prev_sector.disabled else 1.0
+	if _next_sector != null:
+		_next_sector.disabled = _sector_idx >= Campaign.sectors().size()
+		_next_sector.modulate.a = 0.3 if _next_sector.disabled else 1.0

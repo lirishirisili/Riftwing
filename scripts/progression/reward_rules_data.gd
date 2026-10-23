@@ -23,3 +23,6 @@ extends Resource
 ## Rift Core (rare material) is only meaningfully earned by clearing the sector.
 @export var rift_core_on_victory: int = 1
 @export var rift_core_on_defeat: int = 0
+
+## Endless / Boss Rush: Rift Core per boss destroyed (they have no stage payout).
+@export var rift_core_per_boss: int = 1

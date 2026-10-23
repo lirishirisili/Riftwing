@@ -144,3 +144,13 @@ func _scale_tile(sprite: Sprite2D) -> void:
 		return
 	sprite.centered = false
 	sprite.scale = Vector2(_view.x / tex.x, _view.y / tex.y)
+
+
+## Recolors the backdrop for a sector (whole stack tint + nebula layer).
+## Presentation only; called by the run host once per run.
+func apply_sector_palette(tint: Color, nebula: Color) -> void:
+	modulate = tint
+	if _nebula_a != null:
+		_nebula_a.self_modulate = nebula
+	if _nebula_b != null:
+		_nebula_b.self_modulate = nebula

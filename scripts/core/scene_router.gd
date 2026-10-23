@@ -25,6 +25,8 @@ const SCREEN_STAGE_MAP := "stage_map"
 ## event (VOID INVASION). Both are real screens — no coming-soon placeholder.
 const SCREEN_DAILY := "daily"
 const SCREEN_EVENT := "event"
+## Endless + Boss Rush hub.
+const SCREEN_MODES := "modes"
 
 const _SCREEN_SCENES := {
 	SCREEN_VISUAL_SANDBOX: "res://scenes/gameplay/visual_sandbox.tscn",
@@ -41,6 +43,7 @@ const _SCREEN_SCENES := {
 	SCREEN_STAGE_MAP: "res://scenes/ui/stage_map_screen.tscn",
 	SCREEN_DAILY: "res://scenes/ui/daily_screen.tscn",
 	SCREEN_EVENT: "res://scenes/ui/event_screen.tscn",
+	SCREEN_MODES: "res://scenes/ui/modes_screen.tscn",
 }
 
 var _holder: Node = null

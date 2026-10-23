@@ -58,13 +58,15 @@ func _ready() -> void:
 
 	_start_button.configure("START RUN", "CAMPAIGN", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN)
 	_daily_button.configure("DAILY CHALLENGE", "COMPLETE AND EARN REWARDS", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.MAGENTA)
-	_ships_button.configure("SHIPS", "COLLECTION", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 104.0)
-	_upgrades_button.configure("UPGRADES", "POWER UP", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 104.0)
+	_ships_button.configure("HANGAR", "SHIPS · UPGRADES", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 104.0)
+	# SHIPS already opens the hangar (ships + upgrades); this slot hosts the
+	# extra modes instead of a second hangar entry.
+	_upgrades_button.configure("MODES", "ENDLESS · RUSH", GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.NONE, 104.0)
 	_daily_button.set_icons(
 		load("res://assets/icons/icon_target.svg") as Texture2D,
 		load("res://assets/icons/icon_chevron.svg") as Texture2D)
 	_ships_button.set_icons(load("res://assets/icons/icon_nav_ship.svg") as Texture2D)
-	_upgrades_button.set_icons(load("res://assets/icons/icon_nav_upgrade.svg") as Texture2D)
+	_upgrades_button.set_icons(load("res://assets/icons/icon_boss.svg") as Texture2D)
 
 	_start_button.pressed.connect(_on_start_run)
 	_daily_button.pressed.connect(_on_daily_challenge)
@@ -209,7 +211,7 @@ func _on_ships() -> void:
 
 func _on_upgrades() -> void:
 	_click()
-	SceneRouter.go_to(SceneRouter.SCREEN_HANGAR, {"return_to": SceneRouter.SCREEN_MAIN_MENU})
+	SceneRouter.go_to(SceneRouter.SCREEN_MODES)
 
 
 func _on_settings() -> void:

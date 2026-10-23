@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="SpawnProfileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/enemy_data.gd" id="1_dcxf2"]
+[ext_resource type="Resource" path="res://resources/enemies/weaver.tres" id="2_b22oq"]
+[ext_resource type="Resource" path="res://resources/enemies/sniper.tres" id="3_iuyhg"]
+[ext_resource type="Resource" path="res://resources/enemies/bulwark.tres" id="4_foene"]
+[ext_resource type="Resource" path="res://resources/enemies/swarmling.tres" id="5_el4h7"]
+[ext_resource type="Resource" path="res://resources/enemies/spinner.tres" id="6_785qg"]
+[ext_resource type="Resource" path="res://resources/enemies/lancer.tres" id="7_kv1i7"]
+[ext_resource type="Script" path="res://scripts/spawning/spawn_profile_data.gd" id="8_k0hxj"]
+
+[resource]
+script = ExtResource("8_k0hxj")
+enemies = Array[ExtResource("1_dcxf2")]([ExtResource("2_b22oq"), ExtResource("3_iuyhg"), ExtResource("4_foene"), ExtResource("5_el4h7"), ExtResource("6_785qg"), ExtResource("7_kv1i7")])
+weights = PackedFloat32Array(2, 1.4, 1, 1.6, 1, 1.2)
+budget_per_second_start = 2.2
+budget_per_second_end = 4.4
+max_alive = 22
+elite_chance_start = 0.1
+elite_chance_end = 0.2

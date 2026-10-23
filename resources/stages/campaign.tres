@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CampaignData" format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/campaign_data.gd" id="1_83tmf"]
+[ext_resource type="Script" path="res://scripts/progression/stage_map_data.gd" id="2_x3sfv"]
+[ext_resource type="Resource" path="res://resources/stages/nova_sector_map.tres" id="3_ktlji"]
+[ext_resource type="Resource" path="res://resources/stages/ember_sector_map.tres" id="4_12o5n"]
+[ext_resource type="Resource" path="res://resources/stages/abyss_sector_map.tres" id="5_tky45"]
+
+[resource]
+script = ExtResource("1_83tmf")
+sectors = Array[ExtResource("2_x3sfv")]([ExtResource("3_ktlji"), ExtResource("4_12o5n"), ExtResource("5_tky45")])

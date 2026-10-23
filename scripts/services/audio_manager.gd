@@ -73,6 +73,10 @@ const MUSIC_TRACKS := {
 	"menu": "res://assets/audio/music/music_menu.ogg",
 	"run": "res://assets/audio/music/music_run.ogg",
 	"boss": "res://assets/audio/music/music_boss.ogg",
+	"run_ember": "res://assets/audio/music/music_run_ember.ogg",
+	"boss_ember": "res://assets/audio/music/music_boss_ember.ogg",
+	"run_abyss": "res://assets/audio/music/music_run_abyss.ogg",
+	"boss_abyss": "res://assets/audio/music/music_boss_abyss.ogg",
 }
 
 var enabled: bool = true

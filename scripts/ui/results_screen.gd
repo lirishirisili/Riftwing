@@ -55,10 +55,7 @@ func receive_payload(payload: Dictionary) -> void:
 func _resolve_stage() -> StageNodeData:
 	if _stats == null or _stats.stage_id == "":
 		return null
-	var map: StageMapData = load("res://resources/stages/nova_sector_map.tres") as StageMapData
-	if map == null:
-		return null
-	return map.find_by_id(_stats.stage_id)
+	return Campaign.find_stage(_stats.stage_id)
 
 
 func _ready() -> void:
@@ -254,8 +251,7 @@ func _populate() -> void:
 	var claimed := "" if _granted_now else "  ·  already claimed"
 	var stars_txt := ""
 	if _stats.stage_id != "":
-		var map: StageMapData = load("res://resources/stages/nova_sector_map.tres") as StageMapData
-		var stage: StageNodeData = map.find_by_id(_stats.stage_id) if map != null else null
+		var stage := Campaign.find_stage(_stats.stage_id)
 		if _stats.victory:
 			var stars := SaveManager.get_stage_stars(_stats.stage_id, _stats.difficulty)
 			stars_txt = "\nSTARS  %s" % _star_text(stars)
@@ -272,6 +268,8 @@ func _populate() -> void:
 		_format_int(SaveManager.get_best_score()),
 		stars_txt,
 	]
+	if _is_mode_run():
+		_apply_mode_summary()
 
 
 func _set_wing_tint(tint: Color) -> void:
@@ -418,15 +416,15 @@ func _wire_buttons() -> void:
 
 func _on_next_sector() -> void:
 	_click_feedback()
+	if _is_mode_run():
+		_maybe_run_break_interstitial()
+		SceneRouter.go_to(SceneRouter.SCREEN_MODES)
+		return
 	var payload := {}
 	if _stats.stage_id != "":
-		var map: StageMapData = load("res://resources/stages/nova_sector_map.tres")
-		if map != null:
-			var nxt := map.next_after(_stats.stage_id)
-			if nxt != null:
-				payload["stage_id"] = nxt.id
-			else:
-				payload["stage_id"] = _stats.stage_id
+		# Crosses into the next sector after a sector finale.
+		var nxt := Campaign.next_after(_stats.stage_id)
+		payload["stage_id"] = nxt.id if nxt != null else _stats.stage_id
 	_maybe_run_break_interstitial()
 	SceneRouter.go_to(SceneRouter.SCREEN_STAGE_MAP, payload)
 
@@ -446,6 +444,8 @@ func _on_replay() -> void:
 		"stage_id": _stats.stage_id,
 		"difficulty": _stats.difficulty,
 	}
+	if _is_mode_run():
+		payload["mode"] = _stats.mode
 	_maybe_run_break_interstitial()
 	SceneRouter.go_to(SceneRouter.SCREEN_RUN, payload)
 
@@ -516,3 +516,25 @@ func _format_int(value: int) -> String:
 func _format_time(seconds: float) -> String:
 	var total := int(maxf(0.0, seconds))
 	return "%d:%02d" % [total / 60, total % 60]
+
+
+func _is_mode_run() -> bool:
+	return _stats != null and (_stats.mode == "endless" or _stats.mode == "boss_rush")
+
+
+## Endless / Boss Rush: the run is about how far you got, not win / lose.
+func _apply_mode_summary() -> void:
+	var best := SaveManager.get_mode_best(_stats.mode)
+	var label := "ENDLESS" if _stats.mode == "endless" else "BOSS RUSH"
+	if _stats.mode == "endless" or not _stats.victory:
+		_title.text = "RUN OVER"
+		_title.add_theme_color_override("font_color", Color(0.96, 0.98, 1, 1))
+	_subtitle.text = "%s  ·  %d BOSSES  ·  %s" % [label, _stats.bosses_defeated, _format_time(_stats.survival_seconds)]
+	_subtitle.add_theme_color_override("font_color", Palette.get_color("gold", Color(1, 0.69, 0)))
+	_next_button.configure("GAME MODES", "", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN, 108.0)
+	_progress_label.text = "%s  BEST\n%s pts  ·  %s  ·  %d bosses" % [
+		label,
+		_format_int(int(best.get("best_score", 0))),
+		_format_time(float(best.get("best_seconds", 0.0))),
+		int(best.get("best_bosses", 0)),
+	]

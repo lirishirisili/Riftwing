@@ -38,3 +38,26 @@ func default_stage_id() -> String:
 	if not stages.is_empty() and stages[0] != null:
 		return stages[0].id
 	return ""
+
+
+# --- Sector presentation (campaign pass) ---------------------------------------
+
+## 1-based sector number (drives stats.sector and cross-sector unlocks).
+@export_range(1, 20) var sector_index: int = 1
+## Run background tint and nebula modulate for this sector.
+@export var background_tint: Color = Color(1, 1, 1, 1)
+@export var nebula_modulate: Color = Color(1, 1, 1, 1)
+## Music track ids (AudioManager.MUSIC_TRACKS) for waves / bosses.
+@export var run_music: String = "run"
+@export var boss_music: String = "boss"
+## Map canvas height needed by this sector's node layout.
+@export_range(600.0, 4000.0, 10.0) var map_height: float = 1180.0
+
+
+## The last stage of the sector (highest index).
+func last_stage() -> StageNodeData:
+	var best: StageNodeData = null
+	for stage in stages:
+		if stage != null and (best == null or stage.index > best.index):
+			best = stage
+	return best

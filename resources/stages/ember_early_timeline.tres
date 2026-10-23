@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="StageTimelineData" format=3]
+
+[ext_resource type="Resource" path="res://resources/spawning/ember_early.tres" id="1_bdn80"]
+[ext_resource type="Resource" path="res://resources/waves/slice_wave_early.tres" id="2_unkit"]
+[ext_resource type="Resource" path="res://resources/bosses/ember_hydra.tres" id="3_0qvwq"]
+[ext_resource type="Resource" path="res://resources/waves/slice_wave_mid.tres" id="4_7d7ok"]
+[ext_resource type="Resource" path="res://resources/bosses/cinder_warden.tres" id="5_k1ne8"]
+[ext_resource type="Script" path="res://scripts/progression/stage_timeline_data.gd" id="6_xlvaf"]
+
+[resource]
+script = ExtResource("6_xlvaf")
+display_name = "Ember Nebula Ignition"
+early_wave = ExtResource("2_unkit")
+mid_wave = ExtResource("4_7d7ok")
+mini_boss = ExtResource("5_k1ne8")
+final_boss = ExtResource("3_0qvwq")
+mini_boss_at = 55.0
+boss_warning_at = 140.0
+guaranteed_level_up_at = 14.0
+early_ambient = ExtResource("1_bdn80")
+mid_ambient = ExtResource("1_bdn80")

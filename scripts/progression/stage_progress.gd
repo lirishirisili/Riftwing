@@ -12,6 +12,8 @@ static func is_unlocked(map: StageMapData, stage: StageNodeData, cleared_ids: Ar
 		return false
 	if stage.starts_unlocked:
 		return true
+	if stage.requires_stage_id != "":
+		return cleared_ids.has(stage.requires_stage_id)
 	var prev := map.find_by_index(stage.index - 1)
 	if prev == null:
 		return false

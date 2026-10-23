@@ -82,7 +82,7 @@ func _process(delta: float) -> void:
 	# A pooled node may exist in the tree before launch(); stay inert until armed.
 	if data == null or _spent:
 		return
-	if data.homing_turn_rate > 0.0 and targeter != null:
+	if data.homing_turn_rate > 0.0 and targeter != null and (data.homing_duration <= 0.0 or _age < data.homing_duration):
 		_steer(delta)
 	global_position += _velocity * delta
 	_age += delta

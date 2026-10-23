@@ -30,6 +30,11 @@ var is_daily: bool = false
 var daily_date: String = ""
 var daily_reward_core: int = 0
 
+## "campaign", "daily", "endless", or "boss_rush".
+var mode: String = "campaign"
+## Bosses destroyed this run (Endless / Boss Rush payouts and records).
+var bosses_defeated: int = 0
+
 ## Live-accumulated statistics.
 var enemies_destroyed: int = 0
 var best_combo: int = 0

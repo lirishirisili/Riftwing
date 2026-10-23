@@ -1,0 +1,200 @@
+[gd_resource type="Resource" script_class="StageMapData" format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/stage_map_data.gd" id="1_usv04"]
+[ext_resource type="Script" path="res://scripts/progression/stage_node_data.gd" id="2_mg8ac"]
+[ext_resource type="Resource" path="res://resources/stages/abyss_early_timeline.tres" id="3_np66q"]
+[ext_resource type="Resource" path="res://resources/stages/abyss_mid_timeline.tres" id="4_sh0b3"]
+[ext_resource type="Resource" path="res://resources/stages/abyss_finale_timeline.tres" id="5_c5l6l"]
+
+[sub_resource type="Resource" id="Resource_fng1d"]
+script = ExtResource("2_mg8ac")
+id = "3-1"
+label = "3-1"
+title = "DROWNED LIGHT"
+enemy_label = "WEAVER SHOALS"
+objective = "Descend the Abyss Rift: Drowned Light."
+recommended_power = 9000
+reward_rift_energy = 1040
+reward_rift_core = 2
+first_clear_rift_core = 3
+map_position = Vector2(200, 100)
+planet_modulate = Color(0.3, 0.9, 1, 1)
+difficulty_scalar = 2.85
+timeline = ExtResource("3_np66q")
+stars_score_for_3 = 13000
+requires_stage_id = "2-10"
+
+[sub_resource type="Resource" id="Resource_jmwdn"]
+script = ExtResource("2_mg8ac")
+id = "3-2"
+index = 2
+label = "3-2"
+title = "SILENT TRENCH"
+enemy_label = "SNIPER LINES"
+objective = "Descend the Abyss Rift: Silent Trench."
+recommended_power = 9555
+reward_rift_energy = 1088
+reward_rift_core = 2
+first_clear_rift_core = 3
+map_position = Vector2(520, 220)
+planet_modulate = Color(0.25, 0.6, 0.9, 1)
+difficulty_scalar = 2.95
+timeline = ExtResource("3_np66q")
+stars_score_for_3 = 13555
+
+[sub_resource type="Resource" id="Resource_ywu46"]
+script = ExtResource("2_mg8ac")
+id = "3-3"
+index = 3
+label = "3-3"
+title = "HOLLOW REACH"
+enemy_label = "BULWARKS"
+objective = "Descend the Abyss Rift: Hollow Reach."
+recommended_power = 10111
+reward_rift_energy = 1137
+reward_rift_core = 2
+first_clear_rift_core = 3
+map_position = Vector2(220, 360)
+planet_modulate = Color(0.4, 1, 0.8, 1)
+difficulty_scalar = 3.0500000000000003
+timeline = ExtResource("3_np66q")
+stars_score_for_3 = 14111
+
+[sub_resource type="Resource" id="Resource_e3w67"]
+script = ExtResource("2_mg8ac")
+id = "3-4"
+index = 4
+label = "3-4"
+title = "LEVIATHAN WAKE"
+enemy_label = "RIFT LEVIATHAN"
+objective = "Descend the Abyss Rift: Leviathan Wake."
+recommended_power = 10666
+reward_rift_energy = 1186
+reward_rift_core = 2
+first_clear_rift_core = 3
+map_position = Vector2(540, 500)
+planet_modulate = Color(0.2, 0.75, 0.75, 1)
+difficulty_scalar = 3.1500000000000004
+timeline = ExtResource("3_np66q")
+stars_score_for_3 = 14666
+
+[sub_resource type="Resource" id="Resource_1jxl3"]
+script = ExtResource("2_mg8ac")
+id = "3-5"
+index = 5
+label = "3-5"
+title = "GRAVITY WELL"
+enemy_label = "SPINNER FIELDS"
+objective = "Descend the Abyss Rift: Gravity Well."
+recommended_power = 11222
+reward_rift_energy = 1235
+reward_rift_core = 2
+first_clear_rift_core = 3
+map_position = Vector2(240, 640)
+planet_modulate = Color(0.5, 0.6, 1, 1)
+difficulty_scalar = 3.25
+timeline = ExtResource("4_sh0b3")
+stars_score_for_3 = 15222
+
+[sub_resource type="Resource" id="Resource_aiqdg"]
+script = ExtResource("2_mg8ac")
+id = "3-6"
+index = 6
+label = "3-6"
+title = "STATIC ABYSS"
+enemy_label = "CARRIER FLEET"
+objective = "Descend the Abyss Rift: Static Abyss."
+recommended_power = 11777
+reward_rift_energy = 1284
+reward_rift_core = 2
+first_clear_rift_core = 3
+map_position = Vector2(560, 780)
+planet_modulate = Color(0.3, 1, 0.95, 1)
+difficulty_scalar = 3.4000000000000004
+timeline = ExtResource("4_sh0b3")
+stars_score_for_3 = 15777
+
+[sub_resource type="Resource" id="Resource_k5cwq"]
+script = ExtResource("2_mg8ac")
+id = "3-7"
+index = 7
+label = "3-7"
+title = "DEEP LATTICE"
+enemy_label = "ABYSS ELITES"
+objective = "Descend the Abyss Rift: Deep Lattice."
+recommended_power = 12333
+reward_rift_energy = 1333
+reward_rift_core = 2
+first_clear_rift_core = 3
+map_position = Vector2(260, 920)
+planet_modulate = Color(0.45, 0.45, 1, 1)
+difficulty_scalar = 3.5
+timeline = ExtResource("4_sh0b3")
+stars_score_for_3 = 16333
+
+[sub_resource type="Resource" id="Resource_fl843"]
+script = ExtResource("2_mg8ac")
+id = "3-8"
+index = 8
+label = "3-8"
+title = "OVERMIND GAZE"
+enemy_label = "ABYSS OVERMIND"
+objective = "Descend the Abyss Rift: Overmind Gaze."
+recommended_power = 12888
+reward_rift_energy = 1382
+reward_rift_core = 2
+first_clear_rift_core = 3
+map_position = Vector2(500, 1060)
+planet_modulate = Color(0.7, 0.4, 1, 1)
+difficulty_scalar = 3.6
+timeline = ExtResource("5_c5l6l")
+stars_score_for_3 = 16888
+
+[sub_resource type="Resource" id="Resource_3a2tv"]
+script = ExtResource("2_mg8ac")
+id = "3-9"
+index = 9
+label = "3-9"
+title = "EVENT HORIZON"
+enemy_label = "ABYSS OVERMIND"
+objective = "Descend the Abyss Rift: Event Horizon."
+recommended_power = 13444
+reward_rift_energy = 1431
+reward_rift_core = 2
+first_clear_rift_core = 3
+map_position = Vector2(240, 1200)
+planet_modulate = Color(0.2, 0.95, 0.7, 1)
+difficulty_scalar = 3.7
+timeline = ExtResource("5_c5l6l")
+stars_score_for_3 = 17444
+
+[sub_resource type="Resource" id="Resource_hukhv"]
+script = ExtResource("2_mg8ac")
+id = "3-10"
+index = 10
+label = "3-10"
+title = "RIFT HEART"
+enemy_label = "ABYSS OVERMIND"
+objective = "Descend the Abyss Rift: Rift Heart."
+recommended_power = 14000
+reward_rift_energy = 1480
+reward_rift_core = 3
+first_clear_rift_core = 5
+map_position = Vector2(520, 1340)
+planet_modulate = Color(0.9, 0.3, 0.9, 1)
+difficulty_scalar = 3.8000000000000003
+timeline = ExtResource("5_c5l6l")
+stars_score_for_3 = 18000
+
+[resource]
+script = ExtResource("1_usv04")
+sector_id = "abyss"
+sector_code = "03"
+sector_name = "ABYSS RIFT"
+stages = Array[ExtResource("2_mg8ac")]([SubResource("Resource_fng1d"), SubResource("Resource_jmwdn"), SubResource("Resource_ywu46"), SubResource("Resource_e3w67"), SubResource("Resource_1jxl3"), SubResource("Resource_aiqdg"), SubResource("Resource_k5cwq"), SubResource("Resource_fl843"), SubResource("Resource_3a2tv"), SubResource("Resource_hukhv")])
+sector_index = 3
+background_tint = Color(0.78, 0.95, 1, 1)
+nebula_modulate = Color(0.4, 1.25, 1.1, 1)
+run_music = "run_abyss"
+boss_music = "boss_abyss"
+map_height = 1480.0

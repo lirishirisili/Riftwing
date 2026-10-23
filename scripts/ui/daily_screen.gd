@@ -115,15 +115,7 @@ func _on_launch() -> void:
 ## Stage ids the player can already launch on NORMAL (the daily never offers
 ## a locked stage).
 func _launchable_stage_ids() -> Array:
-	var out: Array = []
-	var map := load("res://resources/stages/nova_sector_map.tres") as StageMapData
-	if map == null:
-		return out
-	var cleared := SaveManager.get_cleared_stage_ids()
-	for stage in map.stages:
-		if stage != null and StageProgress.is_unlocked(map, stage, cleared):
-			out.append(stage.id)
-	return out
+	return Campaign.unlocked_stage_ids(SaveManager.get_cleared_stage_ids())
 
 
 func handle_system_back() -> bool:

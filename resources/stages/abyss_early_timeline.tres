@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="StageTimelineData" format=3]
+
+[ext_resource type="Resource" path="res://resources/spawning/abyss_early.tres" id="1_obked"]
+[ext_resource type="Resource" path="res://resources/waves/slice_wave_early.tres" id="2_e1juj"]
+[ext_resource type="Resource" path="res://resources/bosses/rift_leviathan.tres" id="3_ol1x1"]
+[ext_resource type="Resource" path="res://resources/waves/slice_wave_mid.tres" id="4_u3wdf"]
+[ext_resource type="Resource" path="res://resources/bosses/abyss_sentinel.tres" id="5_57cv1"]
+[ext_resource type="Script" path="res://scripts/progression/stage_timeline_data.gd" id="6_7rrpj"]
+
+[resource]
+script = ExtResource("6_7rrpj")
+display_name = "Abyss Rift Descent"
+early_wave = ExtResource("2_e1juj")
+mid_wave = ExtResource("4_u3wdf")
+mini_boss = ExtResource("5_57cv1")
+final_boss = ExtResource("3_ol1x1")
+mini_boss_at = 55.0
+boss_warning_at = 140.0
+guaranteed_level_up_at = 14.0
+early_ambient = ExtResource("1_obked")
+mid_ambient = ExtResource("1_obked")

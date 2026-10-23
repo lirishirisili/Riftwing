@@ -68,6 +68,11 @@ func _default_data() -> Dictionary:
 			"progress": {},
 			"claimed_event_ids": [],
 		},
+		"modes": {
+			# Personal bests for Endless / Boss Rush (score, seconds survived, bosses).
+			"endless": {"best_score": 0, "best_seconds": 0.0, "best_bosses": 0, "runs": 0},
+			"boss_rush": {"best_score": 0, "best_seconds": 0.0, "best_bosses": 0, "runs": 0},
+		},
 		"clock": {
 			# Highest wall-clock time this save has seen; a clock rolled back past
 			# it means the date was tampered with (see is_clock_trusted).
@@ -177,6 +182,31 @@ func get_stage_best_score(stage_id: String, difficulty: String = DIFFICULTY_NORM
 
 ## Whether the stage can be launched right now. NORMAL needs the unlock chain;
 ## HARD additionally requires the stage to have been cleared on NORMAL first.
+## --- Endless / Boss Rush records -------------------------------------------
+
+func get_mode_best(mode: String) -> Dictionary:
+	var modes: Dictionary = _data.get("modes", {}) if typeof(_data.get("modes")) == TYPE_DICTIONARY else {}
+	var entry: Variant = modes.get(mode, {})
+	return (entry as Dictionary).duplicate() if typeof(entry) == TYPE_DICTIONARY else {}
+
+
+## Keeps the best score / time / bosses for a mode. Persisted by the caller's
+## grant (RunSettlement runs this before grant_run_rewards saves).
+func record_mode_result(mode: String, score: int, seconds: float, bosses: int) -> void:
+	if mode == "":
+		return
+	if typeof(_data.get("modes")) != TYPE_DICTIONARY:
+		_data["modes"] = _default_data()["modes"]
+	var modes: Dictionary = _data["modes"]
+	if typeof(modes.get(mode)) != TYPE_DICTIONARY:
+		modes[mode] = {"best_score": 0, "best_seconds": 0.0, "best_bosses": 0, "runs": 0}
+	var e: Dictionary = modes[mode]
+	e["best_score"] = maxi(int(e.get("best_score", 0)), score)
+	e["best_seconds"] = maxf(float(e.get("best_seconds", 0.0)), seconds)
+	e["best_bosses"] = maxi(int(e.get("best_bosses", 0)), bosses)
+	e["runs"] = int(e.get("runs", 0)) + 1
+
+
 ## --- Clock trust -----------------------------------------------------------
 
 ## False when the device clock is earlier than a time this save already saw
@@ -297,8 +327,11 @@ func grant_run_rewards(run_id: String, rewards: RunRewards, stats: RunStats) -> 
 		if campaign_run:
 			_update_stage_best_score(stats.stage_id, stats.score, stats.difficulty)
 		if stats.victory:
-			if not stats.is_daily:
-				_mark_sector_completed(stats.sector)
+			# A sector is complete only when its final stage is cleared.
+			if campaign_run:
+				var sector_map := Campaign.map_for_stage(stats.stage_id)
+				if sector_map != null and sector_map.last_stage() != null and sector_map.last_stage().id == stats.stage_id:
+					_mark_sector_completed(sector_map.sector_index)
 			if campaign_run:
 				_record_stage_clear_from_stats(stats)
 			# One-time Daily Challenge Rift Core bonus (per local date).
@@ -522,10 +555,7 @@ func _accrue_event_progress(stats: RunStats) -> void:
 
 
 func _record_stage_clear_from_stats(stats: RunStats) -> void:
-	var map: StageMapData = load("res://resources/stages/nova_sector_map.tres")
-	var stage: StageNodeData = null
-	if map != null:
-		stage = map.find_by_id(stats.stage_id)
+	var stage := Campaign.find_stage(stats.stage_id)
 	var stars := StageProgress.stars_for_run(stage, stats)
 	record_stage_clear(stats.stage_id, stars, stats.difficulty)
 

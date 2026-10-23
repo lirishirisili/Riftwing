@@ -1,0 +1,199 @@
+[gd_resource type="Resource" script_class="StageMapData" format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/stage_map_data.gd" id="1_utmwu"]
+[ext_resource type="Script" path="res://scripts/progression/stage_node_data.gd" id="2_6dge4"]
+[ext_resource type="Resource" path="res://resources/stages/ember_early_timeline.tres" id="3_eb3b4"]
+[ext_resource type="Resource" path="res://resources/stages/ember_late_timeline.tres" id="4_uut7j"]
+
+[sub_resource type="Resource" id="Resource_i72bs"]
+script = ExtResource("2_6dge4")
+id = "2-1"
+label = "2-1"
+title = "CINDER GATE"
+enemy_label = "EMBER SWARM"
+objective = "Push through the Ember Nebula: Cinder Gate."
+recommended_power = 5200
+reward_rift_energy = 680
+reward_rift_core = 1
+first_clear_rift_core = 2
+map_position = Vector2(200, 100)
+planet_modulate = Color(1, 0.5, 0.25, 1)
+difficulty_scalar = 1.9000000000000001
+timeline = ExtResource("3_eb3b4")
+stars_score_for_3 = 8500
+requires_stage_id = "1-10"
+
+[sub_resource type="Resource" id="Resource_s7bey"]
+script = ExtResource("2_6dge4")
+id = "2-2"
+index = 2
+label = "2-2"
+title = "FLARE DRIFT"
+enemy_label = "LANCER PACKS"
+objective = "Push through the Ember Nebula: Flare Drift."
+recommended_power = 5555
+reward_rift_energy = 713
+reward_rift_core = 1
+first_clear_rift_core = 2
+map_position = Vector2(520, 220)
+planet_modulate = Color(1, 0.7, 0.3, 1)
+difficulty_scalar = 2.0
+timeline = ExtResource("3_eb3b4")
+stars_score_for_3 = 8944
+
+[sub_resource type="Resource" id="Resource_v2vcr"]
+script = ExtResource("2_6dge4")
+id = "2-3"
+index = 3
+label = "2-3"
+title = "MAGMA REEF"
+enemy_label = "STRIKER WINGS"
+objective = "Push through the Ember Nebula: Magma Reef."
+recommended_power = 5911
+reward_rift_energy = 746
+reward_rift_core = 1
+first_clear_rift_core = 2
+map_position = Vector2(220, 360)
+planet_modulate = Color(0.95, 0.3, 0.2, 1)
+difficulty_scalar = 2.1
+timeline = ExtResource("3_eb3b4")
+stars_score_for_3 = 9388
+
+[sub_resource type="Resource" id="Resource_lpxm6"]
+script = ExtResource("2_6dge4")
+id = "2-4"
+index = 4
+label = "2-4"
+title = "SOLAR FORGE"
+enemy_label = "CINDER WARDEN"
+objective = "Push through the Ember Nebula: Solar Forge."
+recommended_power = 6266
+reward_rift_energy = 780
+reward_rift_core = 1
+first_clear_rift_core = 2
+map_position = Vector2(540, 500)
+planet_modulate = Color(1, 0.85, 0.35, 1)
+difficulty_scalar = 2.2
+timeline = ExtResource("3_eb3b4")
+stars_score_for_3 = 9833
+
+[sub_resource type="Resource" id="Resource_hvkmc"]
+script = ExtResource("2_6dge4")
+id = "2-5"
+index = 5
+label = "2-5"
+title = "ASH CATHEDRAL"
+enemy_label = "SPINNERS"
+objective = "Push through the Ember Nebula: Ash Cathedral."
+recommended_power = 6622
+reward_rift_energy = 813
+reward_rift_core = 1
+first_clear_rift_core = 2
+map_position = Vector2(240, 640)
+planet_modulate = Color(0.8, 0.4, 0.3, 1)
+difficulty_scalar = 2.3000000000000003
+timeline = ExtResource("3_eb3b4")
+stars_score_for_3 = 10277
+
+[sub_resource type="Resource" id="Resource_qtqyv"]
+script = ExtResource("2_6dge4")
+id = "2-6"
+index = 6
+label = "2-6"
+title = "BURNING VEIL"
+enemy_label = "EMBER ELITES"
+objective = "Push through the Ember Nebula: Burning Veil."
+recommended_power = 6977
+reward_rift_energy = 846
+reward_rift_core = 1
+first_clear_rift_core = 2
+map_position = Vector2(560, 780)
+planet_modulate = Color(1, 0.45, 0.5, 1)
+difficulty_scalar = 2.35
+timeline = ExtResource("4_uut7j")
+stars_score_for_3 = 10722
+
+[sub_resource type="Resource" id="Resource_16lrl"]
+script = ExtResource("2_6dge4")
+id = "2-7"
+index = 7
+label = "2-7"
+title = "PYRE ARRAY"
+enemy_label = "CARRIER FLEET"
+objective = "Push through the Ember Nebula: Pyre Array."
+recommended_power = 7333
+reward_rift_energy = 880
+reward_rift_core = 1
+first_clear_rift_core = 2
+map_position = Vector2(260, 920)
+planet_modulate = Color(1, 0.6, 0.2, 1)
+difficulty_scalar = 2.45
+timeline = ExtResource("4_uut7j")
+stars_score_for_3 = 11166
+
+[sub_resource type="Resource" id="Resource_7x4o5"]
+script = ExtResource("2_6dge4")
+id = "2-8"
+index = 8
+label = "2-8"
+title = "CRUCIBLE"
+enemy_label = "SNIPER NEST"
+objective = "Push through the Ember Nebula: Crucible."
+recommended_power = 7688
+reward_rift_energy = 913
+reward_rift_core = 1
+first_clear_rift_core = 2
+map_position = Vector2(500, 1060)
+planet_modulate = Color(0.9, 0.25, 0.3, 1)
+difficulty_scalar = 2.5500000000000003
+timeline = ExtResource("4_uut7j")
+stars_score_for_3 = 11611
+
+[sub_resource type="Resource" id="Resource_hr50u"]
+script = ExtResource("2_6dge4")
+id = "2-9"
+index = 9
+label = "2-9"
+title = "EMBER CROWN"
+enemy_label = "EMBER HYDRA"
+objective = "Push through the Ember Nebula: Ember Crown."
+recommended_power = 8044
+reward_rift_energy = 946
+reward_rift_core = 1
+first_clear_rift_core = 2
+map_position = Vector2(240, 1200)
+planet_modulate = Color(1, 0.75, 0.4, 1)
+difficulty_scalar = 2.6500000000000004
+timeline = ExtResource("4_uut7j")
+stars_score_for_3 = 12055
+
+[sub_resource type="Resource" id="Resource_ielmr"]
+script = ExtResource("2_6dge4")
+id = "2-10"
+index = 10
+label = "2-10"
+title = "HYDRA NEST"
+enemy_label = "EMBER HYDRA"
+objective = "Push through the Ember Nebula: Hydra Nest."
+recommended_power = 8400
+reward_rift_energy = 980
+reward_rift_core = 2
+first_clear_rift_core = 3
+map_position = Vector2(520, 1340)
+planet_modulate = Color(1, 0.4, 0.2, 1)
+difficulty_scalar = 2.75
+timeline = ExtResource("4_uut7j")
+stars_score_for_3 = 12500
+
+[resource]
+script = ExtResource("1_utmwu")
+sector_id = "ember"
+sector_code = "02"
+sector_name = "EMBER NEBULA"
+stages = Array[ExtResource("2_6dge4")]([SubResource("Resource_i72bs"), SubResource("Resource_s7bey"), SubResource("Resource_v2vcr"), SubResource("Resource_lpxm6"), SubResource("Resource_hvkmc"), SubResource("Resource_qtqyv"), SubResource("Resource_16lrl"), SubResource("Resource_7x4o5"), SubResource("Resource_hr50u"), SubResource("Resource_ielmr")])
+sector_index = 2
+background_tint = Color(1, 0.84, 0.78, 1)
+nebula_modulate = Color(1.45, 0.62, 0.38, 1)
+run_music = "run_ember"
+boss_music = "boss_ember"
+map_height = 1480.0

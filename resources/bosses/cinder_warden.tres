@@ -1,0 +1,64 @@
+[gd_resource type="Resource" script_class="BossData" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/boss_pattern_data.gd" id="1_3da16"]
+[ext_resource type="Resource" path="res://resources/weapons/boss_radial_projectile.tres" id="2_v1pvw"]
+[ext_resource type="Resource" path="res://resources/weapons/enemy_wall_projectile.tres" id="3_in58j"]
+[ext_resource type="Script" path="res://scripts/combat/boss_data.gd" id="4_2gnxu"]
+[ext_resource type="Texture2D" path="res://assets/art/boss/void_titan.svg" id="5_rltd4"]
+
+[sub_resource type="Resource" id="Resource_jvqf3"]
+script = ExtResource("1_3da16")
+kind = 4
+display_name = "Fang Volley"
+telegraph_seconds = 0.9
+active_seconds = 2.2
+radial_projectile = ExtResource("2_v1pvw")
+volley_spread_degrees = 44.0
+
+[sub_resource type="Resource" id="Resource_21ay5"]
+script = ExtResource("1_3da16")
+display_name = "Nova Ring"
+active_seconds = 1.8
+recover_seconds = 0.9
+radial_bullets = 24
+radial_rings = 2
+radial_spin_degrees = 9.0
+radial_projectile = ExtResource("2_v1pvw")
+
+[sub_resource type="Resource" id="Resource_aqhl5"]
+script = ExtResource("1_3da16")
+kind = 5
+display_name = "Firewall"
+telegraph_seconds = 1.1
+active_seconds = 3.0
+recover_seconds = 1.0
+wall_gap_width = 240.0
+falling_projectile = ExtResource("3_in58j")
+
+[sub_resource type="Resource" id="Resource_8lmes"]
+script = ExtResource("1_3da16")
+kind = 3
+display_name = "Twin Spiral"
+active_seconds = 2.4
+recover_seconds = 0.9
+radial_projectile = ExtResource("2_v1pvw")
+spiral_arms = 2
+spiral_rate = 7.0
+spiral_turn_degrees = 13.0
+
+[resource]
+script = ExtResource("4_2gnxu")
+display_name = "CINDER WARDEN"
+max_health = 650.0
+sprite = ExtResource("5_rltd4")
+sprite_scale = 0.48
+hit_radius = 140.0
+contact_damage = 24.0
+health_segments = 12
+phase2_threshold = 0.45
+tint = Color(1.35, 0.62, 0.38, 1)
+sway_amplitude = 160.0
+sway_speed = 0.3
+loot_pickups = 30
+phase1_patterns = Array[ExtResource("1_3da16")]([SubResource("Resource_jvqf3"), SubResource("Resource_21ay5")])
+phase2_patterns = Array[ExtResource("1_3da16")]([SubResource("Resource_aqhl5"), SubResource("Resource_8lmes")])

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="StageTimelineData" format=3]
+
+[ext_resource type="Resource" path="res://resources/spawning/abyss_early.tres" id="1_benyt"]
+[ext_resource type="Resource" path="res://resources/waves/nova_wave_diver_split.tres" id="2_5qgv1"]
+[ext_resource type="Resource" path="res://resources/bosses/rift_leviathan.tres" id="3_uwx73"]
+[ext_resource type="Resource" path="res://resources/spawning/abyss_late.tres" id="4_kfq67"]
+[ext_resource type="Resource" path="res://resources/waves/nova_wave_tank_line.tres" id="5_7fkfx"]
+[ext_resource type="Resource" path="res://resources/bosses/abyss_sentinel.tres" id="6_6co5q"]
+[ext_resource type="Script" path="res://scripts/progression/stage_timeline_data.gd" id="7_06o7x"]
+
+[resource]
+script = ExtResource("7_06o7x")
+display_name = "Abyss Rift Depths"
+early_wave = ExtResource("2_5qgv1")
+mid_wave = ExtResource("5_7fkfx")
+mini_boss = ExtResource("6_6co5q")
+final_boss = ExtResource("3_uwx73")
+mini_boss_at = 50.0
+boss_warning_at = 130.0
+guaranteed_level_up_at = 14.0
+early_ambient = ExtResource("1_benyt")
+mid_ambient = ExtResource("4_kfq67")

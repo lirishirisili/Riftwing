@@ -31,8 +31,9 @@ func _run() -> void:
 
 func _check_map_data() -> int:
 	var map: StageMapData = load("res://resources/stages/nova_sector_map.tres")
-	if map == null or map.stages.size() != 8:
-		printerr("map missing or not 8 stages")
+	# Nova grew from 8 to 10 stages in the campaign pass (sectors 2-3 follow).
+	if map == null or map.stages.size() != 10:
+		printerr("map missing or not 10 stages")
 		return 1
 	var unlocked_starts := 0
 	for stage in map.stages:
@@ -47,7 +48,7 @@ func _check_map_data() -> int:
 	if unlocked_starts != 3:
 		printerr("expected 3 starts_unlocked, got %d" % unlocked_starts)
 		return 1
-	print("map_ok stages=8 starts_unlocked=3")
+	print("map_ok stages=10 starts_unlocked=3")
 	return 0
 
 

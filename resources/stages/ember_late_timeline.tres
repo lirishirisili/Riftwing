@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="StageTimelineData" format=3]
+
+[ext_resource type="Resource" path="res://resources/spawning/ember_early.tres" id="1_xdtl6"]
+[ext_resource type="Resource" path="res://resources/waves/nova_wave_diver_split.tres" id="2_2ejrr"]
+[ext_resource type="Resource" path="res://resources/bosses/ember_hydra.tres" id="3_3kjpb"]
+[ext_resource type="Resource" path="res://resources/spawning/ember_late.tres" id="4_s721y"]
+[ext_resource type="Resource" path="res://resources/waves/nova_wave_tank_line.tres" id="5_ox5ra"]
+[ext_resource type="Resource" path="res://resources/bosses/cinder_warden.tres" id="6_h67eo"]
+[ext_resource type="Script" path="res://scripts/progression/stage_timeline_data.gd" id="7_jowbj"]
+
+[resource]
+script = ExtResource("7_jowbj")
+display_name = "Ember Nebula Inferno"
+early_wave = ExtResource("2_2ejrr")
+mid_wave = ExtResource("5_ox5ra")
+mini_boss = ExtResource("6_h67eo")
+final_boss = ExtResource("3_3kjpb")
+mini_boss_at = 50.0
+boss_warning_at = 130.0
+guaranteed_level_up_at = 14.0
+early_ambient = ExtResource("1_xdtl6")
+mid_ambient = ExtResource("4_s721y")

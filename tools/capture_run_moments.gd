@@ -65,7 +65,8 @@ func _run() -> void:
 ## firing across the field) and auto-picking upgrade cards.
 func _seconds(seconds: float, run: Node, player: Node) -> void:
 	var t := 0.0
-	while t < seconds:
+	var until := Time.get_ticks_msec() + int(seconds * 1000.0)
+	while Time.get_ticks_msec() < until:
 		var x := 540.0 + sin(t * 1.3) * 300.0
 		player.set("_target", Vector2(x, 1500.0))
 		player.call("grant_invulnerability", 0.5)

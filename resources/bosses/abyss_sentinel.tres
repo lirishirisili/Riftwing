@@ -1,0 +1,63 @@
+[gd_resource type="Resource" script_class="BossData" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/boss_pattern_data.gd" id="1_v221k"]
+[ext_resource type="Resource" path="res://resources/weapons/enemy_orb_homing.tres" id="2_34ixe"]
+[ext_resource type="Resource" path="res://resources/weapons/boss_radial_projectile.tres" id="3_e0308"]
+[ext_resource type="Script" path="res://scripts/combat/boss_data.gd" id="4_mtfyr"]
+[ext_resource type="Texture2D" path="res://assets/art/boss/void_titan.svg" id="5_0vapp"]
+
+[sub_resource type="Resource" id="Resource_5hsed"]
+script = ExtResource("1_v221k")
+kind = 6
+display_name = "Seeker Orbs"
+active_seconds = 1.0
+recover_seconds = 1.4
+falling_projectile = ExtResource("2_34ixe")
+
+[sub_resource type="Resource" id="Resource_21ay5"]
+script = ExtResource("1_v221k")
+display_name = "Nova Ring"
+active_seconds = 1.8
+recover_seconds = 0.9
+radial_bullets = 24
+radial_rings = 2
+radial_spin_degrees = 9.0
+radial_projectile = ExtResource("3_e0308")
+
+[sub_resource type="Resource" id="Resource_lr36o"]
+script = ExtResource("1_v221k")
+kind = 1
+display_name = "Abyss Lance"
+telegraph_seconds = 1.2
+active_seconds = 3.0
+recover_seconds = 0.9
+laser_sweep_degrees = 150.0
+laser_half_width = 28.0
+laser_damage = 22.0
+laser_return_sweep = true
+
+[sub_resource type="Resource" id="Resource_5hreo"]
+script = ExtResource("1_v221k")
+kind = 6
+display_name = "Seeker Swarm"
+active_seconds = 1.0
+recover_seconds = 1.3
+falling_projectile = ExtResource("2_34ixe")
+orb_count = 8
+
+[resource]
+script = ExtResource("4_mtfyr")
+display_name = "ABYSS SENTINEL"
+max_health = 900.0
+sprite = ExtResource("5_0vapp")
+sprite_scale = 0.48
+hit_radius = 140.0
+contact_damage = 24.0
+health_segments = 12
+phase2_threshold = 0.45
+tint = Color(0.5, 1.2, 1.25, 1)
+sway_amplitude = 200.0
+sway_speed = 0.35
+loot_pickups = 30
+phase1_patterns = Array[ExtResource("1_v221k")]([SubResource("Resource_5hsed"), SubResource("Resource_21ay5")])
+phase2_patterns = Array[ExtResource("1_v221k")]([SubResource("Resource_lr36o"), SubResource("Resource_5hreo")])

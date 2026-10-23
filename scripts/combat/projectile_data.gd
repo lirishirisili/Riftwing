@@ -29,6 +29,9 @@ extends Resource
 
 ## Homing steer rate in radians/second toward the nearest target (0 = straight).
 @export_range(0.0, 30.0, 0.1) var homing_turn_rate: float = 0.0
+## Seconds the bolt keeps steering (0 = for its whole life). Hostile homing
+## orbs stop tracking after a while so they stay dodgeable.
+@export_range(0.0, 10.0, 0.1) var homing_duration: float = 0.0
 
 ## Area blast radius on impact (0 = single target).
 @export_range(0.0, 600.0, 5.0) var explode_radius: float = 0.0

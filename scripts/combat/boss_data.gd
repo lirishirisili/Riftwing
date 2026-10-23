@@ -47,6 +47,18 @@ extends Resource
 ## Invulnerable dramatic beat between phases (seconds).
 @export_range(0.3, 4.0, 0.05) var phase_transition_seconds: float = 1.1
 
+## Optional third phase: below this HP fraction (0 = no phase 3).
+@export_range(0.0, 0.9, 0.01) var phase3_threshold: float = 0.0
+@export var phase3_patterns: Array[BossPatternData] = []
+
+## Procedural presentation drawn over / instead of the sprite.
+enum Visual { SPRITE, HYDRA, LEVIATHAN, OVERMIND }
+@export var visual: Visual = Visual.SPRITE
+@export var tint: Color = Color(1, 1, 1, 1)
+## Side-to-side drift while fighting (px amplitude, cycles per second).
+@export_range(0.0, 400.0, 5.0) var sway_amplitude: float = 0.0
+@export_range(0.05, 2.0, 0.05) var sway_speed: float = 0.25
+
 ## Energy pickups flung out in a loot fountain when the boss dies.
 @export_range(0, 80) var loot_pickups: int = 24
 

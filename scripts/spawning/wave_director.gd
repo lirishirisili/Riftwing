@@ -62,10 +62,11 @@ func _ready() -> void:
 	_rng.randomize()
 
 
-## Starts budget-driven ambient spawning from t=0 (null stops it).
-func set_ambient(profile: SpawnProfileData) -> void:
+## Starts budget-driven ambient spawning (null stops it). `start_time` resumes
+## a ramp part-way (Endless keeps climbing across bosses).
+func set_ambient(profile: SpawnProfileData, start_time: float = 0.0) -> void:
 	_ambient = profile
-	_ambient_time = 0.0
+	_ambient_time = maxf(0.0, start_time)
 	_budget = 0.0
 	_elite_cooldown = profile.elite_min_gap_seconds * 0.5 if profile != null else 0.0
 

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ProjectileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/projectile_data.gd" id="1_niupu"]
+
+[resource]
+script = ExtResource("1_niupu")
+speed = 380.0
+lifetime = 6.5
+radius = 18.0
+length = 18.0
+color = Color(1, 0.35, 0.3, 1)

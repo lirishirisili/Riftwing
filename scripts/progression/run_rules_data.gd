@@ -73,3 +73,12 @@ extends Resource
 @export_range(0.0, 3.0, 0.05) var chest_luck_bonus: float = 0.5
 ## The mini-boss drops a chest.
 @export var mini_boss_drops_chest: bool = true
+
+# --- Endless / Boss Rush ----------------------------------------------------------
+
+## Endless: seconds of waves between bosses, and the per-boss difficulty step.
+@export_range(20.0, 300.0, 5.0) var endless_boss_interval: float = 75.0
+@export_range(1.0, 2.0, 0.01) var endless_scale_per_boss: float = 1.2
+## Boss Rush: breather between bosses and free level-ups granted before each.
+@export_range(1.0, 15.0, 0.5) var rush_breather_seconds: float = 4.0
+@export_range(0, 4) var rush_levels_per_boss: int = 1

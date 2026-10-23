@@ -1,0 +1,65 @@
+[gd_resource type="Resource" script_class="BossData" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/boss_pattern_data.gd" id="1_51sd1"]
+[ext_resource type="Resource" path="res://resources/bosses/void_titan_radial.tres" id="2_ytt45"]
+[ext_resource type="Resource" path="res://resources/bosses/void_titan_laser.tres" id="3_43bci"]
+[ext_resource type="Resource" path="res://resources/bosses/void_titan_summon.tres" id="4_jg4ko"]
+[ext_resource type="Resource" path="res://resources/bosses/void_titan_radial_p2.tres" id="5_p03y5"]
+[ext_resource type="Resource" path="res://resources/bosses/void_titan_laser_p2.tres" id="6_w18va"]
+[ext_resource type="Resource" path="res://resources/weapons/boss_radial_projectile.tres" id="7_7u4nc"]
+[ext_resource type="Script" path="res://scripts/combat/boss_data.gd" id="8_pkifk"]
+[ext_resource type="Texture2D" path="res://assets/art/boss/void_titan.svg" id="9_mdp64"]
+
+[sub_resource type="Resource" id="Resource_sophv"]
+script = ExtResource("1_51sd1")
+kind = 3
+display_name = "Inferno Spiral"
+telegraph_seconds = 0.9
+active_seconds = 3.0
+radial_projectile = ExtResource("7_7u4nc")
+spiral_arms = 4
+spiral_rate = 9.0
+spiral_turn_degrees = 12.0
+
+[sub_resource type="Resource" id="Resource_w5hqr"]
+script = ExtResource("1_51sd1")
+kind = 4
+display_name = "Fang Storm"
+telegraph_seconds = 0.8
+active_seconds = 2.4
+recover_seconds = 0.7
+radial_projectile = ExtResource("7_7u4nc")
+volley_count = 6
+volley_bullets = 7
+volley_spread_degrees = 60.0
+
+[sub_resource type="Resource" id="Resource_lr36o"]
+script = ExtResource("1_51sd1")
+kind = 1
+display_name = "Abyss Lance"
+telegraph_seconds = 1.2
+active_seconds = 3.0
+recover_seconds = 0.9
+laser_sweep_degrees = 150.0
+laser_half_width = 28.0
+laser_damage = 22.0
+laser_return_sweep = true
+
+[resource]
+script = ExtResource("8_pkifk")
+display_name = "TITAN ASCENDED"
+max_health = 2600.0
+sprite = ExtResource("9_mdp64")
+sprite_scale = 0.72
+hit_radius = 190.0
+contact_damage = 24.0
+health_segments = 24
+phase2_threshold = 0.45
+phase3_threshold = 0.2
+phase3_patterns = Array[ExtResource("1_51sd1")]([SubResource("Resource_sophv"), SubResource("Resource_w5hqr"), SubResource("Resource_lr36o")])
+tint = Color(1.1, 0.9, 1.25, 1)
+sway_amplitude = 110.0
+sway_speed = 0.22
+loot_pickups = 30
+phase1_patterns = Array[ExtResource("1_51sd1")]([ExtResource("2_ytt45"), ExtResource("3_43bci"), ExtResource("4_jg4ko")])
+phase2_patterns = Array[ExtResource("1_51sd1")]([ExtResource("5_p03y5"), ExtResource("6_w18va"), ExtResource("4_jg4ko")])

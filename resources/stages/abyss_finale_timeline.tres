@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="StageTimelineData" format=3]
+
+[ext_resource type="Resource" path="res://resources/spawning/abyss_late.tres" id="1_ntdbh"]
+[ext_resource type="Resource" path="res://resources/waves/nova_wave_diver_split.tres" id="2_x5g3q"]
+[ext_resource type="Resource" path="res://resources/bosses/abyss_overmind.tres" id="3_mbm0g"]
+[ext_resource type="Resource" path="res://resources/waves/nova_wave_tank_line.tres" id="4_h52es"]
+[ext_resource type="Resource" path="res://resources/bosses/abyss_sentinel.tres" id="5_58apx"]
+[ext_resource type="Script" path="res://scripts/progression/stage_timeline_data.gd" id="6_fhmf4"]
+
+[resource]
+script = ExtResource("6_fhmf4")
+display_name = "Abyss Rift Heart"
+early_wave = ExtResource("2_x5g3q")
+mid_wave = ExtResource("4_h52es")
+mini_boss = ExtResource("5_58apx")
+final_boss = ExtResource("3_mbm0g")
+mini_boss_at = 50.0
+boss_warning_at = 125.0
+guaranteed_level_up_at = 14.0
+early_ambient = ExtResource("1_ntdbh")
+mid_ambient = ExtResource("1_ntdbh")

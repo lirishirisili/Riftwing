@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="SpawnProfileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/enemy_data.gd" id="1_pw171"]
+[ext_resource type="Resource" path="res://resources/enemies/scout.tres" id="2_d8epl"]
+[ext_resource type="Resource" path="res://resources/enemies/weaver.tres" id="3_mcm2b"]
+[ext_resource type="Resource" path="res://resources/enemies/swarmling.tres" id="4_ylcp1"]
+[ext_resource type="Resource" path="res://resources/enemies/diver.tres" id="5_3eg1l"]
+[ext_resource type="Resource" path="res://resources/enemies/shooter.tres" id="6_3dh8v"]
+[ext_resource type="Resource" path="res://resources/enemies/lancer.tres" id="7_yvpit"]
+[ext_resource type="Resource" path="res://resources/enemies/striker.tres" id="8_8idup"]
+[ext_resource type="Resource" path="res://resources/enemies/sniper.tres" id="9_cwufl"]
+[ext_resource type="Resource" path="res://resources/enemies/splitter.tres" id="10_ywdh0"]
+[ext_resource type="Resource" path="res://resources/enemies/tank.tres" id="11_1gbhq"]
+[ext_resource type="Resource" path="res://resources/enemies/spinner.tres" id="12_orqfm"]
+[ext_resource type="Resource" path="res://resources/enemies/bulwark.tres" id="13_uxdr1"]
+[ext_resource type="Resource" path="res://resources/enemies/carrier.tres" id="14_w886n"]
+[ext_resource type="Script" path="res://scripts/spawning/spawn_profile_data.gd" id="15_tjq6i"]
+
+[resource]
+script = ExtResource("15_tjq6i")
+enemies = Array[ExtResource("1_pw171")]([ExtResource("2_d8epl"), ExtResource("3_mcm2b"), ExtResource("4_ylcp1"), ExtResource("5_3eg1l"), ExtResource("6_3dh8v"), ExtResource("7_yvpit"), ExtResource("8_8idup"), ExtResource("9_cwufl"), ExtResource("10_ywdh0"), ExtResource("11_1gbhq"), ExtResource("12_orqfm"), ExtResource("13_uxdr1"), ExtResource("14_w886n")])
+weights = PackedFloat32Array(2.5, 2, 2, 1.5, 1.5, 1.3, 1.2, 1, 1, 0.8, 0.8, 0.6, 0.4)
+budget_per_second_end = 7.0
+ramp_seconds = 420.0
+max_alive = 30
+elite_chance_end = 0.3
