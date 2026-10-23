@@ -1,0 +1,618 @@
+[gd_resource type="Resource" script_class="MetaCatalogData" format=3]
+
+[ext_resource type="Script" path="res://scripts/meta/achievement_data.gd" id="1_slitw"]
+[ext_resource type="Script" path="res://scripts/meta/mission_data.gd" id="2_bv4xk"]
+[ext_resource type="Script" path="res://scripts/meta/module_data.gd" id="3_wugfs"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_energy.svg" id="4_oirod"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_health.svg" id="5_cgmau"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_target.svg" id="6_bhg82"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_coin.svg" id="7_8hlk5"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_crystal.svg" id="8_oqtpf"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_laser.svg" id="9_lcp77"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_shield.svg" id="10_6il1i"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_drone.svg" id="11_p6yk6"]
+[ext_resource type="Script" path="res://scripts/meta/meta_catalog_data.gd" id="12_jpfj1"]
+
+[sub_resource type="Resource" id="Resource_asmto"]
+script = ExtResource("1_slitw")
+id = "a_kills_100"
+title = "First Blood"
+description = "Destroy 100 enemies."
+reward_energy = 300
+
+[sub_resource type="Resource" id="Resource_seuiu"]
+script = ExtResource("1_slitw")
+id = "a_kills_1000"
+title = "Swarm Breaker"
+description = "Destroy 1,000 enemies."
+goal = 1000
+reward_energy = 800
+reward_core = 2
+
+[sub_resource type="Resource" id="Resource_4o50d"]
+script = ExtResource("1_slitw")
+id = "a_kills_10000"
+title = "Void Reaper"
+description = "Destroy 10,000 enemies."
+goal = 10000
+reward_energy = 2500
+reward_core = 5
+
+[sub_resource type="Resource" id="Resource_rup5n"]
+script = ExtResource("1_slitw")
+id = "a_kills_50000"
+title = "Extinction Event"
+description = "Destroy 50,000 enemies."
+goal = 50000
+reward_energy = 6000
+reward_core = 10
+
+[sub_resource type="Resource" id="Resource_maphc"]
+script = ExtResource("1_slitw")
+id = "a_bosses_1"
+title = "Giant Slayer"
+description = "Defeat a boss."
+metric = "bosses"
+goal = 1
+reward_energy = 300
+
+[sub_resource type="Resource" id="Resource_4etpa"]
+script = ExtResource("1_slitw")
+id = "a_bosses_10"
+title = "Titan Hunter"
+description = "Defeat 10 bosses."
+metric = "bosses"
+goal = 10
+reward_energy = 1000
+reward_core = 2
+
+[sub_resource type="Resource" id="Resource_1gcxk"]
+script = ExtResource("1_slitw")
+id = "a_bosses_50"
+title = "Colossus Breaker"
+description = "Defeat 50 bosses."
+metric = "bosses"
+goal = 50
+reward_energy = 3000
+reward_core = 4
+
+[sub_resource type="Resource" id="Resource_i0chl"]
+script = ExtResource("1_slitw")
+id = "a_bosses_200"
+title = "Rift Warden"
+description = "Defeat 200 bosses."
+metric = "bosses"
+goal = 200
+reward_energy = 8000
+reward_core = 8
+
+[sub_resource type="Resource" id="Resource_uktoq"]
+script = ExtResource("1_slitw")
+id = "a_elites_10"
+title = "Elite Marked"
+description = "Defeat 10 elites."
+metric = "elites"
+goal = 10
+reward_energy = 500
+
+[sub_resource type="Resource" id="Resource_bwei8"]
+script = ExtResource("1_slitw")
+id = "a_elites_100"
+title = "Elite Hunter"
+description = "Defeat 100 elites."
+metric = "elites"
+reward_energy = 2000
+reward_core = 3
+
+[sub_resource type="Resource" id="Resource_sxbly"]
+script = ExtResource("1_slitw")
+id = "a_elites_500"
+title = "Gold Standard"
+description = "Defeat 500 elites."
+metric = "elites"
+goal = 500
+reward_energy = 5000
+reward_core = 6
+
+[sub_resource type="Resource" id="Resource_7p6b8"]
+script = ExtResource("1_slitw")
+id = "a_runs_10"
+title = "Frequent Flyer"
+description = "Launch 10 runs."
+metric = "runs"
+goal = 10
+reward_energy = 400
+
+[sub_resource type="Resource" id="Resource_xvvm6"]
+script = ExtResource("1_slitw")
+id = "a_runs_100"
+title = "Veteran Pilot"
+description = "Launch 100 runs."
+metric = "runs"
+reward_energy = 2500
+reward_core = 4
+
+[sub_resource type="Resource" id="Resource_j48c0"]
+script = ExtResource("1_slitw")
+id = "a_wins_5"
+title = "Rising Star"
+description = "Clear 5 stages."
+metric = "victories"
+goal = 5
+reward_energy = 500
+
+[sub_resource type="Resource" id="Resource_5canc"]
+script = ExtResource("1_slitw")
+id = "a_wins_25"
+title = "Ace"
+description = "Clear 25 stages."
+metric = "victories"
+goal = 25
+reward_energy = 1500
+reward_core = 3
+
+[sub_resource type="Resource" id="Resource_tkdxi"]
+script = ExtResource("1_slitw")
+id = "a_wins_100"
+title = "Legend of the Rift"
+description = "Clear 100 stages."
+metric = "victories"
+reward_energy = 5000
+reward_core = 6
+
+[sub_resource type="Resource" id="Resource_rwk2r"]
+script = ExtResource("1_slitw")
+id = "a_chests_10"
+title = "Treasure Seeker"
+description = "Open 10 Rift Chests."
+metric = "chests"
+goal = 10
+reward_energy = 500
+
+[sub_resource type="Resource" id="Resource_xkqx5"]
+script = ExtResource("1_slitw")
+id = "a_chests_100"
+title = "Hoarder"
+description = "Open 100 Rift Chests."
+metric = "chests"
+reward_energy = 3000
+reward_core = 4
+
+[sub_resource type="Resource" id="Resource_ijsou"]
+script = ExtResource("1_slitw")
+id = "a_novas_10"
+title = "Supernova"
+description = "Detonate the Rift Nova 10 times."
+metric = "novas"
+goal = 10
+reward_energy = 500
+
+[sub_resource type="Resource" id="Resource_52v74"]
+script = ExtResource("1_slitw")
+id = "a_novas_100"
+title = "Star Maker"
+description = "Detonate the Rift Nova 100 times."
+metric = "novas"
+reward_energy = 3000
+reward_core = 4
+
+[sub_resource type="Resource" id="Resource_y8lv6"]
+script = ExtResource("1_slitw")
+id = "a_evolve_1"
+title = "Evolution"
+description = "Evolve a weapon."
+metric = "evolutions"
+goal = 1
+reward_energy = 500
+
+[sub_resource type="Resource" id="Resource_k4c5i"]
+script = ExtResource("1_slitw")
+id = "a_evolve_25"
+title = "Apex Arsenal"
+description = "Evolve 25 weapons."
+metric = "evolutions"
+goal = 25
+reward_energy = 3000
+reward_core = 4
+
+[sub_resource type="Resource" id="Resource_0ftu4"]
+script = ExtResource("1_slitw")
+id = "a_combo_50"
+title = "Chain Reaction"
+description = "Reach a x50 kill chain."
+metric = "best_combo"
+goal = 50
+reward_energy = 600
+
+[sub_resource type="Resource" id="Resource_8n3nq"]
+script = ExtResource("1_slitw")
+id = "a_combo_150"
+title = "Unbroken"
+description = "Reach a x150 kill chain."
+metric = "best_combo"
+goal = 150
+reward_energy = 2500
+reward_core = 3
+
+[sub_resource type="Resource" id="Resource_cj64u"]
+script = ExtResource("1_slitw")
+id = "a_stages_10"
+title = "Charted Space"
+description = "Clear 10 different stages."
+metric = "stages_cleared"
+goal = 10
+reward_energy = 1000
+reward_core = 2
+
+[sub_resource type="Resource" id="Resource_15q1n"]
+script = ExtResource("1_slitw")
+id = "a_stages_30"
+title = "Cartographer"
+description = "Clear all 30 stages."
+metric = "stages_cleared"
+goal = 30
+reward_energy = 6000
+reward_core = 8
+
+[sub_resource type="Resource" id="Resource_q3nv3"]
+script = ExtResource("1_slitw")
+id = "a_stars_45"
+title = "Star Collector"
+description = "Earn 45 stars."
+metric = "stars"
+goal = 45
+reward_energy = 1500
+reward_core = 3
+
+[sub_resource type="Resource" id="Resource_jtsnf"]
+script = ExtResource("1_slitw")
+id = "a_stars_90"
+title = "Perfectionist"
+description = "Earn 90 stars."
+metric = "stars"
+goal = 90
+reward_energy = 6000
+reward_core = 8
+
+[sub_resource type="Resource" id="Resource_joh0a"]
+script = ExtResource("1_slitw")
+id = "a_sector_1"
+title = "Nova Liberated"
+description = "Clear the Nova Sector."
+metric = "sectors"
+goal = 1
+reward_energy = 1000
+reward_core = 3
+
+[sub_resource type="Resource" id="Resource_t3iky"]
+script = ExtResource("1_slitw")
+id = "a_sector_3"
+title = "Rift Sealed"
+description = "Clear all three sectors."
+metric = "sectors"
+goal = 3
+reward_energy = 8000
+reward_core = 10
+
+[sub_resource type="Resource" id="Resource_u6pkk"]
+script = ExtResource("1_slitw")
+id = "a_pilot_10"
+title = "Seasoned"
+description = "Reach pilot level 10."
+metric = "pilot_level"
+goal = 10
+reward_energy = 1500
+reward_core = 2
+
+[sub_resource type="Resource" id="Resource_36yol"]
+script = ExtResource("1_slitw")
+id = "a_endless_600"
+title = "Endurance"
+description = "Survive 10 minutes in Endless."
+metric = "endless_seconds"
+goal = 600
+reward_energy = 3000
+reward_core = 5
+
+[sub_resource type="Resource" id="Resource_7uhuo"]
+script = ExtResource("2_bv4xk")
+id = "d_kills_150"
+goal = 150
+reward_energy = 250
+
+[sub_resource type="Resource" id="Resource_xfm4k"]
+script = ExtResource("2_bv4xk")
+id = "d_kills_400"
+goal = 400
+reward_energy = 450
+activity = 25
+
+[sub_resource type="Resource" id="Resource_pkw6b"]
+script = ExtResource("2_bv4xk")
+id = "d_elites_3"
+title = "Defeat {goal} elites"
+metric = "elites"
+goal = 3
+reward_energy = 300
+
+[sub_resource type="Resource" id="Resource_1vgay"]
+script = ExtResource("2_bv4xk")
+id = "d_bosses_2"
+title = "Defeat {goal} bosses"
+metric = "bosses"
+goal = 2
+reward_energy = 350
+
+[sub_resource type="Resource" id="Resource_vsmnx"]
+script = ExtResource("2_bv4xk")
+id = "d_runs_3"
+title = "Launch {goal} runs"
+metric = "runs"
+goal = 3
+reward_energy = 250
+activity = 15
+
+[sub_resource type="Resource" id="Resource_6tgm2"]
+script = ExtResource("2_bv4xk")
+id = "d_clears_2"
+title = "Clear {goal} stages"
+metric = "stage_clears"
+goal = 2
+reward_energy = 400
+activity = 25
+
+[sub_resource type="Resource" id="Resource_2ru05"]
+script = ExtResource("2_bv4xk")
+id = "d_chests_2"
+title = "Open {goal} Rift Chests"
+metric = "chests"
+goal = 2
+reward_energy = 300
+
+[sub_resource type="Resource" id="Resource_dyv32"]
+script = ExtResource("2_bv4xk")
+id = "d_novas_2"
+title = "Detonate the Rift Nova {goal} times"
+metric = "novas"
+goal = 2
+reward_energy = 250
+activity = 15
+
+[sub_resource type="Resource" id="Resource_ks3hd"]
+script = ExtResource("2_bv4xk")
+id = "d_combo_40"
+title = "Reach a x{goal} kill chain"
+metric = "combo"
+goal = 40
+reward_energy = 300
+
+[sub_resource type="Resource" id="Resource_1kig7"]
+script = ExtResource("2_bv4xk")
+id = "d_seconds_600"
+title = "Fly for {goal} seconds"
+metric = "seconds"
+goal = 600
+reward_energy = 300
+
+[sub_resource type="Resource" id="Resource_71c7k"]
+script = ExtResource("2_bv4xk")
+id = "d_energy_300"
+title = "Collect {goal} Rift Energy in runs"
+metric = "energy"
+goal = 300
+reward_energy = 300
+
+[sub_resource type="Resource" id="Resource_2sjfi"]
+script = ExtResource("2_bv4xk")
+id = "d_evolve_1"
+title = "Evolve a weapon"
+metric = "evolutions"
+goal = 1
+reward_energy = 400
+reward_core = 1
+activity = 25
+
+[sub_resource type="Resource" id="Resource_dw67g"]
+script = ExtResource("2_bv4xk")
+id = "w_kills_3000"
+goal = 3000
+scope = "weekly"
+reward_energy = 1500
+reward_core = 2
+activity = 40
+
+[sub_resource type="Resource" id="Resource_g1nud"]
+script = ExtResource("2_bv4xk")
+id = "w_elites_25"
+title = "Defeat {goal} elites"
+metric = "elites"
+goal = 25
+scope = "weekly"
+reward_energy = 1200
+reward_core = 2
+activity = 40
+
+[sub_resource type="Resource" id="Resource_vba3b"]
+script = ExtResource("2_bv4xk")
+id = "w_bosses_15"
+title = "Defeat {goal} bosses"
+metric = "bosses"
+goal = 15
+scope = "weekly"
+reward_energy = 1500
+reward_core = 2
+activity = 40
+
+[sub_resource type="Resource" id="Resource_xnus3"]
+script = ExtResource("2_bv4xk")
+id = "w_clears_12"
+title = "Clear {goal} stages"
+metric = "stage_clears"
+goal = 12
+scope = "weekly"
+reward_energy = 2000
+reward_core = 3
+activity = 50
+
+[sub_resource type="Resource" id="Resource_2dgxo"]
+script = ExtResource("2_bv4xk")
+id = "w_hard_3"
+title = "Clear {goal} stages on HARD"
+metric = "hard_clears"
+goal = 3
+scope = "weekly"
+reward_energy = 1500
+reward_core = 3
+activity = 50
+
+[sub_resource type="Resource" id="Resource_eoqo2"]
+script = ExtResource("2_bv4xk")
+id = "w_chests_15"
+title = "Open {goal} Rift Chests"
+metric = "chests"
+goal = 15
+scope = "weekly"
+reward_energy = 1200
+reward_core = 2
+activity = 40
+
+[sub_resource type="Resource" id="Resource_0t8ui"]
+script = ExtResource("2_bv4xk")
+id = "w_evolve_6"
+title = "Evolve {goal} weapons"
+metric = "evolutions"
+goal = 6
+scope = "weekly"
+reward_energy = 1500
+reward_core = 3
+activity = 50
+
+[sub_resource type="Resource" id="Resource_504ky"]
+script = ExtResource("2_bv4xk")
+id = "w_endless_420"
+title = "Survive {goal}s in one Endless run"
+metric = "endless_seconds"
+goal = 420
+scope = "weekly"
+reward_energy = 1500
+reward_core = 3
+activity = 50
+
+[sub_resource type="Resource" id="Resource_d6f1o"]
+script = ExtResource("2_bv4xk")
+id = "w_combo_120"
+title = "Reach a x{goal} kill chain"
+metric = "combo"
+goal = 120
+scope = "weekly"
+reward_energy = 1200
+reward_core = 2
+activity = 40
+
+[sub_resource type="Resource" id="Resource_hw2hj"]
+script = ExtResource("2_bv4xk")
+id = "w_runs_20"
+title = "Launch {goal} runs"
+metric = "runs"
+goal = 20
+scope = "weekly"
+reward_energy = 1000
+reward_core = 2
+activity = 40
+
+[sub_resource type="Resource" id="Resource_3vy4j"]
+script = ExtResource("2_bv4xk")
+id = "w_novas_15"
+title = "Detonate the Rift Nova {goal} times"
+metric = "novas"
+goal = 15
+scope = "weekly"
+reward_energy = 1000
+reward_core = 2
+activity = 40
+
+[sub_resource type="Resource" id="Resource_luiia"]
+script = ExtResource("2_bv4xk")
+id = "w_seconds_3600"
+title = "Fly for {goal} seconds"
+metric = "seconds"
+goal = 3600
+scope = "weekly"
+reward_energy = 1200
+reward_core = 2
+activity = 40
+
+[sub_resource type="Resource" id="Resource_28xbs"]
+script = ExtResource("3_wugfs")
+id = "overclock_chip"
+title = "Overclock Chip"
+values = PackedFloat32Array(0.04, 0.08, 0.13, 0.2)
+icon = ExtResource("4_oirod")
+
+[sub_resource type="Resource" id="Resource_8bd5n"]
+script = ExtResource("3_wugfs")
+id = "hull_plating"
+title = "Hull Plating"
+stat = "hp"
+values = PackedFloat32Array(0.06, 0.12, 0.2, 0.3)
+icon = ExtResource("5_cgmau")
+
+[sub_resource type="Resource" id="Resource_7wsys"]
+script = ExtResource("3_wugfs")
+id = "targeting_lens"
+title = "Targeting Lens"
+stat = "crit"
+values = PackedFloat32Array(0.02, 0.04, 0.07, 0.1)
+icon = ExtResource("6_bhg82")
+
+[sub_resource type="Resource" id="Resource_5wvwn"]
+script = ExtResource("3_wugfs")
+id = "flux_magnet"
+title = "Flux Magnet"
+stat = "magnet"
+values = PackedFloat32Array(0.15, 0.3, 0.5, 0.8)
+icon = ExtResource("7_8hlk5")
+
+[sub_resource type="Resource" id="Resource_x0lss"]
+script = ExtResource("3_wugfs")
+id = "neural_uplink"
+title = "Neural Uplink"
+stat = "xp"
+values = PackedFloat32Array(0.05, 0.1, 0.16, 0.25)
+icon = ExtResource("8_oqtpf")
+
+[sub_resource type="Resource" id="Resource_4t7l7"]
+script = ExtResource("3_wugfs")
+id = "rapid_coupler"
+title = "Rapid Coupler"
+stat = "fire_rate"
+values = PackedFloat32Array(0.04, 0.07, 0.11, 0.16)
+icon = ExtResource("9_lcp77")
+
+[sub_resource type="Resource" id="Resource_7rs8e"]
+script = ExtResource("3_wugfs")
+id = "ablative_mesh"
+title = "Ablative Mesh"
+stat = "armor"
+values = PackedFloat32Array(0.02, 0.04, 0.07, 0.1)
+icon = ExtResource("10_6il1i")
+
+[sub_resource type="Resource" id="Resource_8kdqp"]
+script = ExtResource("3_wugfs")
+id = "salvage_drone"
+title = "Salvage Drone"
+stat = "energy_find"
+values = PackedFloat32Array(0.06, 0.12, 0.2, 0.3)
+icon = ExtResource("11_p6yk6")
+
+[resource]
+script = ExtResource("12_jpfj1")
+missions = Array[ExtResource("2_bv4xk")]([SubResource("Resource_7uhuo"), SubResource("Resource_xfm4k"), SubResource("Resource_pkw6b"), SubResource("Resource_1vgay"), SubResource("Resource_vsmnx"), SubResource("Resource_6tgm2"), SubResource("Resource_2ru05"), SubResource("Resource_dyv32"), SubResource("Resource_ks3hd"), SubResource("Resource_1kig7"), SubResource("Resource_71c7k"), SubResource("Resource_2sjfi"), SubResource("Resource_dw67g"), SubResource("Resource_g1nud"), SubResource("Resource_vba3b"), SubResource("Resource_xnus3"), SubResource("Resource_2dgxo"), SubResource("Resource_eoqo2"), SubResource("Resource_0t8ui"), SubResource("Resource_504ky"), SubResource("Resource_d6f1o"), SubResource("Resource_hw2hj"), SubResource("Resource_3vy4j"), SubResource("Resource_luiia")])
+achievements = Array[ExtResource("1_slitw")]([SubResource("Resource_asmto"), SubResource("Resource_seuiu"), SubResource("Resource_4o50d"), SubResource("Resource_rup5n"), SubResource("Resource_maphc"), SubResource("Resource_4etpa"), SubResource("Resource_1gcxk"), SubResource("Resource_i0chl"), SubResource("Resource_uktoq"), SubResource("Resource_bwei8"), SubResource("Resource_sxbly"), SubResource("Resource_7p6b8"), SubResource("Resource_xvvm6"), SubResource("Resource_j48c0"), SubResource("Resource_5canc"), SubResource("Resource_tkdxi"), SubResource("Resource_rwk2r"), SubResource("Resource_xkqx5"), SubResource("Resource_ijsou"), SubResource("Resource_52v74"), SubResource("Resource_y8lv6"), SubResource("Resource_k4c5i"), SubResource("Resource_0ftu4"), SubResource("Resource_8n3nq"), SubResource("Resource_cj64u"), SubResource("Resource_15q1n"), SubResource("Resource_q3nv3"), SubResource("Resource_jtsnf"), SubResource("Resource_joh0a"), SubResource("Resource_t3iky"), SubResource("Resource_u6pkk"), SubResource("Resource_36yol")])
+modules = Array[ExtResource("3_wugfs")]([SubResource("Resource_28xbs"), SubResource("Resource_8bd5n"), SubResource("Resource_7wsys"), SubResource("Resource_5wvwn"), SubResource("Resource_x0lss"), SubResource("Resource_4t7l7"), SubResource("Resource_7rs8e"), SubResource("Resource_8kdqp")])
+activity_milestones = PackedInt32Array(40, 80, 120)
+activity_reward_energy = PackedInt32Array(300, 600, 0)
+activity_reward_core = PackedInt32Array(0, 1, 2)
+login_energy = PackedInt32Array(200, 300, 0, 500, 0, 800, 0)
+login_core = PackedInt32Array(0, 0, 1, 0, 2, 0, 5)
+module_rarity_weights = PackedFloat32Array(0.7, 0.24, 0.05, 0.01)

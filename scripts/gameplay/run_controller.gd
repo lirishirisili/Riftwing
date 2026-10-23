@@ -86,6 +86,7 @@ var _peak_enemy_bolts: int = 0
 var _peak_enemies: int = 0
 var _awaiting_boss_outcome: bool = false
 var _profile: CombatProfile
+var _ship: ShipData
 var _difficulty_id: String = ""
 var _difficulty: RunDifficultyData
 var _reward_mult: float = 1.0
@@ -206,6 +207,7 @@ func _ready() -> void:
 		_secondary.enemy_bolts = _enemy_bullet_pool
 	_upgrades.run_effect.connect(_on_run_effect)
 	_upgrades.evolved.connect(_on_evolved)
+	_apply_loadout()
 	_upgrade_screen.configure(_upgrades, _rules.rerolls_per_run, _rules.banishes_per_run)
 	_upgrade_screen.upgrade_selected.connect(_on_upgrade_selected)
 	_upgrade_screen.closed.connect(_on_upgrade_screen_closed)
@@ -235,6 +237,7 @@ func _apply_hangar_profile() -> void:
 	var ship := catalog.find_by_id(SaveManager.get_selected_ship_id())
 	if ship == null:
 		return
+	_ship = ship
 	var levels := SaveManager.get_upgrade_levels(ship.id)
 	# Stats are measured against the starter ship so better hulls really are better.
 	var reference := catalog.find_by_id(catalog.default_ship_id())
@@ -466,7 +469,7 @@ func debug_force_defeat() -> void:
 	if _run_over:
 		return
 	if _player.is_alive():
-		_player.take_damage(_player.combat_data.max_health * 10.0)
+		_player.force_kill()
 	else:
 		_end_run(false)
 
@@ -675,7 +678,9 @@ func _register_kill() -> void:
 		_streak_tier += 1
 
 
-func _on_enemy_killed(_enemy: Enemy) -> void:
+func _on_enemy_killed(enemy: Enemy) -> void:
+	if enemy != null and enemy.is_elite():
+		_stats.elites_killed += 1
 	_register_kill()
 
 
@@ -757,12 +762,14 @@ func _on_boss_defeated() -> void:
 		_on_mode_boss_defeated()
 		return
 	if _phase == Phase.MINI_BOSS:
+		_stats.bosses_defeated += 1
 		_awaiting_boss_outcome = false
 		_health_bar.visible = false
 		_hud.set_boss_bar_visible(false)
 		_enter_mid_waves()
 		return
 	if _phase == Phase.FINAL_BOSS:
+		_stats.bosses_defeated += 1
 		_end_run(true)
 
 
@@ -938,6 +945,7 @@ func _on_nova_activated() -> void:
 		return
 	_nova_charge = 0.0
 	_hud.set_nova_charge(0.0)
+	_stats.novas_used += 1
 	detonate_nova()
 
 
@@ -994,6 +1002,8 @@ func _on_run_effect(kind: int, _target: String, value: float) -> void:
 
 
 func _on_evolved(upgrade: UpgradeData) -> void:
+	if _stats != null:
+		_stats.evolutions += 1
 	_hud.show_callout("EVOLVED", Palette.get_color("gold", Color(1.0, 0.84, 0.25)), upgrade.title.to_upper(), 1.6)
 
 
@@ -1030,6 +1040,7 @@ func _try_open_chest() -> void:
 		_player.heal_fraction(0.35)
 		return
 	_hud.force_resume()
+	_stats.chests_opened += 1
 	GameFeel.chest_open(_player.get_core_global_position())
 	var title := "RIFT CHEST" if picks.size() == 1 else "RIFT CHEST ×%d" % picks.size()
 	_upgrade_screen.open_reveal(title, "UPGRADES INSTALLED", picks)
@@ -1173,3 +1184,29 @@ func _on_mode_boss_defeated() -> void:
 
 func get_mode() -> String:
 	return _mode
+
+
+## Ship signature upgrades + equipped module bonuses (applied once per run).
+func _apply_loadout() -> void:
+	if _ship != null:
+		for id in _ship.starting_upgrades:
+			var up := _upgrades.find_upgrade(id)
+			if up != null:
+				_upgrades.apply(up)
+	var bonus := MetaProgress.equipped_bonuses()
+	if bonus.has("damage") and _weapon != null:
+		_weapon.add_damage_mult(1.0 + float(bonus["damage"]))
+		if _secondary != null:
+			_secondary.add_damage_mult("all", 1.0 + float(bonus["damage"]))
+	if bonus.has("fire_rate") and _weapon != null:
+		_weapon.add_fire_rate_mult(1.0 + float(bonus["fire_rate"]))
+	if bonus.has("crit") and _weapon != null:
+		_weapon.add_crit_chance(float(bonus["crit"]))
+	if bonus.has("hp") and _player != null:
+		_player.apply_max_hp_mult(1.0 + float(bonus["hp"]))
+	if bonus.has("armor") and _player != null:
+		_player.add_damage_reduction(float(bonus["armor"]))
+	if bonus.has("magnet") and _player != null:
+		_player.apply_magnet_mult(1.0 + float(bonus["magnet"]))
+	if bonus.has("xp"):
+		_xp.xp_mult *= 1.0 + float(bonus["xp"])

@@ -29,3 +29,5 @@ shield_track = ExtResource("4")
 engine_track = ExtResource("5")
 drones_track = ExtResource("6")
 ultimate_track = ExtResource("7")
+starting_upgrades = PackedStringArray("arc_laser")
+passive_text = "SOLAR LANCE: launches with the Arc Laser beam."

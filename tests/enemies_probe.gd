@@ -170,7 +170,8 @@ func _check_pickups_and_chest() -> int:
 	var scene: Node = await _mount_run()
 	var player = scene.get_node("PlayerShip")
 	var screen = scene.get_node("UpgradeScreen")
-	# Heal orb.
+	# Heal orb (drop the starter ship's signature barrier so the hit lands).
+	player.set("_barrier_ready", false)
 	player.take_damage(40.0)
 	var hp0: float = player.get_health()
 	scene.call("_on_special_pickup", 1, 20)

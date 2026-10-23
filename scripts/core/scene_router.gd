@@ -27,6 +27,8 @@ const SCREEN_DAILY := "daily"
 const SCREEN_EVENT := "event"
 ## Endless + Boss Rush hub.
 const SCREEN_MODES := "modes"
+## Missions / achievements / modules hub.
+const SCREEN_PROGRESS := "progress"
 
 const _SCREEN_SCENES := {
 	SCREEN_VISUAL_SANDBOX: "res://scenes/gameplay/visual_sandbox.tscn",
@@ -44,6 +46,7 @@ const _SCREEN_SCENES := {
 	SCREEN_DAILY: "res://scenes/ui/daily_screen.tscn",
 	SCREEN_EVENT: "res://scenes/ui/event_screen.tscn",
 	SCREEN_MODES: "res://scenes/ui/modes_screen.tscn",
+	SCREEN_PROGRESS: "res://scenes/ui/progress_screen.tscn",
 }
 
 var _holder: Node = null

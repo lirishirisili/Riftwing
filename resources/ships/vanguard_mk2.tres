@@ -28,3 +28,5 @@ shield_track = ExtResource("4")
 engine_track = ExtResource("5")
 drones_track = ExtResource("6")
 ultimate_track = ExtResource("7")
+starting_upgrades = PackedStringArray("kinetic_barrier")
+passive_text = "AEGIS CORE: launches with a Kinetic Barrier."

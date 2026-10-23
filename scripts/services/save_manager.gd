@@ -10,7 +10,7 @@ signal currencies_changed(rift_energy: int, rift_core: int)
 signal hangar_changed(selected_ship_id: String)
 signal campaign_changed(selected_stage_id: String)
 
-const SCHEMA_VERSION := 6
+const SCHEMA_VERSION := 7
 const SAVE_PATH := "user://riftwing_save.json"
 const _TEMP_PATH := "user://riftwing_save.json.tmp"
 const _BACKUP_PATH := "user://riftwing_save.json.bak"
@@ -73,6 +73,17 @@ func _default_data() -> Dictionary:
 			"endless": {"best_score": 0, "best_seconds": 0.0, "best_bosses": 0, "runs": 0},
 			"boss_rush": {"best_score": 0, "best_seconds": 0.0, "best_bosses": 0, "runs": 0},
 		},
+		# --- v7: meta progression (owned by the MetaProgress systems) ---
+		"pilot": {"level": 1, "xp": 0},
+		"lifetime": {
+			"kills": 0, "elites": 0, "bosses": 0, "runs": 0, "victories": 0, "chests": 0,
+			"novas": 0, "evolutions": 0, "best_combo": 0, "seconds": 0.0, "energy": 0,
+		},
+		"missions": {"day_key": "", "daily": [], "week_key": "", "weekly": [], "activity": 0, "activity_claimed": []},
+		"login": {"last_day": "", "streak": 0, "claimed_day": ""},
+		"patrol": {"last_collect_unix": 0},
+		"achievements": {"claimed": []},
+		"modules": {"owned": [], "equipped": ["", "", ""], "next_uid": 1},
 		"clock": {
 			# Highest wall-clock time this save has seen; a clock rolled back past
 			# it means the date was tampered with (see is_clock_trusted).
@@ -526,6 +537,37 @@ func record_stage_clear(stage_id: String, stars: int, difficulty: String = DIFFI
 	campaign_changed.emit(stage_id)
 
 
+## --- Generic meta sections (v7) ---------------------------------------------
+
+## Live dictionary for a top-level save section (created from defaults when
+## missing or corrupt). Callers mutate it and then call save_game().
+func section(name: String) -> Dictionary:
+	if typeof(_data.get(name)) != TYPE_DICTIONARY:
+		var defaults := _default_data()
+		_data[name] = defaults.get(name, {})
+	return _data[name]
+
+
+## Grants currency from a meta reward (mission, streak, patrol, achievement)
+## and persists. Negative amounts are ignored.
+func grant_currency(rift_energy: int, rift_core: int) -> void:
+	if rift_energy <= 0 and rift_core <= 0:
+		return
+	_data["currencies"]["rift_energy"] = get_rift_energy() + maxi(0, rift_energy)
+	_data["currencies"]["rift_core"] = get_rift_core() + maxi(0, rift_core)
+	save_game()
+	currencies_changed.emit(get_rift_energy(), get_rift_core())
+
+
+## Total stars earned across every stage and difficulty.
+func get_total_stars() -> int:
+	var total := 0
+	var stars: Dictionary = _data["campaign"].get("stage_stars", {})
+	for key in stars:
+		total += int(stars[key])
+	return total
+
+
 func debug_add_currency(rift_energy: int = 0, rift_core: int = 0) -> void:
 	_data["currencies"]["rift_energy"] = get_rift_energy() + maxi(0, rift_energy)
 	_data["currencies"]["rift_core"] = get_rift_core() + maxi(0, rift_core)
@@ -763,6 +805,27 @@ func _migrate(data: Dictionary) -> Dictionary:
 			data["events"] = ev
 		data["schema_version"] = 6
 		version = 6
+	if version < 7:
+		# Meta-progression sections come from defaults (_merge_defaults). The old
+		# build marked a "sector" complete on ANY victory and used the stage index
+		# as the sector, so recompute completed sectors from real stage clears.
+		var cleared: Array = data["campaign"].get("cleared_stage_ids", []) if typeof(data.get("campaign")) == TYPE_DICTIONARY else []
+		var completed: Array = []
+		var highest := 0
+		for map in Campaign.sectors():
+			var last := map.last_stage() if map != null else null
+			if last != null and cleared.has(last.id):
+				completed.append(map.sector_index)
+				highest = maxi(highest, map.sector_index)
+		data["completed_sectors"] = completed
+		if typeof(data.get("progression")) == TYPE_DICTIONARY:
+			data["progression"]["highest_sector_cleared"] = highest
+		# Lifetime counters start from what the save already proves.
+		if typeof(data.get("lifetime")) == TYPE_DICTIONARY:
+			var life: Dictionary = data["lifetime"]
+			life["victories"] = maxi(int(life.get("victories", 0)), cleared.size())
+		data["schema_version"] = 7
+		version = 7
 	if version < SCHEMA_VERSION:
 		data["schema_version"] = SCHEMA_VERSION
 	return data

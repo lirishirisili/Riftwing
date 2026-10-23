@@ -353,6 +353,18 @@ func _draw() -> void:
 		draw_arc(Vector2.ZERO, 98.0, 0.0, TAU, 48, Color(c, 0.18 * pulse), 8.0, true)
 
 
+## Debug / probe: destroys the ship regardless of barrier and invulnerability.
+func force_kill() -> void:
+	if not _alive:
+		return
+	_barrier_ready = false
+	_invuln_time = 0.0
+	_health = 0.0
+	_alive = false
+	health_changed.emit(_health, combat_data.max_health)
+	died.emit()
+
+
 ## Grants a protected window (e.g. after a boss dies, or on revive) without
 ## shortening one already running.
 func grant_invulnerability(seconds: float) -> void:

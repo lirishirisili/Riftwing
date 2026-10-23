@@ -81,3 +81,9 @@ func track_by_id(track_id: String) -> HangarUpgradeTrackData:
 		if track.id == track_id:
 			return track
 	return null
+
+## Signature loadout: upgrade ids applied at the start of every run with this
+## ship (e.g. Void Strider launches with a Guardian Drone).
+@export var starting_upgrades: PackedStringArray = PackedStringArray()
+## One-line description of the ship's signature (hangar + menu).
+@export var passive_text: String = ""

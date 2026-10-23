@@ -233,6 +233,21 @@ func _refresh_ship_list() -> void:
 			btn.self_modulate = Color(cyan.r * 0.85, cyan.g * 0.95, cyan.b, 1.0) if viewing else Color.WHITE
 
 
+var _passive: Label
+
+
+## Ship signature line under the tier label (created on first use).
+func _passive_label() -> Label:
+	if _passive == null:
+		_passive = Label.new()
+		_passive.name = "PassiveLabel"
+		_passive.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_passive.add_theme_font_size_override("font_size", 20)
+		_passive.add_theme_color_override("font_color", Color(1, 0.82, 0.35, 1))
+		_ship_name.get_parent().add_child(_passive)
+	return _passive
+
+
 func _refresh_ship_panel() -> void:
 	var ship := _catalog.find_by_id(_viewed_ship_id)
 	if ship == null:
@@ -250,6 +265,7 @@ func _refresh_ship_panel() -> void:
 	var stats := HangarStats.compute(ship, levels if unlocked else {})
 	_ship_name.text = ship.display_name
 	_tier_label.text = ship.tier_label
+	_passive_label().text = ship.passive_text
 	_power_label.text = "POWER  %s" % _format_int(stats.power())
 	_attack_value.text = _format_int(stats.attack)
 	_defense_value.text = _format_int(stats.defense)

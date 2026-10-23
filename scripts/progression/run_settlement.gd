@@ -32,7 +32,14 @@ static func settle(stats: RunStats) -> void:
 		stats.rewards.rift_core += maxi(0, stats.bosses_defeated) * rules.rift_core_per_boss
 		SaveManager.record_mode_result(stats.mode, stats.score, stats.survival_seconds, stats.bosses_defeated)
 	stats.was_new_best = stats.score > SaveManager.get_best_score()
+	# Equipped "energy_find" modules boost the Rift Energy payout.
+	var find := float(MetaProgress.equipped_bonuses().get("energy_find", 0.0))
+	if find > 0.0:
+		stats.rewards.rift_energy = int(round(float(stats.rewards.rift_energy) * (1.0 + find)))
 	stats.granted = SaveManager.grant_run_rewards(stats.run_id, stats.rewards, stats)
+	# Missions, lifetime stats, pilot XP, module drops (once: only on a fresh grant).
+	if stats.granted:
+		stats.meta_summary = MetaProgress.record_run(stats)
 	stats.settled = true
 
 

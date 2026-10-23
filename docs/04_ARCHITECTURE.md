@@ -143,6 +143,9 @@ Prototype implementations are no-op or local on all platforms. Gameplay talks on
 - Profile on real devices, not only desktop.
 - Rendering method: `mobile` (see `project.godot`). Export signing steps: `docs/EXPORT_SIGNING.md`.
 
+## Meta progression
+- `MetaProgress` (static, `scripts/meta/`) owns missions, activity chests, lifetime stats, pilot XP, login streak, patrol income, achievements, and modules on top of `SaveManager.section(name)`. All tuning lives in `MetaCatalogData` (`resources/meta/meta_catalog.tres`). `RunSettlement` calls `MetaProgress.record_run(stats)` once per granted run; the run host applies ship `starting_upgrades` and equipped module bonuses at run start.
+
 ## Save schema
 Save root includes `schema_version`, player progression, currencies, settings, unlocked ships, completed stages, and run statistics. Never store runtime nodes directly.
 

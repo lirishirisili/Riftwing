@@ -34,6 +34,13 @@ var daily_reward_core: int = 0
 var mode: String = "campaign"
 ## Bosses destroyed this run (Endless / Boss Rush payouts and records).
 var bosses_defeated: int = 0
+## Combat counters for missions / achievements / lifetime stats.
+var elites_killed: int = 0
+var chests_opened: int = 0
+var novas_used: int = 0
+var evolutions: int = 0
+## Meta summary from MetaProgress.record_run (xp, levels, module, missions).
+var meta_summary: Dictionary = {}
 
 ## Live-accumulated statistics.
 var enemies_destroyed: int = 0

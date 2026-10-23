@@ -245,6 +245,7 @@ func _populate() -> void:
 	]
 	if _stats.stage_id != "":
 		rows.append(["Stage", _stats.stage_id, _ICON_BOSS])
+	_append_meta_rows(rows)
 	_set_stat_rows(rows)
 	_set_reward_chips()
 
@@ -538,3 +539,22 @@ func _apply_mode_summary() -> void:
 		_format_time(float(best.get("best_seconds", 0.0))),
 		int(best.get("best_bosses", 0)),
 	]
+
+
+## Pilot XP / level-ups, module drops, and missions finished this run.
+func _append_meta_rows(rows: Array) -> void:
+	var meta: Dictionary = _stats.meta_summary
+	if meta.is_empty():
+		return
+	var xp := int(meta.get("xp", 0))
+	var levels := int(meta.get("levels", 0))
+	if xp > 0:
+		var lv := "  ·  LEVEL UP → %d" % MetaProgress.pilot_level() if levels > 0 else ""
+		rows.append(["Pilot XP", "+%d%s" % [xp, lv], _ICON_ENERGY])
+	var module: Dictionary = meta.get("module", {})
+	if not module.is_empty():
+		var def := MetaProgress.catalog().find_module(String(module.get("id", "")))
+		rows.append(["Module Found", "%s [%s]" % [def.title if def != null else "?", ModuleData.rarity_name(int(module.get("rarity", 0)))], _ICON_CORE])
+	var done := int(meta.get("missions_completed", 0))
+	if done > 0:
+		rows.append(["Missions Ready", "%d to claim" % done, _ICON_MISSILE])

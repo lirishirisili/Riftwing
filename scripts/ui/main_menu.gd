@@ -72,6 +72,8 @@ func _ready() -> void:
 	_daily_button.pressed.connect(_on_daily_challenge)
 	_ships_button.pressed.connect(_on_ships)
 	_upgrades_button.pressed.connect(_on_upgrades)
+	_build_progress_button()
+	call_deferred("_maybe_show_welcome")
 	_settings_button.pressed.connect(_on_settings)
 	_event_banner.gui_input.connect(_on_event_gui_input)
 
@@ -266,14 +268,10 @@ func _refresh_profile() -> void:
 	else:
 		_profile_name.text = Brand.DISPLAY
 		_hero_ship.modulate = Color(1, 1, 1, 1)
-	var power := StageProgress.player_power_from(ship, levels)
-	_profile_power.text = "PWR  %d" % power
-	var invested := 0
-	var cap := 20
-	for key in levels.keys():
-		invested += int(levels[key])
-	_power_bar.max_value = float(cap)
-	_power_bar.value = float(mini(cap, invested + 4))
+	# Pilot rank (real meta progression) replaces the old placeholder power bar.
+	_profile_power.text = "PILOT LV %d" % MetaProgress.pilot_level()
+	_power_bar.max_value = float(MetaProgress.xp_for_next())
+	_power_bar.value = float(MetaProgress.pilot_xp())
 
 
 func _format_int(value: int) -> String:
@@ -351,3 +349,112 @@ func _capture_screenshot() -> void:
 	DisplayServer.window_set_size(prev_size)
 	for entry in restore:
 		entry[0].visible = entry[1]
+
+
+# --- Progress hub + welcome-back rewards ---------------------------------------------
+
+const _GLOW_CTA := preload("res://scenes/ui/chrome/glow_cta_button.tscn")
+var _progress_button: GlowCtaButton
+var _welcome: Control
+
+
+func _build_progress_button() -> void:
+	var row := _ships_button.get_parent()
+	if row == null:
+		return
+	_progress_button = _GLOW_CTA.instantiate() as GlowCtaButton
+	_progress_button.name = "ProgressButton"
+	_progress_button.size_flags_horizontal = _ships_button.size_flags_horizontal
+	_progress_button.custom_minimum_size = _ships_button.custom_minimum_size
+	row.add_child(_progress_button)
+	_progress_button.set_icons(load("res://assets/icons/icon_target.svg") as Texture2D)
+	_progress_button.pressed.connect(func() -> void:
+		_click()
+		SceneRouter.go_to(SceneRouter.SCREEN_PROGRESS))
+	_refresh_progress_badge()
+
+
+func _refresh_progress_badge() -> void:
+	if _progress_button == null:
+		return
+	var n := MetaProgress.claimable_count()
+	_progress_button.configure("PROGRESS", "%d TO CLAIM" % n if n > 0 else "MISSIONS · AWARDS",
+		GlowCtaButton.Variant.NAV, GlowCtaButton.Pulse.MAGENTA if n > 0 else GlowCtaButton.Pulse.NONE, 104.0)
+
+
+## Once per day (login streak) or after time away (patrol income), a modal
+## summarizes the rewards waiting and claims them with one tap.
+func _maybe_show_welcome() -> void:
+	if not is_inside_tree() or _welcome != null:
+		return
+	var login := MetaProgress.login_status()
+	var patrol := MetaProgress.patrol_pending()
+	if not bool(login["can_claim"]) and patrol <= 0:
+		return
+	_welcome = Control.new()
+	_welcome.name = "WelcomeBack"
+	_welcome.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_welcome.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_welcome)
+	var dim := ColorRect.new()
+	dim.color = Color(0.01, 0.02, 0.06, 0.82)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_welcome.add_child(dim)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_welcome.add_child(center)
+	var panel := PanelContainer.new()
+	panel.theme_type_variation = &"NeonPanel"
+	panel.custom_minimum_size = Vector2(900, 0)
+	center.add_child(panel)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 16)
+	panel.add_child(col)
+	col.add_child(_welcome_label("WELCOME BACK, PILOT", 46, Color(0.96, 0.98, 1)))
+	if bool(login["can_claim"]):
+		var today := int(login["day"])
+		col.add_child(_welcome_label("LOGIN STREAK · DAY %d / 7" % today, 30, Color(1, 0.85, 0.4)))
+		var days := HBoxContainer.new()
+		days.add_theme_constant_override("separation", 6)
+		days.alignment = BoxContainer.ALIGNMENT_CENTER
+		col.add_child(days)
+		for d in range(1, 8):
+			var r := MetaProgress.login_reward(d)
+			var box := PanelContainer.new()
+			box.theme_type_variation = &"NeonPanel"
+			box.custom_minimum_size = Vector2(112, 112)
+			box.modulate = Color(1, 1, 1, 1) if d == today else (Color(0.55, 0.6, 0.7, 1) if d < today else Color(0.8, 0.85, 0.95, 0.8))
+			var bl := _welcome_label("D%d\n%s" % [d, ("%d CORE" % int(r["core"])) if int(r["core"]) > 0 else ("%d" % int(r["energy"]))],
+				20, Color(1, 0.85, 0.4) if d == today else Color(0.85, 0.9, 1))
+			box.add_child(bl)
+			days.add_child(box)
+	if patrol > 0:
+		var mins := int(MetaProgress.patrol_minutes())
+		col.add_child(_welcome_label("PATROL EARNINGS  +%d RIFT ENERGY" % patrol, 30, Palette.get_color("cyan", Color(0.2, 0.9, 1))))
+		col.add_child(_welcome_label("%dh %02dm on patrol (cap %dh)" % [mins / 60, mins % 60, int(MetaProgress.catalog().patrol_cap_hours)],
+			22, Color(0.6, 0.72, 0.9)))
+	var claim := _GLOW_CTA.instantiate() as GlowCtaButton
+	col.add_child(claim)
+	claim.configure("CLAIM", "", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN, 110.0)
+	claim.pressed.connect(_claim_welcome)
+
+
+func _welcome_label(text: String, size: int, color: Color) -> Label:
+	var l := Label.new()
+	l.text = text
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.add_theme_font_size_override("font_size", size)
+	l.add_theme_color_override("font_color", color)
+	return l
+
+
+func _claim_welcome(patrol_mult: int = 1) -> void:
+	MetaProgress.claim_login()
+	MetaProgress.claim_patrol(patrol_mult)
+	AudioManager.play_sfx("reward", Vector2.ZERO, AudioManager.PRIORITY_HIGH)
+	GameFeel.haptic("medium")
+	if _welcome != null:
+		_welcome.queue_free()
+		_welcome = null
+	_refresh_currencies()
+	_refresh_progress_badge()

@@ -1,5 +1,19 @@
 # Changelog
 
+## Meta & retention (M5)
+- **Save schema v7**: new sections `pilot`, `lifetime`, `missions`, `login`, `patrol`, `achievements`, `modules`; migration recomputes `completed_sectors` from real sector-final clears (old builds marked sectors on any win). New `SaveManager.section()` / `grant_currency()` / `get_total_stars()`.
+- **MetaProgress** (`scripts/meta/meta_progress.gd`) + `MetaCatalogData` (`resources/meta/meta_catalog.tres`, built by `tools/build_meta_content.gd`):
+  - **Missions**: 3 daily + 3 weekly drawn deterministically per local day / Monday week from 24 missions (kills, elites, bosses, chests, Nova, combo, evolutions, HARD clears, Endless survival…), progressed by every finished run, claimed for Energy / Core + activity points; **daily activity chests** at 40 / 80 / 120 (the last also gives a module).
+  - **Pilot level**: XP from score, bosses, and wins; Rift Core on every level-up (bonus every 5th). Shown on the main-menu profile chip (replaces the placeholder power bar) and on Results.
+  - **7-day login streak** (200 → 5 Core on day 7; a missed day restarts it) and **offline patrol** income (scales with stages cleared, 8h cap) in a once-a-day **Welcome back** modal on the main menu.
+  - **32 achievements** (lifetime kills / bosses / elites / chests / Nova / evolutions / combo / stages / stars / sectors / pilot level / Endless).
+  - **Modules**: 8 module types × 4 rarities, 3 equip slots, merge 3 identical into the next rarity; drop from campaign wins (rarer in later sectors) and activity chests; bonuses to damage, HP, crit, magnet, XP, fire rate, armor, and Rift Energy payout.
+  - Time-gated rewards respect the clock-tamper guard.
+- **Ship signatures** (`ShipData.starting_upgrades` / `passive_text`, shown in the hangar): Vanguard launches with a Kinetic Barrier, Void Strider with a Guardian Drone, Razor Wing with Piercing Rounds + Targeting Matrix, Solar Lance with the Arc Laser.
+- **Progress hub** (MISSIONS / AWARDS / MODULES tabs with claim badges) from a new **PROGRESS** main-menu button that shows how many rewards are waiting. Results lists pilot XP / level-ups, module found, and missions ready.
+- Runs now track elites killed, chests opened, Nova uses, evolutions, and bosses (campaign included). Debug "force defeat" uses `PlayerShip.force_kill()` (the barrier used to absorb it).
+- New `tests/meta_probe.gd` (works on a save copy and restores it); `tools/capture_screens.gd` screenshots the meta screens.
+
 ## Content (M4): 3 sectors / 30 stages, 6 new bosses, Endless, Boss Rush
 - **Campaign** (`CampaignData` + static `Campaign` helper, `resources/stages/campaign.tres`): Nova Sector grows to 10 stages (1-9 Shattered Halo, 1-10 Titan Throne), plus **Ember Nebula** (2-1..2-10) and **Abyss Rift** (3-1..3-10). Cross-sector unlocks (`StageNodeData.requires_stage_id`: 2-1 needs 1-10, 3-1 needs 2-10); difficulty scalars climb to 3.8; rewards and 3-star targets scale per sector. Every former hard-coded `nova_sector_map.tres` load now goes through `Campaign`.
 - **Sector presentation**: each sector has its own background tint / nebula color and music (`run_ember`, `boss_ember`, `run_abyss`, `boss_abyss` — new procedural tracks).
