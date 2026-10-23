@@ -579,7 +579,7 @@ func _build_double_button() -> void:
 		return
 	if not _granted_now or _rewards == null or _rewards.is_empty():
 		return
-	if SaveManager.has_bonus_rewards(_stats.run_id) or not RewardedAd.is_ready():
+	if SaveManager.has_bonus_rewards(_stats.run_id) or not RewardedOffer.is_ready():
 		return
 	_double_button = _GLOW_DOUBLE.instantiate() as GlowCtaButton
 	_double_button.name = "DoubleRewards"
@@ -589,7 +589,7 @@ func _build_double_button() -> void:
 	_double_button.configure("×2 REWARDS", "WATCH AN AD", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.MAGENTA, 100.0)
 	_double_button.pressed.connect(func() -> void:
 		_watched_rewarded = true
-		RewardedAd.show("results_double", _on_double_reward, func(_ok: bool) -> void:
+		RewardedOffer.show("results_double", _on_double_reward, func(_ok: bool) -> void:
 			if _double_button != null and SaveManager.has_bonus_rewards(_stats.run_id):
 				_double_button.queue_free()
 				_double_button = null))

@@ -1,6 +1,6 @@
 extends SceneTree
 ## Proves the M6 onboarding / ads / privacy pass:
-## - RewardedAd grants ONLY on the SDK reward callback (close never grants),
+## - RewardedOffer grants ONLY on the SDK reward callback (close never grants),
 ##   including a reward that arrives after close.
 ## - Revive: offered once per run, pauses combat, revives with HP, a second
 ##   death ends the run.
@@ -54,7 +54,7 @@ func _run() -> void:
 
 
 func _rewarded():
-	return load("res://scripts/services/rewarded_ad.gd")
+	return load("res://scripts/services/rewarded_offer.gd")
 
 
 func _check_reward_contract() -> int:

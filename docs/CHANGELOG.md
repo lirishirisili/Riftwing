@@ -1,7 +1,7 @@
 # Changelog
 
 ## Onboarding, ads placements, privacy (M6)
-- **Rewarded placements** (all opt-in, hidden when no ad is ready, granted only from the SDK reward callback via the new `RewardedAd` helper):
+- **Rewarded placements** (all opt-in, hidden when no ad is ready, granted only from the SDK reward callback via the new `RewardedOffer` helper):
   - **Revive** once per run (50% HP, 3s protection, hostile bolts cleared; build kept) — a 6s offer pauses combat; a second death ends the run.
   - **×2 run rewards** on Results (once per run id, `SaveManager.grant_bonus_rewards`).
   - **Extra reroll** when the free rerolls are spent.
@@ -10,6 +10,7 @@
 - **Privacy**: first-launch choice (personalized vs non-personalized ads) before the ad SDK starts; Settings has a PERSONALIZED ADS toggle and a PRIVACY POLICY link. The LevelPlay bridge gained `set_consent` / `set_metadata` (Android AAR rebuilt; iOS bridge resolves the selectors at runtime and is compiled by CI). `do_not_sell` follows the choice; the game is flagged not child-directed. `docs/store/PRIVACY_POLICY.md` documents the choice.
 - **Onboarding**: first-run "DRAG ANYWHERE TO FLY" hint (hides on first drag), first card screen explains levels / evolutions, first charged Nova points at the orb. Settings → REPLAY TUTORIAL; Settings shows the app version.
 - `docs/00_PRODUCT_VISION.md` monetization section updated (it still said "ads removed").
+- The rewarded helper is `RewardedOffer` (a `RewardedAd` class name collided with the disabled AdMob addon and broke export builds); export verified with zero script errors.
 - New `tests/monetization_probe.gd` (close never grants + late reward, revive once, x2 once, interstitial guard rails, privacy, tutorial).
 
 ## Meta & retention (M5)

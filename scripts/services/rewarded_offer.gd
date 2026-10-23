@@ -1,4 +1,4 @@
-class_name RewardedAd
+class_name RewardedOffer
 extends RefCounted
 ## One-at-a-time rewarded-ad requests for gameplay / UI placements.
 ##
@@ -22,7 +22,8 @@ static var _earned: bool = false
 static var _on_reward: Callable = Callable()
 static var _on_done: Callable = Callable()
 static var _placement: String = ""
-static var _connected: bool = false
+## The ads service instance the signals are wired to (re-wired if it changes).
+static var _connected_to: Object = null
 
 
 static func is_ready() -> bool:
@@ -63,9 +64,9 @@ static func show(placement: String, on_reward: Callable, on_done: Callable = Cal
 
 
 static func _connect(ads: AdsService) -> void:
-	if _connected:
+	if _connected_to == ads:
 		return
-	_connected = true
+	_connected_to = ads
 	ads.rewarded_earned.connect(_on_earned_signal)
 	ads.rewarded_closed.connect(_on_closed_signal)
 	ads.rewarded_failed.connect(_on_failed_signal)

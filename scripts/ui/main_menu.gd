@@ -437,12 +437,12 @@ func _maybe_show_welcome() -> void:
 	col.add_child(claim)
 	claim.configure("CLAIM", "", GlowCtaButton.Variant.PRIMARY, GlowCtaButton.Pulse.CYAN, 110.0)
 	claim.pressed.connect(_claim_welcome)
-	if patrol > 0 and RewardedAd.is_ready():
+	if patrol > 0 and RewardedOffer.is_ready():
 		var double := _GLOW_CTA.instantiate() as GlowCtaButton
 		col.add_child(double)
 		double.configure("CLAIM ×2 PATROL", "WATCH AN AD", GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.MAGENTA, 96.0)
 		double.pressed.connect(func() -> void:
-			RewardedAd.show("patrol_double", func() -> void: _claim_welcome(2)))
+			RewardedOffer.show("patrol_double", func() -> void: _claim_welcome(2)))
 
 
 func _welcome_label(text: String, size: int, color: Color) -> Label:

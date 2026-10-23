@@ -795,11 +795,11 @@ func _on_player_died() -> void:
 
 
 func _can_offer_revive() -> bool:
-	return not _run_over and _stats.revives_used < _rules.revives_per_run and RewardedAd.is_ready()
+	return not _run_over and _stats.revives_used < _rules.revives_per_run and RewardedOffer.is_ready()
 
 
 func _on_revive_accepted() -> void:
-	if not RewardedAd.show("revive", _do_revive, _on_revive_done):
+	if not RewardedOffer.show("revive", _do_revive, _on_revive_done):
 		_finish_death()
 
 

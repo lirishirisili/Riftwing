@@ -334,7 +334,7 @@ func _on_reroll_pressed() -> void:
 		return
 	if _rerolls_left <= 0:
 		# Out of free rerolls: one more for a rewarded ad (granted on reward only).
-		RewardedAd.show("reroll", func() -> void:
+		RewardedOffer.show("reroll", func() -> void:
 			_rerolls_left += 1
 			_on_reroll_pressed())
 		return
@@ -362,7 +362,7 @@ func _refresh_reroll_button() -> void:
 			"REROLL · %d" % _rerolls_left, "",
 			GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.MAGENTA, 96.0)
 		_reroll_button.set_enabled(true)
-	elif RewardedAd.is_ready():
+	elif RewardedOffer.is_ready():
 		_reroll_button.configure(
 			"REROLL · AD", "WATCH AN AD",
 			GlowCtaButton.Variant.SECONDARY, GlowCtaButton.Pulse.MAGENTA, 96.0)
